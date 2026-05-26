@@ -1,0 +1,660 @@
+id_tela;tipo_tela;tela;ancho;peso;caracteristicas;rendimiento;encogimiento;precio;fecha_actualizacion;unidades_metros;Proveedor
+1;Antifluidos;Antifluido Adidas ;1,5;;;;;6471;23/01/2025;0;El Mayorista
+2;Antifluidos;Antifluido Adidas Es Mas Impermeable ;1,5;105 Gr ;100% Poliester;;;6600;23/01/2025;0;Quantto
+3;Antifluidos;Antifluido Alviero Strech Lafshield;1,5;;;;;23166;23/01/2025;0;Lafayette
+4;Antifluidos;Antifluido Alviero Strech Lafshield Estampada;1,5;;;;;26284;23/01/2025;0;Lafayette
+5;Antifluidos;Antifluido Antimicrobial Microtec Cloro Antimicrobial;1,5;;;;;0;23/01/2025;0;Lafayette
+6;Antifluidos;Antifluido Antimicrobial Microtec Cloro Antimicrobial  Estampado;1,5;;;;;0;23/01/2025;0;Lafayette
+7;Antifluidos;Antifluido Antimicrobial Universal Cloro Antimicrobial;1,5;;;;;0;23/01/2025;0;Lafayette
+8;Antifluidos;Antifluido Aqua Max Cloro Resistencia;1,5;140 Gr;;;;14698;23/01/2025;0;Icoltex
+9;Antifluidos;Antifluido Astral (Se Parece Wembley Y Nike) ;1,5;115 Gr;100%Poliester ;;;7480;23/01/2025;0;Bella Tela
+10;Antifluidos;Antifluido Balsillas ;1,5;;100% Poliester;;;4950;23/01/2025;0;Bella Tela
+11;Antifluidos;Antifluido Betania;1,48;150 Gr;65%Poliester - 35%Viscosa Sensacion Frescura ;;;19255;23/01/2025;0;Lafayette
+12;Antifluidos;Antifluido Boston Navy ;1,5;;;;;11345;23/01/2025;0;Texticorp
+13;Antifluidos;Antifluido Caribe Cloro Resistente;1,5;;;;;23215;23/01/2025;0;Lafayette
+14;Antifluidos;Antifluido Caribe Cloro Resistente;1,5;;Estampado;;;26235;23/01/2025;0;Lafayette
+15;Antifluidos;Antifluido Cooper;1,5;62-67 Gr;Repelente Al Agua No Impermeable Tipo Cortaviento ;;;8800;23/01/2025;0;Stilotex
+16;Antifluidos;Antifluido Cosmos ;1,53;;;;;19255;23/01/2025;0;Lafayette
+17;Antifluidos;Antifluido Cosmos  Estampado;1,53;;;;;21879;23/01/2025;0;Lafayette
+18;Antifluidos;Antifluido Country;1,53;;100% Poliester ;;;6710;23/01/2025;0;Quantto
+19;Antifluidos;Antifluido De 8 Homologa Universal De 3;;;;;;7590;23/01/2025;0;Tramas
+20;Antifluidos;Antifluido Durango;1,5;;;;;22225;23/01/2025;0;Lafayette
+21;Antifluidos;Antifluido Electra ;1,5;;100% Poliester Pelicula Clororesistencia;;;18150;23/01/2025;0;Margaretex
+22;Antifluidos;Antifluido Kae Se Parece Al Tequila Es Opaco ;1,6;;;;;10450;23/01/2025;0;Comertex
+23;Antifluidos;Antifluido Lacrosse;1,48;;;;;0;23/01/2025;0;Lafayette
+24;Antifluidos;Antifluido Liso Wr ;1,5;115 Gr;100%Poliester Liviano Poca Clororesistencia;;;8228;23/01/2025;0;Icoltex
+25;Antifluidos;Antifluido Manila;1,46;148 Gr;65%Poliester - 60%Algodon ;;;21433;23/01/2025;0;Lafayette
+26;Antifluidos;Antifluido 20 Extra;;;;;;18370;23/01/2025;0;Margaritex
+27;Antifluidos;Antifluido Megadrill Lafshield;1,5;;;;;25690;23/01/2025;0;Lafayette
+28;Antifluidos;Antifluido Metropol ;1,5;100 Gr;100% Poliester ;;;28314;23/01/2025;0;Stilotex
+29;Antifluidos;Antifluido Megadrill Lafshield Estampado;1,5;;;;;28314;23/01/2025;0;Lafayette
+30;Antifluidos;Antifluido Microdril Lafshield;1,5;;;;;27670;23/01/2025;0;Lafayette
+31;Antifluidos;Antifluido Microfibra Acabado Soft ;1,48;115 Gr;100% Poliester;;;29353;23/01/2025;0;Tramas
+32;Antifluidos;Antifluido Microdril Lafshield Estampado;1,5;;;;;29353;23/01/2025;0;Lafayette
+33;Antifluidos;Antifluido Microprince;1,51;;;;;26928;23/01/2025;0;Lafayette
+34;Antifluidos;Antifluido Microtec Clor Resistente ;1,5;;;;;20542;23/01/2025;0;Lafayette
+35;Antifluidos;Antifluido Microtec  Estampado;1,5;;;;;27472;23/01/2025;0;Lafayette
+36;Antifluidos;Antifluido Mundial Clororesistente (Universal Clororesistente) ;1,45;30 Gr;100%Poliester ;;;13750;23/01/2025;0;Bella Tela
+37;Antifluidos;Antifluido Napolen (Toque Soft) ;1,5;110 Gr;100%Poliester ;;;7700;23/01/2025;0;Bella Tela
+38;Antifluidos;Antifluido Nike ;1,5;;100% Poliester;;;7810;23/01/2025;0;T3 Textiles
+39;Antifluidos;Antifluido Odeon;;;;;;14251;23/01/2025;0;Quantto
+40;Antifluidos;Antifluido Olimpia Repel Estampado;1,5;;;;;9119;23/01/2025;0;Tienda Portofino
+41;Antifluidos;Antifluido Olimpia Repel  Unicolor;1,5;;;;;8074;23/01/2025;0;Patprimo
+42;Antifluidos;Antifluido Pacific ;1,45;;100% Poliester ;;;15398;23/01/2025;0;Sutex
+43;Antifluidos;Antifluido Plus Ancho ;1,5;;;;;11000;23/01/2025;0;Icoltex
+44;Antifluidos;Antifluido Riva ;1,5;137 Gr;100% Poliester ;;;9982;23/01/2025;0;Danitex
+45;Antifluidos;Antifluido Salud Universal V- Safe;1,5;;;;;0;23/01/2025;0;Lafayette
+46;Antifluidos;Antifluido Spandex Baltimore ;1,45;120 Gr;97%Poliester 3%Spandex ;;;5830;23/01/2025;0;Bella Tela
+47;Antifluidos;Antifluido Spandex Fatima ;1,45;140 Gr ;92%Poliester-8%Spandex  Solo Blanco Por Ahora;;;7821;23/01/2025;0;Quantto
+48;Antifluidos;Antifluido Spandex Iguazu Lycra ;1,5;;;;;25245;23/01/2025;0;Lafayette
+49;Antifluidos;Antifluido Spandex Lotus;;;;;;25245;23/01/2025;0;Lafayette
+50;Antifluidos;Antifluido Spandex Lotus Estampado;;;;;;25245;23/01/2025;0;Lafayette
+51;Antifluidos;Antifluido Spandex Marruecos R;;;;;;30987;23/01/2025;0;Lafayette
+52;Antifluidos;Antifluido Spandex Metro ;1,47;180 Gr;100% Poliester Strech Mecanico  Solo Blanco Por Ahora Spandex En La Trama;;;0;23/01/2025;0;Quantto
+53;Antifluidos;Antifluido Spandex Napolen ;1,5;150 Gr ;96%Poliester - 4%Spandex ;;;10813;23/01/2025;0;Risalltex
+54;Antifluidos;Antifluido Spandex Tesla ;1,5;;95%Poliester - 5% Elastomero Peso 148;;;11925;23/01/2025;0;Icoltex
+55;Antifluidos;Antifluido Spandex Tory ;1,47;135 Gr;91%Poliester-9%Spandex   Solo Blanco Por Ahora;;;0;23/01/2025;0;Quantto
+56;Antifluidos;Antifluido Spandex Universal Lycra;1,5;;;;;25245;23/01/2025;0;Lafayette
+57;Antifluidos;Antifluido Tulum ;1,5;148 Gr ;100% Poliester Texturizado ;;;18395;23/01/2025;0;Icoltex
+58;Antifluidos;Antifluido T180;;;;;;21136;23/01/2025;0;Lafayette
+59;Antifluidos;Antifluido T1801,8 Estampada;;;;;;24057;23/01/2025;0;Lafayette
+60;Antifluidos;Antifluido Tekila ;1,5;;100% Poliester ;;;11660;23/01/2025;0;Comertex
+61;Antifluidos;Antifluido Tifon  Verde Neon Brigadista;1,5;;;;;4898;23/01/2025;0;El Mayorista
+62;Antifluidos;Antifluido Tulun Homologa Universal Clororesistente ;1,5;;;;;18395;23/01/2025;0;Icoltex
+63;Antifluidos;Antifluido Tx 200;1,5;;;;;16731;23/01/2025;0;Lafayette
+64;Antifluidos;Antifluido Tx 200 Estampada;1,5;;;;;19948;23/01/2025;0;Lafayette
+65;Antifluidos;Antifluido Universal Cloro Resis 1,5;1,5;;;;;23430;23/01/2025;0;Lafayette
+66;Antifluidos;Antifluido Universal Cloro Resistente Estampado;1,5;;;;;24156;23/01/2025;0;Lafayette
+67;Antifluidos;Antifluido Universal Ripstop;1,5;;;;;19404;23/01/2025;0;Lafayette
+68;Antifluidos;Antifluido Universal Touch;1,5;;;;;21384;23/01/2025;0;Lafayette
+69;Antifluidos;Antifluido Urano Liviano Para Cortavientos;;;;;;8459;23/01/2025;0;Teks
+70;Antifluidos;Antifluido Valdo ;1,5;140 Gr;100% Poliester;;;8470;23/01/2025;0;Fourtex - Fernando 
+71;Antifluidos;Antifluido Velero R ;1,58;;;;;31383;23/01/2025;0;Lafayette
+72;Antifluidos;Antifluido Wembley ;1,55;104 Gr;100% Poliester;;;8646;23/01/2025;0;Risalltex
+73;Antifluidos;Antifluido Wembley Detal ;1,55;104 Gr;100% Poliester;;;9706;23/01/2025;0;Danitex
+74;Antifluidos;Antifluido Wind Breaker ;1,5;;100% Poliester;;;5500;23/01/2025;0;T3 Textiles
+75;Antifluidos;Antifluido Zelandia Wr Soft ;1,5;105 Gr;100%Poliester;;;6765;23/01/2025;0;Quantto
+76;Burdas;Burda Latina ;;180 Gr;77% Poliester 23%Algodon;;;9119;23/01/2025;0;Patprimo
+77;Camisa Confeccionada;Dril Camisa Confeccionada Polialgodon 19;;;;;;42521;23/01/2025;0;Enciso
+78;Camisera;Camisera Guayabera Resort ;1,5;;;;;21235;23/01/2025;0;Lafayette
+79;Camisera;Camisera Guayabera Resort Estampada;1,5;;;;;25294;23/01/2025;0;Lafayette
+80;Camisera;Camisero Acantha ;1,5;;;;;19107;23/01/2025;0;Lafayette
+81;Camisera;Camisero Adara;1,5;;;;;14157;23/01/2025;0;Lafayette
+82;Camisera;Camisero Adara Estampado;1,5;;;;;17770;23/01/2025;0;Lafayette
+83;Camisera;Camisero Alessio ;1,5;;;;;23661;23/01/2025;0;Lafayette
+84;Camisera;Camisero Alessio Estampado Parker;1,5;;;;;26433;23/01/2025;0;Lafayette
+85;Camisera;Camisero Andes ;1,5;;;;;19503;23/01/2025;0;Lafayette
+86;Camisera;Camisero Bamoa;1,5;;;;;18810;23/01/2025;0;Lafayette
+87;Camisera;Camisero Bamoa Estampado;1,5;;;;;27324;23/01/2025;0;Lafayette
+88;Camisera;Camisero Carlita ;1,5;;;;;18810;23/01/2025;0;Margaretex
+89;Camisera;Camisero Chicago Unicolor Y Jasped;1,5;;;;;21384;23/01/2025;0;Lafayette
+90;Camisera;Camisero Danova L.C;;;;;;0;23/01/2025;0;Lafayette
+91;Camisera;Camisero Danova L.C Estampada;;;;;;0;23/01/2025;0;Lafayette
+92;Camisera;Camisero Dexter;1,46;;;;;23116;23/01/2025;0;Lafayette
+93;Camisera;Camisero Dinamica;1,5;;;;;23958;23/01/2025;0;Margaretex
+94;Camisera;Camisero Dull Khosibo ;;130 Gr;100%Poliester;;;19552;23/01/2025;0;Geomundo
+95;Camisera;Camisero E Padua Queen Estampado;1,7;;;;;23116;23/01/2025;0;Lafayette
+96;Camisera;Camisero Éxito ;1,48;130 Gr;95%Poliester-5% Algodón;;;23958;23/01/2025;0;Texeli
+97;Camisera;Camisero Fay;;;;;;19552;23/01/2025;0;Danitex
+98;Camisera;Camisero Fay Negro;;;;;;23116;23/01/2025;0;Mil Telas
+99;Camisera;Camisero Fay Queen ;1,49;118 Gr ;100%Poliester;;;23958;23/01/2025;0;Texeli
+100;Camisera;Camisero Fay 25 ;1,47;125 Gr ;100% Poliester;;;19552;23/01/2025;0;Cosmotextil
+101;Camisera;Camisero Fay Detal ;1,47;125 Gr;100% Poliester;;;23116;23/01/2025;0;Danitex
+102;Camisera;Camisero Fendi Mil Rayas ;1,5;100 Gr;65%Poliester - 35%Algodon ;;;23958;23/01/2025;0;Icoltex
+103;Camisera;Camisero Fill And Fill 20 ;1,5;;100% Poliester ;;;19552;23/01/2025;0;Margaretex
+104;Camisera;Camisero Fill And Fill 24 ;;;100% Algodón ;;;23116;23/01/2025;0;Primatela
+105;Camisera;Camisero Flafil Homologa Fill And Fill ;1,48;;35% Algodón- 65% Poliester;;;23958;23/01/2025;0;Quantto
+106;Camisera;Camisero Gaell;1,6;;;;;19552;23/01/2025;0;Lafayette
+107;Camisera;Camisero Gorgona R;1,5;;;;;26928;23/01/2025;0;Lafayette
+108;Camisera;Camisero Gorgona R Estampado;1,5;;;;;30096;23/01/2025;0;Lafayette
+109;Camisera;Camisero Howard ;1,7;;;;;26136;23/01/2025;0;Lafayette
+110;Camisera;Camisero Kuvo Estampado;1,5;;;;;0;23/01/2025;0;Lafayette
+111;Camisera;Camisero Maori Estampado;1,5;;;;;19552;23/01/2025;0;Lafayette
+112;Camisera;Camisero 20;;;;;;18260;23/01/2025;0;Margaretex
+113;Camisera;Camisero Metro L.C;1,5;;;;;19404;23/01/2025;0;Lafayette
+114;Camisera;Camisero Metro L.C  Estampada;1,5;;;;;23809;23/01/2025;0;Lafayette
+115;Camisera;Camisero Monaco;;;;;;10553;23/01/2025;0;Quantto
+116;Camisera;Camisero Montecarlo ;1,5;100 Gr;55%Poliester-45% Algodón Peso 95 A ;;;13198;23/01/2025;0;T3 Textiles
+117;Camisera;Camisero New Prestige ;1,45;;50%Algodon - 50% Poliester;;;13864;23/01/2025;0;Sutex
+118;Camisera;Camisero Nicole L.C;1,5;;;;;20097;23/01/2025;0;Lafayette
+119;Camisera;Camisero Nicole L.C Estampado;1,5;;;;;24354;23/01/2025;0;Lafayette
+120;Camisera;Camisero Popelina ;1,5;;;;;12941;23/01/2025;0;Danitex
+121;Camisera;Camisero Popelina Brisa;1,5;;65%Poliester-35%Algodon;;;9240;23/01/2025;0;Risalltex
+122;Camisera;Camisero Popelina Brisa ;1,5;;65%Poliester-35%Algodon;;;9790;23/01/2025;0;Risalltex
+123;Camisera;Camisero Popelina Menta ;;;Poli-Alg ;;;7040;23/01/2025;0;Corbeta
+124;Camisera;Camisero Popelina Menta ;;;Poli-Alg;;;7810;23/01/2025;0;Corbeta
+125;Camisera;Camisero Popelina Pc Holandes ;1,5;150 Gr;65% Poliester- 35% Viscosa;;;0;23/01/2025;0;Risalltex
+126;Camisera;Camisero Popelina San Pablo ;;;;;;10192;23/01/2025;0;Quantto
+127;Camisera;Camisero Popelina Superior ;1,5;;;;;10076;23/01/2025;0;Icoltex
+128;Camisera;Camisero Queen;1,65;;;;;19552;23/01/2025;0;Lafayette
+129;Camisera;Camisero Queen Estampada;1,65;;;;;22374;23/01/2025;0;Lafayette
+130;Camisera;Camisero Rayas Steve2-1;;88 Gr ;65%Poliester -35%Algodon;;;7150;23/01/2025;0;Geomundo
+131;Camisera;Camisero Super Turin ;1,45;90 A 95 Gr;55%Poliester-45% Algodón ;;;13198;23/01/2025;0;T3 Textiles
+132;Camisera;Camisero Unicolor Y Estampadas ;1,45;;100% Poliester;;;16610;23/01/2025;0;Margaretex
+133;Camisera;Camisero Vargas Llosa ;1,5;110 Gr;50% Poliester - 50% Algodón  ;;;10989;23/01/2025;0;Patprimo
+134;Camisera;Camisero Universal Ristop Wicking;;;;;;19404;23/01/2025;0;Lafayette
+135;Camisera;Camisero Universal Ristop Wicking Estampado;;;;;;26136;23/01/2025;0;Lafayette
+136;Camisera;Camisero Veneta Plus;1,5;;;;;22572;23/01/2025;0;Lafayette
+137;Camisera;Dacron Danes Blanco ;1,45;110 Gr;65%Poliester 35%Algodon ;;;8470;23/01/2025;0;Bellatela Cali
+138;Camisera;Dacron Danes Colores ;1,45;110 Gr;65%Poliester 35%Algodon ;;;9350;23/01/2025;0;Bellatela Cali
+139;Camisera;Dacron Lombardy ;1,5;100 Gr ;35%Algodòn- 65% Poliester Blanco;;;8041;23/01/2025;0;Quantto
+140;Camisera;Dacron Lombardy ;1,5;100 Gr;35%Algodòn- 65% Poliester  Colores;;;7386;23/01/2025;0;Quantto
+141;Camisera;Dacron Otoñal Solo Blanco ;1,5;125 Gr;65%Poliester 35%Algodon ;;;9350;23/01/2025;0;Bellatela Cali
+143;Camisera;Oxford  32 ;1,5;150 Gr;50%Algodon-50% Poliester  ;;;10989;23/01/2025;0;Ovetex
+144;Camisera;Oxford ;1,45;130 Gr ;100%Algodon;;;8800;23/01/2025;0;Geomundo
+145;Camisera;Oxford 160 Pat Primo        ;1,6;150 Gr   ;52%Algodon- 48% Poliester    ;;;13189;23/01/2025;0;Patprimo
+146;Camisera;Oxford Aquiles;1,45;160 Gr;60%Algodon - 40%Poliester;;;9240;23/01/2025;0;Tramas
+147;Camisera;Oxford Azul Ml Camisa Confeccionada;;;;;;35503;23/01/2025;0;Balletexco
+148;Camisera;Oxford Blanco 34 ;1,55;155 Gr;50%Poliester - 50% Algodón;;;10450;23/01/2025;0;Jhon Uribe
+149;Camisera;Oxford Blanco 66 ;1,6;;55%Algodon - 45%Poliester ;;;11385;23/01/2025;0;Risalltex
+150;Camisera;Oxford Blanco 46 ;1,5;;;;;0;23/01/2025;0;Comertex Tienda
+151;Camisera;Oxford Blanco 35;1,5;165 Gr;50% Poliester-50% Algodón ;;;10890;23/01/2025;0;Top Tex
+152;Camisera;Oxford Colores 66 ;1,6;;55% Algodón - 45%Poliester;;;11990;23/01/2025;0;Risalltex
+153;Camisera;Oxford Colores 35 ;1,5;165 Gramos;50% Poliester - 50% Algodón ;;;11330;23/01/2025;0;Top Tex
+154;Camisera;Oxford Deluxe ;1,42;208 Gr;68%Algodon - 32% Poliester ;;;17598;23/01/2025;0;Sutex
+155;Camisera;Oxford Gris 15;1,6;;;;;10890;23/01/2025;0;Danitex
+156;Camisera;Oxford Magno 135 ;1,5;;60% Algodón - 40% Poliester;;;8250;23/01/2025;0;Tramas
+157;Camisera;Oxford Manhattan ;;;60%Algodòn - 40%Poliester;;;13484;23/01/2025;0;Quantto
+158;Camisera;Oxford ;;;60%Algodòn - 40%Poliester;;;12673;23/01/2025;0;Quantto
+159;Camisera;Oxford Rayas 66 ;1,6;155 Gr;50%Algodon - 50%Poliester;;;13530;23/01/2025;0;Risalltex
+160;Camisera;Oxford Rayas 4 ;1,5;;;;;13227;23/01/2025;0;Icoltex
+161;Camisera;Oxford Superoxford ;1,5;160 Gr;60% Algodon-40% Poliester ;;;14698;23/01/2025;0;Icoltex
+162;Camisera;Oxford Unioffice ;1,6;163 Gr;62% Algodón - 38% Poliester;;;12540;23/01/2025;0;Tramas
+163;Camisera;Oxoford Azul Y Blanca Mc Confeccionada;;;;;;36975;23/01/2025;0;Éxito - Custer
+164;Camisera;Oxoford 32 ;1,5;150 Gr ;50% poliester - 50% Algodón ;;;12089;23/01/2025;0;Ovetex
+165;Camisera Strech;Camisero Spandex Atina ;1,46;116 Gr;93%Poliester -7%Spandex ;;;8580;23/01/2025;0;Geomundo
+166;Camisera Strech;Camisero Strech Bershka ;;;97%Algodon - 3%Spandex;;;11330;23/01/2025;0;Primatela
+167;Camisera Strech;Camisero Strech Isabel ;;132 Gr;92%Poliester - 8%Spandex ;;;9350;23/01/2025;0;Dgt Nancy
+168;Camisera Strech;Camisero Strech Marcel Lycra;1,5;;;;;27918;23/01/2025;0;Lafayette
+169;Camisera Strech;Camisero Strech Marcel Lycra Est;1,5;;;;;32076;23/01/2025;0;Lafayette
+170;Camisera Strech;Camisero Strech Monet Lycra;1,54;;;;;26334;23/01/2025;0;Lafayette
+171;Camisera Strech;Camisero Strech Popelina ;;;97%Algodon - 3% Lycra;;;9152;23/01/2025;0;Icoltex
+172;Camisera Strech;Camisero Strech Popelina Dubay ;1,45;125 Gr  ;97%Algodon - 3 %Spandex;;;9350;23/01/2025;0;Risalltex
+173;Camisera Strech;Camisero Strech Popelina Pera ;;;97%Algodon - 3%Spandex;;;9350;23/01/2025;0;Corbeta
+174;Camisera Strech;Camisero Strech Popelina Santana;;;;;;7040;23/01/2025;0;Quantto
+175;Camisera Strech;Camisero Strech Popelina Unikl;;;;;;17039;23/01/2025;0;Teks
+176;Camisera Strech;Camisero Strech Popelina Victoria ;1,45;115 Gr;97%Algodon - 3%Spandex;;;8910;23/01/2025;0;Intexco
+177;Camisera Strech;Camisero Strech Rafael Lycra ;1,5;;;;;20900;23/01/2025;0;Margaretex
+178;Camisera Strech;Camisero Strech Rosella Lycra;1,5;;;;;25542;23/01/2025;0;Lafayette
+179;Camisera Strech;Camisero Strech Rosella Lycra Estampado;1,5;;;;;28116;23/01/2025;0;Lafayette
+180;Camisera Strech;Camisero Strech Skikda ;;;92%Poliester - 8%Eslastomero;;;7370;23/01/2025;0;Primatela
+181;Camisero Dacron;Dacron 205 Plus ;1,48;115 Gr;80%Poliester-20%Algodon ;;;8250;23/01/2025;0;Tramas
+182;Camisero Dacron;Dacron Chino Blanco 9;;;;;;5120;23/01/2025;0;Comertex
+183;Camisero Dacron;Dacron Chino Blanco Toptex;;;;;;3410;23/01/2025;0;Top Tex
+184;Camisero Dacron;Dacron Chino Colores  ;1,5;;80%Poliester-20% Algodón ;;;5084;23/01/2025;0;El Mayorista
+185;Camisero Dacron;Dacron Chino Colores Toptex;;;;;;3850;23/01/2025;0;Top Tex
+186;Camisero Dacron;Dacron Colores 5 ;1,5;90 Gr;90%Poliester -10% Algodón  ;;;6160;23/01/2025;0;Bellatela Cali
+187;Camisero Dacron;Dacron Hidalgo Solo Blanco;1,45;;;;;5060;23/01/2025;0;Bellatela Cali
+188;Camisero Dacron;Dacron Importado ;1,54;;;;;6050;23/01/2025;0;Icoltex
+189;Camisero Dacron;Dacron Marques ;1,45;;AnchoSolo Blanco 90%Poliester - 10%Algodon;;;5500;23/01/2025;0;Bellatela Cali
+190;Camisero Dacron;Dacron Perla Blanca ;;;90% Pol-10% Alg Econòmica;;;3630;23/01/2025;0;Quantto
+191;Camisero Dacron;Dacron Popelina Diana ;;;50 poliester - 50 algodón ;;;11440;23/01/2025;0;Jhon Uribe
+192;Camisero Dacron;Dacron Popelina Superior Blanca ;1,48;;;;;6105;23/01/2025;0;Comertex
+193;Camisero Dacron;Dacron Popelina Blanca;1,48;;;;;8782;23/01/2025;0;Tienda Comertex Detal
+194;Conjuntos Impermeables Para Moto;En Este Moento No Tiene Pcc;;;;;;0;23/01/2025;0;Diego Sellartex
+195;Conjuntos Impermeables Para Moto;Impermeabble Chaqueta Pantalon, Calibre 18 Color Azul Y Negro, Reflectivo Solo En Espalda De Chaqueta;;;;;;64522;23/01/2025;0;Surtiplas
+196;Conjuntos Impermeables Para Moto;Impermeable Chaqueta Pantalon Zapatones Y Bolso Calibre 18 Color Azul Y Negro, Reflectivo Solo En Espalda De Chaqueta;;;;;;83083;23/01/2025;0;Surtiplas
+197;Conjuntos Impermeables Para Moto;Impermeable Conjunto Negro Cinta Reflectiva En Espalda Manga Y Bota De 2 Chaqueta Pantalon Calibre 18 Talla S A Xl;;;;;;64871;23/01/2025;0;Guantes Y Seguridad
+198;Conjuntos Impermeables Para Moto;Impermeable Conjunto Negro Talla Xl C/Reflectivo, Cierre Velcro Y Cremallera Con Bolso Y Zapatones Cal-16;;;;;;71280;23/01/2025;0;Enciso
+199;Conjuntos Impermeables Para Moto;Impermeable Conjunto Pantalón Y Chaqueta. En Color Amarillo Y Negro, De Las Talla M A La Xl;;;;;;41800;23/01/2025;0;Asequin
+200;Conjuntos Impermeables Para Moto;Impermeable Pantalon Y Chqueta Sin Botas Ni Bolsito A 60.000 Hasta La Talla Xl Azul Y Negro Con Reflectivo 1 Linea En Bota Y Espalda;;;;;;55462;23/01/2025;0;Dotacol
+201;Conjuntos Impermeables Para Moto;Ref 505-20 Conjunto, Chaqueta Cierre Velcro Y Cremallera, Pantalón Con Resorte, Zapaton Con Suela Y Estuche Cargador (Calibre 16, Una Franja De Reflectivo De 1 En Manga De La Chaqueta, Bota Del Pantalón Y Espalda);;;;;;51838;23/01/2025;0;Dress Winter- Sthepany
+202;Conjuntos Impermeables Para Moto;Ref 605-18 Conjunto, Chaqueta Cierre Velcro Y Cremallera, Pantalón Con Resorte, Zapaton Con Suela Y Estuche Cargador (Calibre 18, Una Franja De Reflectivo De 1 En Manga De La Chaqueta, Bota Del Pantalón Y Espalda) ;;;;;;54043;23/01/2025;0;Dress Winter- Sthepany
+203;Cuartos Frios - Fleece;Fleece Alpaca ;1,5;200 Gr;;;;14828;23/01/2025;0;Linda Textil
+204;Cuartos Frios - Fleece;Fleece Polo Norte;1,5;230 Gr;;;;12650;23/01/2025;0;Linda Textil
+205;Cuartos Frios - Fleece;Fleece Suave Star ;1,5;128 Gr ;100% Poliester ;;;8789;23/01/2025;0;Patprimo
+206;Cuartos Frios - Fleece;Fleece Super Fleeese;;;;;;9983;23/01/2025;0;Telares Medellin
+207;Deportiva;Deportiva Atletica Activa ;1,6;140 Gr ;100%Poliester Strech Mecanico Rendimiento 4,6;;;3564;23/01/2025;0;Tramas
+208;Deportiva;Deportiva Bahhia 1.52;;;;;;26928;23/01/2025;0;Lafayette
+209;Deportiva;Deportiva Bosstex Sec ;;;100% Poliester;;;7370;23/01/2025;0;Teks
+210;Deportiva;Deportiva Dual;1,57;;;;;19552;23/01/2025;0;Lafayette
+211;Deportiva;Deportiva Dunga Sec ;1,5;;;;;6149;23/01/2025;0;Patprimo
+212;Deportiva;Deportiva Hydrotech ;1,5;;;;;16632;23/01/2025;0;Lafayette
+213;Deportiva;Deportiva Hydrotech Antibact;1,47;;;;;18067;23/01/2025;0;Lafayette
+214;Deportiva;Deportiva Hydrotech Reciclado Antibacterial ;1,5;;;;;21235;23/01/2025;0;Lafayette
+215;Deportiva;Deportiva Megafil Sec ;1,5;;;;;5929;23/01/2025;0;Patprimo
+216;Deportiva;Deportiva Montecarmelo ;;155 Gr  ;Poliéster 100% Microfibra ;;;5720;23/01/2025;0;Tejilar
+217;Deportiva;Deportiva Montesimone Reciclado;;;;;;21730;23/01/2025;0;Lafayette
+218;Deportiva;Deportiva Montesimone;1,5;;;;;20839;23/01/2025;0;Lafayette
+219;Deportiva;Deportiva Paraiso ;;139 Gr  ;100%Poliester ;;;4895;23/01/2025;0;Tejilar
+220;Deportiva;Deportiva Sportwear (Sudafrica) ;1,55;120 Gr;100%Poliester ;;;7150;23/01/2025;0;Bellatela Cali
+221;Deportiva;Deportiva Sudafrica ;1,5; 145 Gr;100%Poliester;;;8019;23/01/2025;0;Teks
+222;Deportiva;Deportiva Stamina;1,48;;;;;22819;23/01/2025;0;Lafayette
+223;Deportiva;Deportiva Stepway;1,7;;;;;29848;23/01/2025;0;Lafayette
+224;Deportiva;Deportiva Zanetti ;1,73;;;;;18711;23/01/2025;0;Lafayette
+225;Dril Liviano;Dril Borneo Plus (Oriòn) ;1,5;230 Gr;65% Poliester - 35%Algodon ;;;10560;23/01/2025;0;Tramas
+226;Dril Liviano;Dril Cìtrico (Gabardina);;;;;;12650;23/01/2025;0;Corbeta
+227;Dril Liviano;Dril Malpelo ;1,4;240 Gr;65% Poliester -35%Algodon ;;;10450;23/01/2025;0;Jhon Uribe
+228;Dril Liviano;Dril Noruego (Chefs-Medicos) ;1,5;190 Gr;80% Poliester - 20%Algodon;;;9350;23/01/2025;0;Tramas
+229;Dril Liviano;Dril Orion ;1,5;240 Gr   ;65% Poliester-35%Algodòn ;;;11545;23/01/2025;0;Quantto
+230;Dril Liviano;Dril Orion 15 ;1,5;240 Gr;65% Poliester-35%Algodòn ;;;16638;23/01/2025;0;Danitex
+231;Dril Liviano;Dril Pocker ;;;;;;12980;23/01/2025;0;Comertex
+232;Dril Liviano;Dril Qatar;1,5;;;;;19750;23/01/2025;0;Lafayette
+233;Dril Liviano;Dril Santafe ;1,5;245 Gr;65% Poliester - 35%Algodon. ;;;14697;23/01/2025;0;Icoltex
+234;Dril Liviano;Dril Troyano ;1,7;;100% Poliester ;;;10098;23/01/2025;0;Quantto
+235;Dril Liviano;Dril Universal Ecologico 32 ;1,6;220 Gr;70% Algodòn - 30% Polies Reciclado ;;;0;23/01/2025;0;Ovetex
+236;Dril Pesado;Dril A100 ;1,6;260 Gr;100% Algodòn Colorante Reactivo ;;;18395;23/01/2025;0;Icoltex
+237;Dril Pesado;Dril Activo 32 ;1,6;250 Gr;100% Algodón Colorante Reactivo Alta Fijacion ;;;18689;23/01/2025;0;Ovetex
+238;Dril Pesado;Dril Activo 66  Sin Colorante Tina;;;100% Algodón;;;17336;23/01/2025;0;Risalltex
+239;Dril Pesado;Dril Apolo Colorante Reactivo Alta Fijacion ;1,6;7,4 Onz;100% Algodón ;;;17490;23/01/2025;0;Jhon Uribe
+240;Dril Pesado;Dril Espartano  Colorante Quimico Reactivo;1,6;265 Gr;100%Algodon ;;;14960;23/01/2025;0;Tramas
+241;Dril Pesado;Dril Fortaleza  Sin Tina;;;100% Algodòn;;;9335;23/01/2025;0;Quantto
+242;Dril Pesado;Dril Forza ;1,5;220 Gr ;35% Algodón / 65% Poliéster ;;;16176;23/01/2025;0;Icoltex
+243;Dril Pesado;Dril Forza;1,5;;;;;23413;23/01/2025;0;Lafayette
+244;Dril Pesado;Dril Frutal;1,67;7,8 Onzas ;100% Algodòn Blanco;;;14190;23/01/2025;0;Corbeta
+245;Dril Pesado;Dril Frutal Colores;1,67;7,8 Onzas ;100% Algodòn ;;;9009;23/01/2025;0;Corbeta
+246;Dril Pesado;Dril Goliat  Reactivo Quimico No Tina,;1,68;7,4 Onz;100% Algodon;;;18024;23/01/2025;0;Tienda Comertex
+247;Dril Pesado;Dril Goliat Por Metro  Reactivo Quimico No Tina;1,68;7,4 Onz;100% Algodon;;;20132;23/01/2025;0;Tienda Comertex
+248;Dril Pesado;Dril Goliat  Reactivo Quimico No Tina;1,68;7,4 Onz;100% Algodon;;;17930;23/01/2025;0;Comertex
+249;Dril Pesado;Dril Hercules  Con Colorante Tina Medios;1,58;8 Onz 260 G;100% Algodón;;;13970;23/01/2025;0;Tramas
+250;Dril Pesado;Dril Hercules  Con Colorante Tina Oscuros;1,58;8 Onz 260 Gr;100% Algodón;;;13970;23/01/2025;0;Tramas
+251;Dril Pesado;Dril Kael  Sin Colorante Tina ;1,6;250 Gr;100% Algodón;;;17372;23/01/2025;0;Quantto
+252;Dril Pesado;Dril Kratos  ;1,6;;100% Algodón;;;11550;23/01/2025;0;Comertex
+253;Dril Pesado;Dril Nadal  Sin Colorante Tina;1,6;;100% Algodón;;;15290;23/01/2025;0;Risalltex
+254;Dril Pesado;Dril Pegasso Medios Colorante Tina, Pelicula Anticloro, Proteccion Uv ;1,68;7,4 Onzas;100% Algodón;;;19580;23/01/2025;0;Jhon Uribe
+255;Dril Pesado;Dril Pegasso Oscuros Colorante Tina, Pelicula Anticloro, Proteccion Uv;1,68;7,4 Onzas;100% Algodón;;;19580;23/01/2025;0;Jhon Uribe
+256;Dril Pesado;Dril Raza  ;1,6;;100% Algodòn;;;12996;23/01/2025;0;Comertex
+257;Dril Pesado;Dril Raza Azteca  Colorante Tina ;1,6;275 Gr;100% Algodòn;;;18876;23/01/2025;0;Ovetex
+258;Dril Pesado;Dril Raza Detal  Colorante Tina;1,6;2,15 Gr 7,6 Onzas;100% Algodòn   ;;;21076;23/01/2025;0;Telares Medellin
+259;Dril Pesado;Dril Uniextrom ;1,6;250 Gr;65%Algodon - 35%Poliester ;;;10560;23/01/2025;0;Tramas
+260;Dril Pesado;Dril Universo 32  Colorante Tina;1,6;250 Gr;100% Algodòn ;;;16390;23/01/2025;0;Ovetex
+261;Dril Pesado;Dril Universal 66  Colorante Tina;1,6;;100% Algodòn ;;;18590;23/01/2025;0;Risalltex
+262;Dril Pesado;Dril Vulcano O Activo  Con Colorante Reactivo Alta Fijacion;1,6;250 Gr;100% Algodon;;;18515;23/01/2025;0;Ovetex
+263;Dril Pesado;Dril Rip Stop A r;1,5;185 Gr;35% Algodón / 65% Poliéste;;;14327;23/01/2025;0;Icoltex
+264;Dril Spandex ;Dril Sapndex Austin ;1,6;;97% Algodón 3% Elastomero ;;;18139;23/01/2025;0;Primatela
+265;Dril Spandex ;Dril Spandex Espiga ;1,57;8 Onz ;98 Algodo 2%Spadex ;;;18590;23/01/2025;0;Corbeta
+266;Dril Spandex ;Dril Smart  Operativo;;;62% Algodón - 35%Poliester 3% Spandex;;;19438;23/01/2025;0;Quantto
+267;Dril Spandex ;Dril Spandex Asuncion ;1,6;;97% Algodón - 3% Elastomero;;;19573;23/01/2025;0;Quantto
+268;Dril Spandex ;Dril Spandex Avatar Flex;1,6;255 Gr 7,5onz; 98% Algodon 2% Spandex ;;;20790;23/01/2025;0;Stilotex
+269;Dril Spandex ;Dril Spandex Biscaia ;1,55;6,4 Onzas ;;;;14410;23/01/2025;0;Tramas
+270;Dril Spandex ;Dril Spandex Everest ;1,6;224 Gr;97,5% - Algodón 2,5 % Elastomero  ;;;16225;23/01/2025;0;Risalltex
+271;Dril Spandex ;Dril Spandex Everest Detal;;;;;;24495;23/01/2025;0;Danitex
+272;Dril Spandex ;Dril Spandex Lenovoflex Elit  ;1,4;220 Gr;59% Algodón -38%Poliester -3%Spandex;;;16489;23/01/2025;0;Patprimo
+273;Dril Spandex ;Dril Spandex Lenovoflex Gold ;1,4;210 Gr;59% Algodon - 38%Poliester - 3%Spandex ;;;17589;23/01/2025;0;Patprimo
+274;Dril Spandex ;Dril Spandex Lisboa;1,5;260 Gr;95% Algodon-5% Lycra;;;18395;23/01/2025;0;Icoltex
+275;Dril Spandex ;Dril Spandex Liverpool;;;;;;0;23/01/2025;0;Fibratela Maria Elena 31083513
+276;Dril Spandex ;Dril Spandex Monserrate;1,6;265 Gr;97,5% Algodon-2,5% Spandex;;;20350;27/01/2025;0;Risalltex
+277;Dril Spandex ;Dril Spandex Moon ;1,55;198 Gr 7onz ;98% Algodón -2% spandex;;;14850;23/01/2025;0;Tramas
+278;Dril Spandex ;Dril Spandex New Orleans;;;;;;0;23/01/2025;0;Fibratela Maria Elena 31083513
+279;Dril Spandex ;Dril Spandex Nouvelle - Delgado;1,4;216 Gr;97% Algodón - 3% Spandex;;;17039;23/01/2025;0;Patprimo
+280;Dril Spandex ;Dril Spandex Otawa ;1,47;;98,66% Algodón 1,34%Spandex;;;15939;23/01/2025;0;Daccahs  Mario Ceballos
+281;Dril Spandex ;Dril Spandex Phoebe ;1,44;Gr 7,3 Onz;98%Algodon-2%Spandex ;;;17490;23/01/2025;0;Stilotex
+282;Dril Spandex ;Dril Spandex Royal ;1,5;6,5 Onz;97% Algodón - 3% Spandex, ;;;17589;23/01/2025;0;Patprimo
+283;Dril Spandex ;Dril Spandex Star;;;;;;12100;23/01/2025;0;Tramas
+284;Dril Spandex ;Dril Spandex Sun;;;;;;14520;23/01/2025;0;Tramas
+285;Dril Spandex ;Dril Spandex Versalles 2 ;1,5;218 Gr;98%Algod-2%Elastomero ;;;19365;23/01/2025;0;Quantto
+286;Dril Spandex ;Dril Star ;;7,5 Onza;98% Alg-2 Span ;;;14850;23/01/2025;0;Tramas
+287;Forro;Forro Vaskanit ;1,55;110 Gr;100% Poliester;;;4070;23/01/2025;0;Bella Tela
+288;Forro;Forro Brioni;1,5;;;;;18859;23/01/2025;0;Lafayette
+289;Forro;Forro Briony Ancho ;1,5;;;;;3575;23/01/2025;0;Quantto
+290;Forro;Forro Briony 1 Ancho ;1,5;;;;;2126;23/01/2025;0;El Mayorista
+291;Forro;Forro Margaret Db ;1,47;120 Gr;100%Poliester;;;7689;23/01/2025;0;Linda Textil
+292;Forro;Forro Miami;1,5;;;;;11236;23/01/2025;0;Lafayette
+293;Forro;Forro Michigan;1,5;;;;;14305;23/01/2025;0;Lafayette
+294;Forro;Forro Microtitan;1,48;;;;;26037;23/01/2025;0;Lafayette
+295;Forro;Forro Tafeta;1,5;;;;;2126;23/01/2025;0;El Mayorista
+296;Forro;Forro Uruguay ;1,5;110 Gr Kilo Rendimiento 6;94,2 Polliester - 5,8 Elastano ;;;8030;23/01/2025;0;Linda Textil
+297;Franela Jersey;Franela Barcelona (Tenemos Muestra)  ;1,6;150 Gramos;Poliester 65% -Algodón 35%,;;;0;23/01/2025;0;Utex
+298;Franela Jersey;Franela Barcelona (Tenemos Muestra)  Puede Homologar La Hamburgo;1,6;150 Gr;Poliester 65% -Algodón 35%;;;0;23/01/2025;0;Utex
+299;Franela Jersey;Franela Bavara;;;;;;9999;23/01/2025;0;Comertex
+300;Franela Jersey;Franela Bavara (Malagueña) ;1,68;190 Gr;65%Poliester - 35% Algodón  ;;;15067;23/01/2025;0;Retacol Lina
+301;Franela Jersey;Franela Bavara 34;1,7;;;;;11000;23/01/2025;0;Jhon Uribe
+302;Franela Jersey;Franela Bavara Classic Blanco ;1,8;;50% poliester - 50% Algodon ;;;14509;23/01/2025;0;Risalltex
+303;Franela Jersey;Franela Bavara Classic Claros ;1,8;;50% poliester - 50% Algodon ;;;15609;23/01/2025;0;Risalltex
+304;Franela Jersey;Franela Bavara Classic Oscuros;1,8;;50% Poleste - 50% Algodón  ;;;16852;23/01/2025;0;Risalltex
+305;Franela Jersey;Franela Bavaria Blancos;1,8;205 Gr Rend 2,71;50%Poliester-50%Algodon;;;15653;23/01/2025;0;Linda Textil
+306;Franela Jersey;Franela Bavaria  ;1,8;205 Gr Rend 2,71 Claro;50%Poliester-50%Algodon ;;;17545;23/01/2025;0;Linda Textil
+307;Franela Jersey;Franela Bavaria   Oscuros;1,8;205 Gr Rend 2,71;50%Poliester-50%Algodon;;;20218;23/01/2025;0;Linda Textil
+308;Franela Jersey;Franela Baviera    Blanco;1,7;190 Gr;65%Poliester-35%Algodon;;;9680;23/01/2025;0;Tejilar
+309;Franela Jersey;Franela Baviera Claros $10200 Oscuros $117'';1,7;190 Gr;65%Poliester-35%Algodon ;;;12870;23/01/2025;0;Tejilar
+310;Franela Jersey;Franela Centauro ;1,6;Rendimiento 3,5 - Minimo 3 Kil;93%Algodon- 7%Spandex Algodón Peinado ;;;13196;23/01/2025;0;Patprimo
+311;Franela Jersey;Franela Danesa ;1,46;166 Gr;65%Poliester -35% Algodón ;;;9779;23/01/2025;0;Patprimo
+312;Franela Jersey;Franela Escandinava Claros  Carga Min 580 Mts Por Color;1,75;155 Gr ;100% Algodón Peinado;;;12980;23/01/2025;0;Tejilar
+313;Franela Jersey;Franela Escandinava Oscuros  Carga Min 580 Mts Por Color;1,75;155 Gr;100% Algodón Peinado;;;14850;23/01/2025;0;Tejilar
+314;Franela Jersey;Franela Fria Peach, Kiwi;;;;;;0;23/01/2025;0;Sutex
+315;Franela Jersey;Franela Gold ;1,6;130 Gr;95% Poliester-5% Spandex ;;;5405;23/01/2025;0;Tramas
+316;Franela Jersey;Franela Hamburgo Rigida Color ;1,8;190-200 Gr;65%Poliester-35% Algodó;;;12749;23/01/2025;0;Risalltex
+317;Franela Jersey;Franela Hamburgo Rigida Blanco ;1,8;190-200 Gr;65%Poliester-35% Algodó ;;;11990;23/01/2025;0;Risalltex
+318;Franela Jersey;Franela Hamburgo Suave Blanco ;1,8;190-200 Gr;65%Poliester-35% Algodó ;;;12540;23/01/2025;0;Risalltex
+319;Franela Jersey;Franela Hamburgo Suave Color ;1,8;190-200 Gr;65%Poliester-35% Algodó;;;13992;23/01/2025;0;Risalltex
+320;Franela Jersey;Franela Harriet ;1,7;240 Gr;100% Algodón ;;;18139;23/01/2025;0;Patprimo
+321;Franela Jersey;Franela Jeremy ;1,8;180 Gr;100% Algodón ;;;15389;23/01/2025;0;Patprimo
+322;Franela Jersey;Franela Jersey Supergaroto Silk  Encogim 3% Tintura A Partir 1000 Metros;1,55;150 Gr;100% Algodón;;;13189;23/01/2025;0;Patprimo
+323;Franela Jersey;Franela Minotauro ;1,6;;Algodón + Spandex;;;12540;23/01/2025;0;Patprimo
+324;Franela Jersey;Franela Nevada ;1,8;192 Gr;65%Pol-35%Alg;;;7810;23/01/2025;0;Intexco
+325;Franela Jersey;Franela Topacio Claros (Parecida A La Bavara)  s Encog 3% Tintura A Partir 800 Mts;1,6;180 Gr;65%Poliester-35%Algodon ;;;9559;23/01/2025;0;Patprimo
+326;Franela Jersey;Franela Topacio Oscuros Y Gj(Parecida A La Bavara)   Encog 3% Tintura A Partir 800 Mts;1,6;180 Gr;65%Poliester-35%Algodon;;;10659;23/01/2025;0;Patprimo
+327;Gorras;Gorra Beisbolera Hebilla Metalica Al Por Mayor;;;;;;6600;23/01/2025;0;El Imperio De La Gorra
+328;Gorras;Gorra Tipo Chavo Dril Azul Oscuro A Partir 12 Unidades;;;;;;6600;23/01/2025;0;El Imperio De La Gorra
+329;Ignifugas;Ignifgas Ultra Soft ;1,6;7 oz;;;;68365;23/01/2025;0;Lafayette
+330;Ignifugas;Ignifugas Dh ;1,55;6,5 oz;;;;101860;23/01/2025;0;Lafayette
+331;Ignifugas;Ignifugas Indigo ;1,7;14 oz;;;;83545;23/01/2025;0;Lafayette
+332;Ignifugas;Ignifugas Indura ;1,6;7 oz;;;;68365;23/01/2025;0;Lafayette
+333;Ignifugas;Ignifugas Indura ;1,6;9 oz;;;;80630;23/01/2025;0;Lafayette
+334;Ignifugas;Ignifugas Ultra Soft ;1,6;9 oz;;;;105270;23/01/2025;0;Lafayette
+335;Ignifugas;Ignifugas Ultra Soft Rib ;1,45;10 oz;;;;211585;23/01/2025;0;Lafayette
+336;Impermeable;Impermeable;;;;;;14960;23/01/2025;0;Margaritex
+337;Impermeable;Impermeable Branta;1,47;;;;;47520;23/01/2025;0;Lafayette
+338;Impermeable;Impermeable Cerrusport;1,5;;;;;32076;23/01/2025;0;Lafayette
+339;Impermeable;Impermeable Gavia;1,49;;;;;44649;23/01/2025;0;Lafayette
+340;Impermeable;Impermeable Glou Crushed;1,5;;;;;19156;23/01/2025;0;Lafayette
+341;Impermeable;Impermeable Gorek Alta Visibilidad ;1,5;;;;;18760;23/01/2025;0;Lafayette
+342;Impermeable;Impermeable Gorek;1,5;;;;;18760;23/01/2025;0;Lafayette
+343;Impermeable;Impermeable Kasac ;1,5;;;;;20344;23/01/2025;0;Lafayette
+344;Impermeable;Impermeable Orion Cloro Resistente;1,5;;;;;21978;23/01/2025;0;Lafayette
+345;Impermeable;Impermeable Orion Stretch;1,7;;;;;23562;23/01/2025;0;Lafayette
+346;Impermeable;Impermeable Tempestad Alta Visibilidad Evolut;1,5;;;;;31482;23/01/2025;0;Lafayette
+347;Impermeable;Impermeable Tempestad;1,5;;;;;26284;23/01/2025;0;Lafayette
+348;Impermeable;Impermeable Top Gun ;1,5;;;;;33214;23/01/2025;0;Lafayette
+349;Impermeable;Impermeable Top Gun Alta Visibilidad ;1,51;;;;;35640;23/01/2025;0;Lafayette
+350;Impermeable;Impermeable Tormenta Homologa El Tempestad De 3;1,51;;;;;18370;23/01/2025;0;Margaritex
+351;Impermeable;Impermeable Vendaval ;1,5;;;;;21582;23/01/2025;0;Lafayette
+352;Impermeable;Impermeable Vendaval Cloro Resitente;1,5;;;;;21582;23/01/2025;0;Lafayette
+353;Impermeable;Impermeable Vendaval Crushed;1,5;;;;;23314;23/01/2025;0;Lafayette
+354;Indigo;Indigo Avila Viscosa ;1,67;Pesos 10 Oz;31,5%Pol-62%Algo-6,5% ;;;13651;23/01/2025;0;Quantto
+355;Indigo;Indigo Roma ;1,68;10,3 Oz;98%Indigo 2%Spandex  ;;;16390;23/01/2025;0;Colteantioquia
+356;Indigo;Inidgo  ;1,65;10 Oz;98% 2%;;;19800;23/01/2025;0;Quantto
+357;Indigo Camisero;Indigo Nuevo Romano   1metro 15546;1,68;7 Oz;;;;16638;23/01/2025;0;Comertex Tienda
+358;Indigo Camisero;Indigo Twill   ;1,8;5,5 oz;100% Algodón;;;15400;23/01/2025;0;Risalltex
+359;Indigo Camisero;Indigo Twill Corsega  ;1,5;4,5 Oz;100% Algodòn;;;11649;23/01/2025;0;Risalltex
+360;Indigo Camisero;Indigo Camisa Indigo ;;7 Oz;;;;21890;23/01/2025;0;Dotaciones Calderon
+361;Indigo Camisero;Indigo Camisero ;1,7;4 ,1 Oz ;100% Algodón ;;;19800;23/01/2025;0;Comertex Tienda
+362;Indigo Camisero;Indigo Camisero 1969  ;1,7;10 Oz;100% Algodón;;;17930;23/01/2025;0;Quantto
+363;Indigo Camisero;Indigo Camisero ;1,7;5 Oz;;;;17820;23/01/2025;0;Comertex Tienda
+364;Indigo Camisero;Indigo Camisero  ;1,5;6,8 Oz;100% Algodón;;;10340;23/01/2025;0;Risalltex
+365;Indigo Camisero;Indigo Camisero ;1,7;9,5 Oz ;70%Algod-28% Poliester- 2 Elastano ;;;20790;23/01/2025;0;Comertex Tienda
+366;Indigo Camisero;Indigo Camisero ;1,63;5 Oz;70%Algod-30% Poliester  ;;;17820;23/01/2025;0;Comertex Tienda
+367;Indigo Camisero;Indigo Camisero America ;1,67;7 Oz;100% Algodon;;;14866;23/01/2025;0;Quantto
+368;Indigo Camisero;Indigo Camisero Arles ;1,5;8,5 Oz;Comp Algodón + Poliester + Lycra;;;14300;23/01/2025;0;Quantto
+369;Indigo Camisero;Indigo Camisero Atenea ;;6 Oz;100% Algodón ;;;0;23/01/2025;0;Tramas
+370;Indigo Camisero;Indigo Camisero Claire ;1,7;7 Oz ;;;;12760;23/01/2025;0;Poljean
+371;Indigo Camisero;Indigo Camisero Latino ;;7 Oz ;100% Algodón 1,70 Ancho;;;11440;23/01/2025;0;Tramas
+372;Indigo Camisero;Indigo Camisero Michigan ;1,7;5,3 Oz;100% Algodón ;;;12540;23/01/2025;0;Insumos Y Textiles
+373;Indigo Camisero;Indigo Camisero Mucura ;1,6;10,4 Oz ;100% Algodón ;;;20790;23/01/2025;0;Comertex Tienda
+374;Indigo Camisero;Indigo Camisero Pandora    0% Encogimiento;1,7;7 Oz;100% Algodón;;;0;23/01/2025;0;Tramas
+375;Indigo Pesado;Indigo ;;;;;;16170;23/01/2025;0;Jhon Uribe
+376;Indigo Pesado;Indigo Chronos ;1,7;13 Oz ;80% Algodón -20%Poliester ;;;12980;23/01/2025;0;Tramas
+377;Indigo Pesado;Indigo ;;12 Oz;100% Algodón  ;;;14245;23/01/2025;0;Vicuña
+378;Indigo Pesado;Indigo 13 Onz Peso ;1,7;12,5 Oz ;100% Algodón ;;;16658;23/01/2025;0;Poljean
+379;Indigo Pesado;Indigo Alfa ;1,67;12,8 Oz  ;90%Algodon - 10% Poliester ;;;16049;23/01/2025;0;Ovetex
+380;Indigo Pesado;Indigo Apolo 2 ;1,7;12,5 Oz ;100% Algodón ;;;15965;23/01/2025;0;Quantto
+381;Indigo Pesado;Indigo Apolo Ii 8 ;1,7;12,5 Oz ;100% Algodón ;;;12870;23/01/2025;0;Tramas
+382;Indigo Pesado;Indigo Coloso ;1,7;13,75 Oz ;100% Algodón ;;;16335;23/01/2025;0;Tramas
+383;Indigo Pesado;Indigo Dallas ;1,7;12,5 Oz ;100% Algodón ;;;17949;23/01/2025;0;Quantto
+384;Indigo Pesado;Indigo Damasco ;1,7;13.5 Oz ;;;;17270;23/01/2025;0;Insumos Y Textiles- Bernardo
+385;Indigo Pesado;Indigo Denver ;1,69;13,5 Oz ;100% Algodón ;;;19834;23/01/2025;0;Quantto
+386;Indigo Pesado;Indigo Detroit ;1,7;13,75 Oz ;100% Algodón ;;;16390;23/01/2025;0;Colteantioquia
+387;Indigo Pesado;Indigo Inti ;1,7;12 Oz  ;27%Poliester - 61%Algodon - 12%Viscosa ;;;14866;23/01/2025;0;Quantto
+388;Indigo Pesado;Indigo Lemmon ;1,68;12,5 Oz ;100%Algodon;;;10560;23/01/2025;0;Corbeta
+389;Indigo Pesado;Indigo Marvel ;1,7;13 Oz ;100% Algodón ;;;15620;23/01/2025;0;Jhon Uribe
+390;Indigo Pesado;Indigo Super Inti ;1,7;12 Oz  ;34%Poliester - 53%Algodon - 13%Rayon ;;;15007;23/01/2025;0;Quantto
+391;Indigo Pesado;Indigo Tazmania ;1,7;12 Oz ;;;;12144;23/01/2025;0;Vicuña
+392;Indigo Pesado;Indigo Tera ;1,7;13,5 Oz ;100% Algodón ;;;16060;23/01/2025;0;Comertex
+393;Indigo Pesado;Indigo Texano ;1,69;12,5 Oz ;100% Algodón ;;;17949;23/01/2025;0;Quantto
+394;Indigo Pesado;Indigo Tronic Delta ;1,7;12,5 Oz ;100% Algodón ;;;18150;23/01/2025;0;Comertex
+395;Indigo Pesado;Indigo Tronic ;1,7;12,5 Oz;100% Algodón ;;;17380;23/01/2025;0;Comertex
+396;Indigo Pesado;Indigo Tundra ;1,7;12,5 Oz ;100% Algodón ;;;16390;23/01/2025;0;Colteantioquia
+397;Indigo Pesado;Indigo Venecia ;1,75;13 Oz ;100% Algodón ;;;13200;23/01/2025;0;Insumos Y Textiles
+398;Indigo Pesado;Indigo Vesubio ;1,68;13 Oz ;100% Algodón Recilado ;;;17490;23/01/2025;0;Jhon Uribe
+399;Indigo Pesado;Indigo Vesubio Fabricato  ;1,7;12,6 Oz ;100% Algodón;;;15840;23/01/2025;0;Risalltex
+400;Indigo Pesado;Indigo Zeus  ;1,7;13,75 Oz ;100% Algodón  ;;;15290;23/01/2025;0;Quantto
+401;Indigo Pesado;Indigo ;1,7;12,75 Oz;100% Algodón ;;;14859;23/01/2025;0;Corbeta
+402;Indigo Spandex;Indigo Bybury ;1,84;9,5 Oz ;Alg-Spandex;;;11365;23/01/2025;0;Quantto
+403;Indigo Spandex;Indigo Finlandia ;1,33;;65% Algodon - 31%Poliester - 4% Lycra ;;;12430;23/01/2025;0;Insumos Y Textiles
+404;Indigo Spandex;Indigo Gènesis ;1,6;11,3 Oz ;98%Poliester - 2%Spandex ;;;14080;23/01/2025;0;Insumos Y Textiles
+405;Indigo Spandex;Indigo Granada ;1,54;10 oz;97% Algodon - 3%Lycra ;;;12320;23/01/2025;0;Insumos Y Textiles
+406;Indigo Spandex;Indigo Spandex Carlin ;1,65;10 Oz;97% Indigo-3 Spandex ;;;15802;23/01/2025;0;Poljean
+407;Indigo Spandex;Indigo Spandex Mikonos ;1,45;9,7 Oz ;98% Algodon -2 Spandex;;;19800;23/01/2025;0;Tramas
+408;Indigo Spandex;Indigo Spandex Missy Azul ;1,44;8,8 Oz ;67% Algodon-30%Poliester- 3% Spandex;;;15180;23/01/2025;0;Tramas
+409;Indigo Spandex;Indigo Spandex Mostaza ;1,6;9 Oz;79% Algodon - 19%Poliester - 2%Spdex;;;9790;23/01/2025;0;Corbeta
+410;Indigo Spandex;Inidgo Licrado ;1,8;;98%Algodon - 2%Elastano ;;;18645;23/01/2025;0;Ovetex
+411;Jeans Comprados;Jean Dama ;;;68% Algodón 20%  Poliester 2 Elastano ;;;32260;23/01/2025;0;Ryco
+412;Jeans Comprados;Jean Dama ;;;68% Algodón 20% Poliester 2 Elastano ;;;35033;23/01/2025;0;Ryco
+413;Jeans Comprados;Jean Dama  ;;;68% Algodón 20% Poliester 2 Elastano;;;29487;23/01/2025;0;Ryco
+414;Jeans Comprados;Jean Dama Con Spandex ;;;;;;24200;23/01/2025;0;Dotaciones Calderon
+415;Jeans Comprados;Jean Dama ;;8 Oz;;;;31429;23/01/2025;0;Fenix
+416;Jeans Comprados;Jean Dama ;;;;;;34201;23/01/2025;0;Fenix
+417;Jeans Comprados;Jean Dama;;;;;;30504;23/01/2025;0;Fenix
+418;Jeans Comprados;Jean Hombre Dotacion Composicion ;;;;;;29118;23/01/2025;0;Ryco
+419;Jeans Comprados;Jean Hombre Dotacion Composicion;;;;;;31891;23/01/2025;0;Ryco
+420;Jeans Comprados;Jean Hombre Dotacion Composicion ;;;;;;34664;23/01/2025;0;Ryco
+421;Jeans Comprados;Jean Hombre Rigido ;;14 Oz;;;;24200;23/01/2025;0;Dotaciones Calderon
+422;Jeans Comprados;Jean Hombre  ;;;Spandex;;;32722;23/01/2025;0;Ryco
+423;Jeans Comprados;Jean Hombre  ;;;Spandex;;;35495;23/01/2025;0;Ryco
+424;Jeans Comprados;Jean Hombre Talla 28 A 36;;;;;;27731;23/01/2025;0;Fenix
+425;Jeans Comprados;Jean Hombre Talla 38 A 42;;;;;;29580;23/01/2025;0;Fenix
+426;Jeans Comprados;Jean Hombre Talla 44-46 Y 48;;;;;;32353;23/01/2025;0;Fenix
+427;Jeans Comprados;Jean Spandex Negro Caballero ;;;;;;36974;23/01/2025;0;Ryco
+428;Jeans Comprados;Jean Spandex Negro Caballero ;;;;;;39748;23/01/2025;0;Ryco
+429;Jeans Comprados;Jean Spandex Negro Dama ;;;;;;39655;23/01/2025;0;Ryco
+430;Jeans Comprados;Jean Spandex Negro Dama ;;;;;;36881;23/01/2025;0;Ryco
+431;Malla;Malla Orion Para Forro Color Blanco;;;;;;2420;23/01/2025;0;Bella Tela
+432;Malla;Malla Para Forrar Camisa Mitad Espalda Blanca;;;;;;4035;23/01/2025;0;Icoltex
+433;Malla;Malla Para Forrar Camisa Mitad Espalda Blanca O Chaquetta;;;;;;3236;23/01/2025;0;El Mayorista
+434;Militar;Impermeable Campero;1,5;;;;;29650;23/01/2025;0;Lafayette
+435;Militar;Impermeable Huracan;1,5;;;;;40639;23/01/2025;0;Lafayette
+436;Militar;Lona Reebag;1,5;;;;;31581;23/01/2025;0;Lafayette
+437;Pantalon; 220 Gramos;;;;;;12100;23/01/2025;0;Bella Tela
+438;Pantalon;Lino Nova (Linoflex);;;;;;5703;23/01/2025;0;Quantto
+439;Pantalon;Lino Vertigo ;;;;;;15400;23/01/2025;0;Linotex Medellin
+440;Pantalon;Linoflex ;1,5;;100% Poliester ;;;5720;23/01/2025;0;Bella Tela
+441;Pantalon;Linoflex  ;1,54;;100% Poliester;;;6932;23/01/2025;0;Icoltex
+442;Pantalon;Linoflex ;1,5;;100% Poliester ;;;6490;23/01/2025;0;Risalltex
+443;Pantalon;Linoflex ;1,5;;100% Poliester  ;;;9790;23/01/2025;0;Risalltex
+444;Pantalon;Linoflex ;1,5;;100% Poliester ;;;6933;23/01/2025;0;Textiles Yoyo Medellin
+445;Pantalon;Linoflex  ;;;100% Poliester;;;5643;23/01/2025;0;Comertex
+446;Pantalon;Linoflex Alicia ;1,5;175 Oz;100% Poliester ;;;0;23/01/2025;0;Quantto
+447;Pantalon;Linoflex ;1,5;;100% Poliester ;;;5823;23/01/2025;0;El Mayorista
+448;Pantalon;Linoflex Esmeralda ;1,5;;100% Poliester ;;;4510;23/01/2025;0;Quantto
+449;Pantalon;Linoflex Francia;;;;;;5953;23/01/2025;0;Quantto
+450;Pantalon;Linoflex Gabardina Alegado ;1,5;;;;;5830;23/01/2025;0;Insumos Y Textiles- Bernardo
+451;Pantalon;Linoflex Gabardina Ox Café Oscuro Coidgo 12417 Seguridad Nal ;1,47;;;;;6600;23/01/2025;0;Bella Tela
+452;Pantalon;Linoflex 61 ;;;100% Poliester ;;;7700;23/01/2025;0;Linotex Medellin
+453;Pantalon;Linoflex London ;1,5;180 Gr;100% Poliester ;;;4180;23/01/2025;0;Tramas
+454;Pantalon;Linoflex Lyon ;1,45;;100% Poliester ;;;12100;23/01/2025;0;Cosmotextil
+455;Pantalon;Pantalon Alviero Strech;1,5;;;;;22572;23/01/2025;0;Lafayette
+456;Pantalon;Pantalon Ankara Lycra;1,5;;;;;0;23/01/2025;0;Lafayette
+457;Pantalon;Pantalon Batari Lycra;1,5;;;;;26433;23/01/2025;0;Lafayette
+458;Pantalon;Pantalon Bogaz Lycra;1,5;;;;;26284;23/01/2025;0;Lafayette
+459;Pantalon;Pantalon Bogaz Lycra Estampado;1,5;;;;;39402;23/01/2025;0;Lafayette
+460;Pantalon;Pantalon Brunno Lp;1,54;;;;;0;23/01/2025;0;Lafayette
+461;Pantalon;Pantalon Chakma ;;;97%Poliester - 3%Spandex;;;11330;23/01/2025;0;Primatela
+462;Pantalon;Pantalon Cosmos ;1,53;;;;;0;23/01/2025;0;Lafayette
+463;Pantalon;Pantalon Dynamic;1,49;;;;;17869;23/01/2025;0;Lafayette
+464;Pantalon;Pantalon Elegance ;1,35;243 Gr;97%Poliester-3% Elastomero ;;;15290;23/01/2025;0;Dgt Nancy
+465;Pantalon;Pantalon Florence Detal ;1,4;240 Gr;94% Poliéster, 6% Spandex;;;26621;23/01/2025;0;Telares Medellin
+466;Pantalon;Pantalon Florence 14 ;1,4;240 Gr;94% Poliéster, 6% Spandex;;;25850;23/01/2025;0;Sutex
+467;Pantalon;Pantalon Lugo;1,5;;;;;0;23/01/2025;0;Lafayette
+468;Pantalon;Pantalon Lyon Linoflex Strech Mecanico ;1,5;;;;;15950;23/01/2025;0;Cosmotextil
+469;Pantalon;Pantalon Megadrill Lafshield;1,5;;;;;0;23/01/2025;0;Lafayette
+470;Pantalon;Pantalon Microdril;1,49;;;;;25690;23/01/2025;0;Lafayette
+471;Pantalon;Pantalon Moretti;1,5;;;;;24849;23/01/2025;0;Lafayette
+472;Pantalon;Pantalon Novastretch Lc;1,53;;;;;35442;23/01/2025;0;Lafayette
+473;Pantalon;Pantalon People Strech ;1,4;245 Gr;96% Poliester - 4%Spandex;;;20900;23/01/2025;0;Texeli
+474;Pantalon;Pantalon Praga ;1,5;30gm ;96% Poliester - 4% spandex Supervertigo;;;11440;23/01/2025;0;Tramas
+475;Pantalon;Pantalon Segal Wicking;1,5;;;;;29304;23/01/2025;0;Lafayette
+476;Pantalon;Pantalon Soho (Supervertigo O Studio F)  ;1,5;239 Gr;96% Poliester-4%Spandex;;;11990;23/01/2025;0;Ryco
+477;Pantalon;Pantalon Soho;1,51;;;;;20493;23/01/2025;0;Lafayette
+478;Pantalon;Pantalon Stefano R;1,56;;;;;26730;23/01/2025;0;Lafayette
+479;Pantalon;Pantalon Stefano Lycra R;1,54;;;;;29502;23/01/2025;0;Lafayette
+480;Pantalon;Pantalon Super Big Star ;1,42;216- 239 Gr;96% Poliester 4% Elastomero  ;;;13090;23/01/2025;0;Primatela
+481;Pantalon;Pantalon Super Vertigo 15 ;1,5;;65% Poliester-35%Algodon;;;19412;23/01/2025;0;Danitex
+482;Pantalon;Pantalon Supervertigo ;1,4;236 Gr  ;96% Poliester -4%Elastomero ;;;18590;23/01/2025;0;Dgt Nancy
+483;Pantalon;Pantalon Supervertigo5 ;1,45;;;;;12016;23/01/2025;0;Bella Tela
+484;Pantalon;Pantalon Tafetan Garota ;;;65% Poliester-35%Algodòn;;;11906;23/01/2025;0;Quantto
+485;Pantalon;Pantalon Tisu;1,5;;;;;0;23/01/2025;0;Lafayette
+486;Pantalon;Pantalon Trevi ;1,6;;;;;26977;23/01/2025;0;Lafayette
+487;Pantalon;Pantalon Triana Lycra;1,5;;;;;23908;23/01/2025;0;Lafayette
+488;Pantalon;Pantalon Versalles ;1,43;245 Gr;95% Poliester Filamentos - 5% Elastomero ;;;16087;23/01/2025;0;Icoltex
+489;Pantalon;Pantalon Vertigo 15, Menos Pesado Que Supervertigo, Elongacion 1 Direccion ;1,5;200 Gr;65%Poliester-35%Algodon ;;;22770;23/01/2025;0;Danitex
+490;Pantalon;Pantalon Vertigo Lafayete ;1,45;320 Gr ;98% Poliester 2% Spandex ;;;10296;23/01/2025;0;Quantto
+491;Pantalon;Pantalon Vertigo Leticia   Por Ahora Solo Azul Oscuro;1,45;220 Gr ;97% Poliester 3% Spandex;;;0;23/01/2025;0;Quantto
+492;Pantalon;Pantalon Zulu Stretch;1,5;;;;;16879;23/01/2025;0;Lafayette
+493;Pantalon Gabardina;Gabardina Esparta ;1,5;180 Gr ;20%Algodon - 80%Poliester ;;;7892;23/01/2025;0;Quantto
+494;Pantalon Gabardina;Gabardina Magenta ;1,67;200 Gr ;49%Poliester 26%Algodon 25%Pst ;;;13959;23/01/2025;0;Ovetex
+495;Pantalon Gabardina;Gabardina Olimpia Blanca ;1,5;182 Gr;65%Poliester 35% Algodón ;;;13259;23/01/2025;0;Quantto
+496;Pantalon Gabardina;Gabardina Praga ;1,5;193 Gr;65%Pol - 35%Algodon ;;;11731;23/01/2025;0;Quantto
+497;Pantalon Gabardina;Gabardina Rio ;1,5;200 Gr;65%Poliester - 35%Algodon;;;14327;23/01/2025;0;Icoltex
+498;Pantalon Gabardina;Gabardina Tempo ;1,7;189 Gr ;49%Poliester 26%Algodon 25%Pst ;;;13090;23/01/2025;0;Risaltex
+499;Perchados;Perchado Cairo Plus;;;;;;10219;23/01/2025;0;Patprimo
+500;Perchados;Perchado Fastrack Pb;1,63;;;;;17968;23/01/2025;0;Lafayette
+501;Perchados;Perchado Monaco ;1,5;264 Gr;84%Poliester 16%Algodon ;;;18139;23/01/2025;0;Patprimo
+502;Perchados;Perchado Monarca ;1,5;280 Gr;100%Poliester ;;;14729;23/01/2025;0;Patprimo
+503;Perchados;Perchado Montevideo ;1,5;164 Gr;100%Poliester;;;8019;23/01/2025;0;Patprimo
+504;Perchados;Perchado Seul ;1,5;200 Gr;52%Poliester-48% Algodón ;;;13002;23/01/2025;0;Linda Textil
+505;Perchados;Perchado Seul ;1,5;200 Gr;52%Poliester-48% Algodón ;;;14586;23/01/2025;0;Linda Textil
+506;Perchados;Perchado Seul Oscuro;1,5;200 Gr;52%Poliester-48% Algodón;;;17083;23/01/2025;0;Linda Textil
+507;Perchados;Perchado Standford   Blanco;1,5;285 Gr;44%Poliester-55% Algodón;;;21439;23/01/2025;0;Linda Textil
+508;Perchados;Perchado Standford  Claro;1,5;285 Gr;44%Poliester-55% Algodón;;;23254;23/01/2025;0;Linda Textil
+509;Perchados;Perchado Standford Oscuro;1,5;285 Gr;44%Poliester-55% Algodón;;;26961;23/01/2025;0;Linda Textil
+510;Pique;Pique Palaos  Tenemos Muestra;;230 Gr;;;;0;23/01/2025;0;Ninguno
+511;Pique;Pique ;;;65% Poliester 35% Algodón;;;20900;23/01/2025;0;Comertex
+512;Pique;Pique Action;1,57;;;;;31135;23/01/2025;0;Lafayette
+513;Pique;Pique Antilla ;1,8;200 Gr;65% Poliester 35%Algodon;;;13640;23/01/2025;0;Tejilar
+514;Pique;Pique Apolo ;1,76;;20% Algodón - 80%Poliester ;;;24502;23/01/2025;0;Lafayette
+515;Pique;Pique Apoluss, Es Un Lacoste  Blanca;1,8;200 Gr; 100% Poliester ;;;29650;23/01/2025;0;Retacol Lina
+516;Pique;Pique Apoluss, Es Un Lacoste  ,  Negra Y Azul Oscura;1,8;200 Gr;100% Poliester;;;24948;23/01/2025;0;Retacol Lina
+517;Pique;Pique Aranza ;1,7;210 Gr;73%Pol - 27%Algo;;;12639;23/01/2025;0;Patprimo
+518;Pique;Pique Armani    Tipo Pique Lacoste Caiman $36000 Kg Rendimiento 3 Metros Venden Cuellos Y Puños;1,5;220 Gr;100% Poliester;;;9900;23/01/2025;0;Tramas
+519;Pique;Pique Atlantic +;1,5;;;;;26185;23/01/2025;0;Lafayette
+520;Pique;Pique Barbados  Blanca ;1,5;;65%Poliester 35% Algodón;;;0;23/01/2025;0;Ninguno
+521;Pique;Pique Cole Plus Alta Visibilidad 2.00;;;;;;20691;23/01/2025;0;Lafayette
+522;Pique;Pique Cole Plus2;;;;;;19305;23/01/2025;0;Lafayette
+523;Pique;Pique Dakota Classic Blanco  ;2;195 Gr ;50% Poliester - 50% Algodón ;;;16764;23/01/2025;0;Risalltex
+524;Pique;Pique Dakota Classic Claros ;2;195 Gr ;50% Poliester - 50% Algodón ;;;18513;23/01/2025;0;Risalltex
+525;Pique;Pique Dakota Classic Oscuros ;2;195 Gr;50% Poliester - 50% Algodón ;;;20108;23/01/2025;0;Risalltex
+526;Pique;Pique Db Color Microfibra;1,8;;100% Poliester ;;;12265;23/01/2025;0;Risalltex
+527;Pique;Pique Decathon  (Polux);1,8;;100% Poliester;;;14289;23/01/2025;0;Textrama Rodrigo
+528;Pique;Pique Decathon  (Polux) Blanco;1,8;;100% Poliester;;;13189;23/01/2025;0;Risalltex
+529;Pique;Pique Deportiva  ;1,5;;100%Poliester;;;9889;23/01/2025;0;Patprimo
+530;Pique;Pique Deportiva Super ;1,47;209 Gr;84,2 Poliester-15,8 Algodón;;;11627;23/01/2025;0;Linda Textil
+531;Pique;Pique 60 Tipo Lacoste Blanca  Parece Apoluss,  Blanca;1,8;216 Gr ;100% Poliester;;;11770;23/01/2025;0;Bella Tela
+532;Pique;Pique 60 Tipo Lacoste Colores Parece Apoluss, ;1,8;216 Gr ;100% Poliester ;;;13420;23/01/2025;0;Bella Tela
+533;Pique;Pique Generra Blanco ;2;250 Gr;50% Poliester - 50% Algodón ;;;19965;23/01/2025;0;Risaltex
+534;Pique;Pique Generra Claros ;2;250 Gr;50% Poliester - 50% Algodón ;;;21252;23/01/2025;0;Risaltex
+535;Pique;Pique Generra Oscuros;2;250 Gr;50% Poliester - 50% Algodón ;;;23094;23/01/2025;0;Risaltex
+536;Pique;Pique Hannover    Blancos;1,8;190 Gr;77%Poliester-23 Algodón;;;15444;23/01/2025;0;Linda Textil
+537;Pique;Pique Hannover    Claros;1,8;190 Gr;77%Poliester-23 Algodón;;;17413;23/01/2025;0;Linda Textil
+538;Pique;Pique Hannover    Oscuros;1,8;190 Gr;77%Poliester-23 Algodón;;;19074;23/01/2025;0;Linda Textil
+539;Pique;Pique Hannover  Tenemos Muestra;;200 Gr;;;;0;23/01/2025;0;Risalltex
+540;Pique;Pique Lacost Mil Rayas ;1,8;210 Gr;65%Poliester - 35%Algodon ;;;9350;23/01/2025;0;Intexco
+541;Pique;Pique Lacoste ;1,8;200 Gr ;65%Poliester-35% Algodón ;;;11550;23/01/2025;0;Retacol Lina
+542;Pique;Pique Lindatextil   Se Parece A La Poltexsec;1,8;200 Gr;100% Poliester;;;14245;23/01/2025;0;Linda Textil
+543;Pique;Pique Lucia ;1,8;220 Gr;65% Poliester - 35% algodón   ;;;11092;23/01/2025;0;Textiles del Pacifico
+544;Pique;Pique Madrigal Claros (Polux) ;1,8;220 Gr ;100%Poliester;;;7700;23/01/2025;0;Intexco
+545;Pique;Pique Madrigal Claros Homologa Polux;;;;;;8140;23/01/2025;0;Risalltex
+546;Pique;Pique Madrigal Oscuros (Polux) ;1,8;220 Gr;100%Poliester;;;8360;23/01/2025;0;Ninguno
+547;Pique;Pique Madrigal Oscuros Homologa Polux;;;;;;9702;23/01/2025;0;Ninguno
+548;Pique;Pique Manila Claros ;1,6;180 Gr ;80% Poliester -20% Algodón ;;;7040;23/01/2025;0;Intexco
+549;Pique;Pique Manila Oscuros ;1,6;180 Gr;80% Poliester -20% Algodón ;;;7920;23/01/2025;0;Intexco
+550;Pique;Pique Oslo ;1,8;;;;;0;23/01/2025;0;Trend Lab
+551;Pique;Pique Palaos  Es Mas Suave Que Hannover Blancos;1,8;;65%Poliester- 35%Algodon;;;21109;23/01/2025;0;Linda Textil
+552;Pique;Pique Palaos   Es Mas Suave Que Hannover Claros;1,8;230 Gr;65%Poliester- 35%Algodon ;;;23485;23/01/2025;0;Linda Textil
+553;Pique;Pique Palaos   Es Mas Suave Que Hannover Oscuros;1,8;230 Gr;65%Poliester- 35%Algodon;;;26895;23/01/2025;0;Linda Textil
+554;Pique;Pique Palermo  Rollo;1,83;205 Gr;100% Algodón;;;24548;23/01/2025;0;Risaltex
+555;Pique;Pique Poltexsec ;1,8;210 Gr;100%Poliester ;;;9889;23/01/2025;0;Patprimo
+556;Pique;Pique Poluss  ;1,65;220 Gr;;;;12941;23/01/2025;0;Almacen Textifill Bogota
+557;Pique;Pique Poluss 34   ;1,65;220 Gr;;;;13750;23/01/2025;0;Jhon Uribe
+558;Pique;Pique Polux;1,8;;;;;21037;23/01/2025;0;Lafayette
+559;Pique;Pique 73 ;1,9;220 Gr ;65% Poliester -35% Algodón ;;;13125;23/01/2025;0;Retacol Lina
+560;Pique;Pique Rus Blancos;1,8;225 Gr;65%Poliester-35%Algodon;;;18304;23/01/2025;0;Linda Textil
+561;Pique;Pique Ruso   Claros - 25 Dias Programacion Color;1,8;225 Gr;65%Poliester-35%Algodon;;;21505;23/01/2025;0;Linda Textil
+562;Pique;Pique Ruso  Oscuros 25 Dias Programacion Color;1,8;225 Gr;65%Poliester-35%Algodon;;;25333;23/01/2025;0;Linda Textil
+563;Pique;Pique Russo Blanco ;1,8;225 Gr;65%Poliester-35%Algodon;;;19052;23/01/2025;0;Risaltex
+564;Pique;Pique Russo Medios ;1,8;225 Gr;65%Poliester-35%Algodon;;;22429;23/01/2025;0;Risaltex
+565;Pique;Pique Russo Oscuros ;1,8;225 Gr;65%Poliester-35%Algodon;;;26400;23/01/2025;0;Risaltex
+566;Pique;Pique Russo/Ref Nigeria ;1,7;216 Gr ;65%Poliester-35%Algodon;;;8690;23/01/2025;0;Intexco
+567;Pique;Pique Saturno ;1,8;180 Gr;65% Poliester 35%Algodon;;;0;23/01/2025;0;Tejilares Ana Cristina
+568;Pique;Pique Speed Igual A La Spray ;1,5;140 Gr;100%Poliester ;;;7118;23/01/2025;0;Bella Tela
+569;Pique;Pique Spray ;1,47;136 Gr;100%Poliester ;;;8129;23/01/2025;0;Linda Textil
+570;Pique;Pique Spray Azul Rey Y Azul La De Eve;;;;;;8316;23/01/2025;0;Risalltex
+571;Pique;Pique Superior Claros ;1,9;220 Gr ;65% Poliester 35%Algodon;;;9900;23/01/2025;0;Intexco
+572;Pique;Pique Superior Medios ;1,9;220 Gr ;65% Poliester 35%Algodon;;;11000;23/01/2025;0;Ninguno
+573;Pique;Pique Terranova Blanco ;1,76;195 Gr;50% Poliester - 50% Algodón ;;;17374;23/01/2025;0;Risaltex
+574;Pique;Pique Terranova Medios ;1,76;195 Gr;50% Poliester - 50% Algodón ;;;19855;23/01/2025;0;Risaltex
+575;Pique;Pique Terranova Oscuros ;1,76;195 Gr;50% Poliester - 50% Algodón ;;;21615;23/01/2025;0;Risaltex
+576;Pique;Pique Tikal R  Homologa Polux;1,85;;;;;26086;23/01/2025;0;Lafayette
+577;Pique;Pique Togo ;1,47;110 Gr;100% Poliester ;;;7205;23/01/2025;0;Linda Textil
+578;Pique;Pique Ultra  Blanco;1,8;200 Gr;65% Poliester 35%Algodon;;;12540;23/01/2025;0;Risalltex
+579;Pique;Pique Ultra    Colores;1,8;200 Gr;65% Poliester 35%Algodon;;;9020;23/01/2025;0;Risalltex
+580;Polos Y Tshirt Ya Confeccionadas;Polo Mc Blanca;;;;;;20798;23/01/2025;0;Yenjhon
+581;Polos Y Tshirt Ya Confeccionadas;Polo Mc Color;;;;;;21722;23/01/2025;0;Yenjhon
+582;Polos Y Tshirt Ya Confeccionadas;Polo Ml Blanca;;;;;;24033;23/01/2025;0;Yenjhon
+583;Polos Y Tshirt Ya Confeccionadas;Polo Ml Color;;;;;;24957;23/01/2025;0;Yenjhon
+584;Polos Y Tshirt Ya Confeccionadas;Polos Mc;;;;;;0;23/01/2025;0;Gildan- Corbeta
+585;Rib;Rib Bahamas Se Tiñe Con Prendas Entrega 25 A 30 Dias;1,4;216 Gr;65%Poliester -35%Algodon;;;12540;23/01/2025;0;Tejilar
+586;Rib;Rib Éxito ;1,6;200 Gr;65%Poliester -35%Algodon ;;;16489;23/01/2025;0;Portofino
+587;Rib;Rib 73 ;1,5;;Poliesteralgodon ;;;14789;23/01/2025;0;Retacon
+588;Rib;Rib Spring Maxim Minimo 6 Metros;;;;;;13959;23/01/2025;0;Patprimo
+589;Rib;Rib 44 ;1,5;;Poliester ;;;10907;23/01/2025;0;Telares Medellin
+590;Rib;Rib Titanica ;1,5;;64%Poliester -34%Algodon -2%Spandex ;;;22687;23/01/2025;0;Patprimo
+591;Sabanas;Genero 23  144 Hilos ;2,5;;50% Poliester - 50% Algodón ;;;16546;23/01/2025;0;Mi Telas
+592;Sabanas;Genero 66 144 Hilos  Solo Vende Rollos;2,5;;50% Poliester - 50% Algodón;;;11825;23/01/2025;0;Risalltex
+593;Sabanas;Genero 44 144 Hilos  ;2,4;;50% Poliester -  50% Algodón;;;14604;23/01/2025;0;Telares Medellin
+594;Salud;Impermeable Antimicrobial Vendaval Cloro Antimicrobial1.50;;;;;;0;23/01/2025;0;Lafayette
+595;Salud;Impermeable Orion Cloro Antimicrobial1.50;;;;;;0;23/01/2025;0;Lafayette
+596;Tela Bolsillo;Tela Bolsillo Blanca Dajol Pc Chino ;1,5;;80%Poliester -20% Algodón ;;;5610;23/01/2025;0;Risalltex
+597;Tela Bolsillo;Tela Bolsillo Crema Batida Bellatela ;;;;;;4400;23/01/2025;0;Bella Tela
+598;Tela Bolsillo;Tela Bolsillo Crema Batida Rollo 100 Mts;;;;;;3630;23/01/2025;0;El Mayorista
+599;Tela Bolsillo;Tela Bolsillo 4  ;1,5;90 +- 5 Gr;;;;3601;23/01/2025;0;Icoltex
+600;Tela Bolsillo;Tela Bolsillo Negro Dajol Pc Chino ;1,5;;80%Poliester -20% Algodón ;;;6710;23/01/2025;0;Risalltex
+601;Tela Bolsillo;Tela Bolsillo 32 ;2,5;;;;;4829;23/01/2025;0;Ovetex
+602;Tela Bolsillo;Tela Bolsillo Negra Y Beige;;280 Gr;;;;5236;23/01/2025;0;Quantto
+603;Tshirt Confeccionadas;Tshirt Blanca  Solo Color Blanco;;;Algodón 100%;;;8030;23/01/2025;0;Francisco Rosero
+604;Tshirt Confeccionadas;Tshirt Mc;;;;;;15950;23/01/2025;0;Mapi
+605;Tshirt Confeccionadas;Tshirt Mc Cuello Redondo Blanca;;;;;;12016;23/01/2025;0;Yenjhon
+606;Tshirt Confeccionadas;Tshirt Mc Cuello Redondo Caballero Aritex Tallas S A Xl;;;;;;14604;23/01/2025;0;Eduardo Mejia Z Sucesores
+607;Tshirt Confeccionadas;Tshirt Mc Cuello Redondo Color;;;;;;12941;23/01/2025;0;Yenjhon
+608;Tshirt Confeccionadas;Tshirt Mc Cuello Redondo Dama Aritex Talla S A Xl;;;;;;14986;23/01/2025;0;Eduardo Mejia Z Sucesores
+609;Tshirt Confeccionadas;Tshirt Mc Cuello V Blanca;;;;;;12201;23/01/2025;0;Yenjhon
+610;Tshirt Confeccionadas;Tshirt Mc Cuellov Color;;;;;;13126;23/01/2025;0;Yenjhon
+611;Tshirt Confeccionadas;Tshirt Ml Cuello Redondo Blanca;;;;;;14789;23/01/2025;0;Yenjhon
+612;Tshirt Confeccionadas;Tshirt Ml Cuello Redondo Color;;;;;;15714;23/01/2025;0;Yenjhon
+613;Tshirt Confeccionadas;Tshirt Ml;;;;;;18395;23/01/2025;0;Mapi
+615;Pique;OMEGA ;1,8;223 Gr;100%poliester;;;14300;23/01/2025;0;Sutex
+616;Tela Bolsillo;Tela Bolsillo ;2,5;;;;;4400;23/01/2025;0;Risalltex
+617;Pique;Pique Dornella Plus ;1,8;;62% Poliester - 34% Algodón - 4% Spandex ;;;16940;23/01/2025;0;Teks
+619;Antifluidos;Antifluido Repe Garnet1 T180 Estampada Negro Rayas base 22329 Stock 75115 Color 174405 ;;;;;;25249;23/01/2025;0;Lafayette
+620;Impermeable;Tela poliamida Nylon  Filamentos 100%   Tafetan 1*1 Liviano (Chaquetas Cortavientos);1,5;76 Gr;;;;3512;23/01/2025;0;El Mayorista
+621;Camisera;Tela Ref 25000 ;1,58;100 Gr;Poliester 80% Algodon 20% ;;;8635;23/01/2025;0;Textilia
+622;Pantalon Gabardina;Linoflex Ref 5001 Tela Pantalonera ;1,5;;100% Poliester ;;;8784;23/01/2025;0;Textilia
+623;Dril Spandex ;Hawai ;1,63;7.3 oz ;98% Algodon 2% Elastano ;;;14520;23/01/2025;0;Vicuña
+624;Antifluidos;Antifluido Potenza ;1,45;160 Gr;100% Poliester ;;;13860;23/01/2025;0;Sutex
+625;Camisera Strech;Cotton Popelin 150 ;1,5;;algodon 97% spandex 3% ;;;14190;23/01/2025;0;Sutex
+626;Camisera Strech;Stretch Popelin ;1,45;120 Gr;polyester 75% algodon 23% spandex 2% ;;;13200;23/01/2025;0;Sutex
+627;Camisera;Camisero MARMARA ;1,6;;Pol-Alg 92-8 ;;;24200;23/01/2025;0;Lafayette
+628;Antifluidos;Antifluido Cosmos Clororesistente ;1,52;148 Gr;100% Polyester ;;;13079;23/01/2025;0;Textiles Spirit
+629;Pantalon Gabardina;Gabardina Garota ;1,5;175 Gr;;;;7892;23/01/2025;0;Quantto
+630;Deportiva;Montecatini ;1,5;;100% Polyester ;;;8635;23/01/2025;0;Risalltex
+631;Deportiva;Megafil Sec  ;1,6;112 Gms;100% Polyester ;;;5819;23/01/2025;0;Teks
+632;Indigo Spandex;Indigo Nakan Tejido Plano;1,6;318.7;69% Filamentos de Algodon 29% Filamento de polyester 2% spandex;;;11642;23/01/2025;0;Intermoda
+633;Pique;Coqui Útil;1,7;;3,2 - 35 Polyester 65% Algodón;3,2;;9099;23/01/2025;0;Guia Logistica sas
+634;Franela Jersey;Franela Jersey Crear Franela Sahara;1,6;149 Gm;"65% Poliéster 35% Algodón
+";;;6710;28/11/2024;0;Guia Logistica sas
+635;Franela Jersey;Franela Jabón;1,5;;91% Polyester 9% Spandex;3,5;;6911;28/11/2024;0;Teks
+636;Franela Jersey;"Franela Keira
+";0,6;;33% Algodón 61% Polyester 6%Spandex;3,5;;9425;28/11/2024;0;Teks
+637;Deportiva;"Hidrotech  
+";1,48;138;100% Polyester;;;18480;29/11/2024;0;Lafayette
+638;Perchados;"Perchado Olimpica
+";1,5;213;46.3% Poliéster 53.7%;3,13;;19239;19/12/2024;0;Risalltex
+639;Perchados;Perchado Seul;1,47;190;52% poliéster 48% Algodón;3,16;;17160;16/12/2024;0;Risalltex
+640;Impermeable;"Tela Nylon Azul Turqueza
+";;;"100% Poliester
+";;;4251;5/12/2024;0;INVERSIONES EL MAYORISTA
+641;Camisera;Saray;1,45;105 Gms;100% Poliester;;;18260;10/12/2024;0;Margaritex
+642;Camisera;Popelina Malta Tejido Plano;1,5;18 Gms;65% Poliester 35% Algodón;;;8690;13/12/2024;0;Risalltex
+643;Camisera;Oxfod ;;;;;;9900;21/12/2024;0;COLNOTEX
+644;Perchados;Perchado Loto;1,5;;100% Poliester;;;7150;19/12/2024;0;Risalltex
+645;Indigo Pesado;Indigo Tokio;1,8;12,5 onz;;;;12120;21/12/2024;0;Intermoda
+646;Indigo Spandex;Indigo nakano;1,6;;2% spandex 69% Algodón 29% poliester;;;11642;21/12/2024;0;Intermoda
+647;Dril Spandex ;Dril spandex;;;;;;18480;3/01/2025;0;TEXTILES MEDELLIN Y MODA
+648;Franela Jersey;Franela Sahara R/4.2;1,6;149;Poliester algodon;;;29117;13/01/2025;0;Guia Logistica sas
+649;Antifluidos;Antifluido Pacific Unicolor;1,49;;Poliester 91% Lycra 9;;;30525;13/01/2025;0;Lafayette
+650;Antifluidos;ANTIFLUIDO PACIFIC PLUS LAFAYETTE STOCK 37402 Color 194056 azul rey;;;;;;25250;25/01/2025;0;Lafayette
+651;Forro;FORRO STRONG ;;;100% POLIESTER;;;3399;27/01/2025;0;Sutex
+652;Forro;FORRO COLOMBIA ;;;100% POLIESTER;;;5799;27/01/2025;0;Sutex
+653;Pantalon;Tela Pantalon Patagonia ;1.45;204;100% Polyester;;;20000;31/01/2025;0;Sutex
+654;Malla;MALLA CON ARRESTO AZUL OSCURO (AGENTE TRANSITO);;;;;;5033;31/01/2025;0;DISTRIBUIDORA CALI PLASTICOS 
+655;Camisera;HAIDEN 100% POLIESTER ANCHO 1.45;;;;;;17100;6/02/2025;0;Margaritex
+656;Camisera;ANDES ESTAMPADA 100% POLIESTER RECICLADO;;;;;;24150;6/02/2025;0;Lafayette

@@ -1,0 +1,13 @@
+body {
+    background-color: #f0f0f0; /* Gris claro de fondo */
+}
+
+.navbar {
+    background: linear-gradient(70deg, #020873 0%, #000DD3 100%); /* Gradiente de azul en la barra de navegación */
+}
+
+.contenedorCuadro {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}

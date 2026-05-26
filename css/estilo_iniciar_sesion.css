@@ -1,0 +1,54 @@
+body {
+    background-color: #f0f0f0; /* Gris claro de fondo */
+}
+
+.navbar {
+    background-color: #0c59cf; /* Azul en la barra de navegación */
+}
+
+.contenedorCuadro {
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+.form-control {
+    border-color: #ccc; /* Gris más claro para el borde */
+    border-radius: 20px; /* Bordes redondeados */
+    background-color: #f8f8f8; /* Gris más claro para el fondo */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2); /* Sombreado */
+    color: #333; /* Texto más oscuro */
+}
+
+.form-control:focus {
+    border-color: #0c59cf; /* Color de borde al enfocar */
+    background-color: #f0f0f0; /* Gris claro para el fondo al enfocar */
+    color: #333; /* Texto más oscuro */
+}
+
+.btn-primary {
+    background-color: #0c59cf;
+    border-color: #0c59cf;
+    border-radius: 20px; /* Bordes redondeados */
+}
+
+.btn-primary:hover {
+    background-color: #094286;
+    border-color: #094286;
+}
+
+/* Estilo para el label en negrilla */
+label {
+    font-weight: bold;
+}
+
+/* Estilo para el modal */
+.modal-content {
+    background-color: #fff; /* Fondo blanco del modal */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+
+
+
