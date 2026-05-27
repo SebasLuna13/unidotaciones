@@ -119,8 +119,9 @@
             <!-- Sidebar -->
             <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%);">
                 <div class="d-flex justify-content-center align-items-center">
-                    <a class="navbar-brand d-none d-md-block text-center" href="inicio_compras.php">
-                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 80px;">
+                    <a class="navbar-brand text-center" href="inicio_compras.php">
+                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 60px;"
+                        >
                     </a>
                 </div>
                 <hr class="sidebar-divider my-0 bg-white opacity-50">
@@ -138,6 +139,70 @@
                     <li class="nav-item mb-1">
                         <a class="nav-link sidebar-link" href="proveedor_tela.php">
                             <i class="bi bi-person-badge-fill"></i><span>Proveedores de Telas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTelas">
+                            <div class="d-flex align-items-center w-100">
+                                <div>
+                                    <i class="bi bi-journal-text sidebar-icon"></i><span>Telas</span>
+                                </div>
+                                <i class="bi bi-chevron-down ms-auto small"></i>
+                            </div>
+                        </a>
+                        
+
+                        <div id="collapseTelas" class="collapse" data-bs-parent="#accordionSidebar">
+                            <div class="collapse-inner rounded bg-white shadow-sm py-2">
+                                <h6 class="collapse-header text-primary fw-bold">Tipos de telas</h6>
+
+                                <?php
+                                $consulta = "SELECT id_tipo_tela, tipo_tela FROM tipo_tela WHERE id_tipo_tela > 0";
+                                $resultado = mysqli_query($enlace, $consulta);
+
+                                if ($resultado->num_rows > 0) {
+                                    while ($fila = mysqli_fetch_array($resultado)) {
+                                        echo '<a class="collapse-item text-wrap" href="telas.php?id_tipo_tela=' . $fila["id_tipo_tela"] . '"> ' . $fila["tipo_tela"] . '
+                                        </a>';
+                                    }
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="nav-item mb-1">
+                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseInsumos">
+                            <div class="d-flex align-items-center w-100">
+                                <div>
+                                    <i class="bi bi-journal-text sidebar-icon"></i><span>Insumos</span>
+                                </div>
+                                <i class="bi bi-chevron-down ms-auto small"></i>
+                            </div>
+                        </a>
+
+                        <div id="collapseInsumos" class="collapse" data-bs-parent="#accordionSidebar">
+                            <div class="collapse-inner rounded bg-white shadow-sm py-2">
+                                <h6 class="collapse-header text-primary fw-bold">Listado de insumos</h6>
+
+                                <?php
+                                $consulta = "SELECT id_tipoinsumo, nombre FROM tipo_insumo WHERE id_tipoinsumo > 0 ORDER BY nombre ASC";
+                                $resultado = mysqli_query($enlace, $consulta);
+
+                                if ($resultado->num_rows > 0) {
+                                    while ($fila = mysqli_fetch_array($resultado)) {
+                                        echo ' <a class="collapse-item text-wrap" href="insumos.php?id_tipoinsumo=' . $fila["id_tipoinsumo"] . '"> ' . $fila["nombre"] . '
+                                        </a>';
+                                    }
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="nav-item mb-1">
+                        <a class="nav-link" href="prenda_comprada.php">
+                            <i class="bi bi-bag-plus-fill"></i><span>Prendas Compradas</span>
                         </a>
                     </li>
                 </div>

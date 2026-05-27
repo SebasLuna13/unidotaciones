@@ -1645,7 +1645,7 @@
     <body>
         <?php
             $consulta = "SELECT 
-            producto.id_producto, producto2.id_producto2, ficha_tecnica.id_producto, orden_compra.id_producto, orden_compra.id_ordencompra, ficha_tecnica.id_fichatecnica, ficha_tecnica.ficha_tecnica, prenda.id_prenda, prenda.nombre_prenda, 
+            producto.id_producto, producto2.id_producto2, tipo_producto.id_tipo_producto, tipo_producto.tipo_producto, ficha_tecnica.id_producto, orden_compra.id_producto, orden_compra.id_ordencompra, ficha_tecnica.id_fichatecnica, ficha_tecnica.ficha_tecnica, prenda.id_prenda, prenda.nombre_prenda, 
             producto.nombre_producto, producto.suma_prendas, producto.nombre_proveedor, producto.num_ficha, producto.precio_compra,
             tela.id_tela, tela.tela, producto.precio_tela, producto.color_tela, producto.promedio_consumo, producto.valor_tela, producto2.id_tela2, orden_compra.consumo_realund, orden_compra.consumo_realtotal, orden_compra.consumo_tela, orden_compra.precio_telacompra, proveedor_tela.id_proveedor, proveedor_tela.nombre, orden_compra.dif_und_tela, orden_compra.dif_total_tela, orden_compra.dif_consumo_und, orden_compra.dif_consumo_total, orden_compra.total_telacotizado, orden_compra.total_telacompra,
             tela_combinada.id_telacombi, tela_combinada.tela_combi, producto.precio_telacombinada, producto.color_telacombi, producto.promedio_telacombi, producto.valor_telacombi, producto2.id_telacombi2, orden_compra.consumo_combinadaund, orden_compra.consumo_combinadatotal, orden_compra.consumo_telacombi, orden_compra.precio_telacombicompra, orden_compra.dif_und_telacombi, orden_compra.dif_total_telacombi, orden_compra.dif_consumocombi_und, orden_compra.dif_consumocombi_total, orden_compra.total_telacombicotizado, orden_compra.total_telacombicompra,
@@ -1710,6 +1710,7 @@
             orden_compra.consumo_totalvivo, orden_compra.precio_vivocompra, orden_compra.total_vivocotizado, orden_compra.total_vivocompra, orden_compra.dif_und_vivo, orden_compra.dif_total_vivo, orden_compra.orden_compravivo,
             orden_compra.prendas_comprar, orden_compra.precio_prendacompra, orden_compra.total_prendacotizado, orden_compra.total_prendacompra, orden_compra.dif_und_prenda, orden_compra.dif_total_prenda, orden_compra.orden_compraprenda
             FROM producto 
+            LEFT JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto
             LEFT JOIN ficha_tecnica ON ficha_tecnica.id_producto = producto.id_producto
             LEFT JOIN orden_compra ON orden_compra.id_producto = producto.id_producto
             LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda
@@ -1769,6 +1770,7 @@
 
         <div class="text-center mt-3">
             <h1 style="font-family: 'Times New Roman'">Insumos a Comprar del Producto <?php echo $fila ? $fila['nombre_prenda'] : 'N/A'; ?></h1>
+            <h1 style="font-family: 'Times New Roman'">Tipo de Prenda: <?php echo $fila ? $fila['tipo_producto'] : 'N/A'; ?></h1>
             <h1 style="font-family: 'Times New Roman'">Con Ficha Tecnica: <?php echo $fila ? $fila['num_ficha'] : 'N/A'; ?></h1>
             <h1 style="font-family: 'Times New Roman'">Cantidad de Prendas a Realizar <?php echo $fila ? $fila['suma_prendas'] : 'N/A'; ?></h1>
             <hr class="container" style="border-top: 2px solid; width: 80%; margin-top: 20px;">

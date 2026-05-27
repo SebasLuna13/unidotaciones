@@ -5,8 +5,8 @@
     if (!isset($_SESSION['rol'])) {
         header("Location: index.php");
     } else {
-        if ($_SESSION['rol'] != 'inventario') {
-            header("Location: inicio_inventario.php");
+        if ($_SESSION['rol'] != 'compras') {
+            header("Location: inicio_compras.php");
         }
     }
 
@@ -73,23 +73,30 @@
     <body id="page-top">
         <div id="wrapper">
             <!-- Sidebar -->
-            <ul class="navbar-nav sidebar sidebar-dark accordion shadow" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%); min-height: 100vh;">
-                <!-- LOGO -->
+            <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%);">
                 <div class="d-flex justify-content-center align-items-center">
-                    <!-- PC -->
-                    <a class="navbar-brand d-none d-md-block text-center" href="inicio_inventario.php">
-                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 80px;">
-                    </a>
-
-                    <!-- Mobile -->
-                    <a class="navbar-brand d-block d-md-none text-center" href="inicio_inventario.php">
-                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 60px;">
+                    <a class="navbar-brand text-center" href="inicio_compras.php">
+                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 60px;"
+                        >
                     </a>
                 </div>
                 <hr class="sidebar-divider my-0 bg-white opacity-50">
-
-                <!-- MENU -->
                 <div class="px-2 mt-3">
+                    <li class="nav-item mb-1">
+                        <a class="nav-link sidebar-link" href="inicio_compras.php">
+                            <i class="bi bi-bag-fill"></i><span>Ordenes de Compra</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link sidebar-link" href="proveedor.php">
+                            <i class="bi bi-file-person-fill"></i><span>Proveedores</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link sidebar-link" href="proveedor_tela.php">
+                            <i class="bi bi-person-badge-fill"></i><span>Proveedores de Telas</span>
+                        </a>
+                    </li>
                     <li class="nav-item mb-1">
                         <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTelas">
                             <div class="d-flex align-items-center w-100">
@@ -99,6 +106,7 @@
                                 <i class="bi bi-chevron-down ms-auto small"></i>
                             </div>
                         </a>
+                        
 
                         <div id="collapseTelas" class="collapse" data-bs-parent="#accordionSidebar">
                             <div class="collapse-inner rounded bg-white shadow-sm py-2">
@@ -269,10 +277,10 @@
                                         while ($fila = mysqli_fetch_array($resultado)) {
                                             ?>
                                             <tr>
-                                                <td><center><?php echo $fila['nombre_producto']; ?></center></td>
-                                                <td><center><?php echo $fila['nombre']; ?></center></td>
-                                                <td><center>$ <?php echo $fila['precio_compra']; ?></center></td>
-                                                <td><center><?php echo $fila['fecha_actualizacion']; ?></center></td>
+                                                <td class="text-center align-middle"><?php echo $fila['nombre_producto']; ?></td>
+                                                <td class="text-center align-middle"><?php echo $fila['nombre']; ?></td>
+                                                <td class="text-center align-middle"><?php $precio = $fila['precio_compra']; $precio_formateado = $precio == intval($precio) ? number_format($precio, 0, ',', '.') : number_format($precio, 2, ',', '.');?>$<?= $precio_formateado ?></td>
+                                                <td class="text-center align-middle"><?php echo $fila['fecha_actualizacion']; ?></td>
                                                 <td>
                                                     <div class="d-flex justify-content-center">
                                                         <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#modalEditar<?php echo $fila['id_prendacomprada']; ?>">

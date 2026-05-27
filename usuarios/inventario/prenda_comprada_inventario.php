@@ -2,156 +2,48 @@
     require_once('../../conexion.php');
     session_start();
 
-    $roles_permitidos = ['comercial', 'comercial2', 'comercial3', 'comercial4', 'comercial5'];
-
     if (!isset($_SESSION['rol'])) {
         header("Location: index.php");
-        exit;
-    }
-
-    if (!in_array($_SESSION['rol'], $roles_permitidos)) {
-        header("Location: inicio_comercial.php");
-        exit;
+    } else {
+        if ($_SESSION['rol'] != 'inventario') {
+            header("Location: inicio_inventario.php");
+        }
     }
 
     foreach ($_REQUEST as $var => $val) {
         $$var = $val;
     }
 
-    if (isset($_POST['submit_pedido'])) {
-        $nit = $_POST['nit'];
-        $id_usuario = $_POST['id_usuario'];
-        $id_pedido = $_POST['id_pedido'];
-        $codficha_tecnica = $_POST['codficha_tecnica'];
-        date_default_timezone_set('America/Bogota');
-        $fecha_produccion = date('Y-m-d H:i:s');
+    if (isset($_POST['submit_crear'])) {
+
+        $nombre_producto = $_POST['nombre_producto'];
+        $id_proveedor = $_POST['id_proveedor'];
+        $precio_compra = $_POST['precio_compra'];
+        $fecha_actualizacion = date('Y-m-d');
     
-        // Función para calcular el domingo de Pascua de un año dado
-        function calcularPascua($anio) {
-            $a = $anio % 19;
-            $b = floor($anio / 100);
-            $c = $anio % 100;
-            $d = floor($b / 4);
-            $e = $b % 4;
-            $f = floor(($b + 8) / 25);
-            $g = floor(($b - $f + 1) / 3);
-            $h = (19 * $a + $b - $d - $g + 15) % 30;
-            $i = floor($c / 4);
-            $k = $c % 4;
-            $l = (32 + 2 * $e + 2 * $i - $h - $k) % 7;
-            $m = floor(($a + 11 * $h + 22 * $l) / 451);
-            $mes = floor(($h + $l - 7 * $m + 114) / 31);
-            $dia = (($h + $l - 7 * $m + 114) % 31) + 1;
-    
-            return date("$anio-$mes-$dia");
-        }
-    
-        // Función para obtener los festivos colombianos del año actual
-        function obtenerFestivosColombia($anio) {
-            $domingoPascua = calcularPascua($anio);
-    
-            // Calcula los festivos móviles basados en el Domingo de Pascua
-            $festivos = [
-                // Festivos fijos
-                "$anio-01-01", // Año Nuevo
-                "$anio-05-01", // Día del Trabajo
-                "$anio-07-20", // Día de la Independencia
-                "$anio-08-07", // Batalla de Boyacá
-                "$anio-12-08", // Inmaculada Concepción
-                "$anio-12-25", // Navidad
-                
-                // Festivos móviles
-                date("Y-m-d", strtotime("$domingoPascua -7 days")),  // Domingo de Ramos
-                date("Y-m-d", strtotime("$domingoPascua -3 days")),  // Jueves Santo
-                date("Y-m-d", strtotime("$domingoPascua -2 days")),  // Viernes Santo
-                date("Y-m-d", strtotime("$domingoPascua +39 days")), // Ascensión del Señor
-                date("Y-m-d", strtotime("$domingoPascua +60 days")), // Corpus Christi
-                date("Y-m-d", strtotime("$domingoPascua +68 days")), // Sagrado Corazón
-    
-                // Festivos trasladables (al lunes más cercano)
-                date("Y-m-d", strtotime("third monday of January $anio")), // Día de los Reyes Magos
-                date("Y-m-d", strtotime("third monday of March $anio")),   // San José
-                date("Y-m-d", strtotime("first monday of July $anio")),    // San Pedro y San Pablo
-                date("Y-m-d", strtotime("second monday of October $anio")),// Día de la Raza
-                date("Y-m-d", strtotime("first monday of November $anio")),// Todos los Santos
-                date("Y-m-d", strtotime("second monday of November $anio")),// Independencia de Cartagena
-            ];
-            
-            return $festivos;
-        }
-    
-        // Función para sumar días hábiles a una fecha
-        function sumarDiasHabiles($fecha, $diasHabiles, $nit) {
-            $anio = date('Y', strtotime($fecha));
-            $festivos = obtenerFestivosColombia($anio);
-    
-            $diasSumados = 0;
-            $fechaActual = $fecha;
-    
-            while ($diasSumados < $diasHabiles) {
-                $fechaActual = date('Y-m-d', strtotime($fechaActual . ' +1 day'));
-                $diaSemana = date('N', strtotime($fechaActual));
-    
-                // Si el nit es igual a 22, sumar días corridos sin importar días hábiles o festivos
-                if ($nit == 22) {
-                    $diasSumados++;
-                } else {
-                    // Si es un día hábil (no sábado, domingo o festivo)
-                    if ($diaSemana < 6 && !in_array($fechaActual, $festivos)) {
-                        $diasSumados++;
-                    }
-                }
-            }
-    
-            return $fechaActual;
-        }
-    
-        // Calcula la fecha de entrega basada en el valor de nit
-        $fecha_entrega = sumarDiasHabiles($fecha_produccion, 30, $nit);
-    
-        // Ejecuta la consulta para actualizar el pedido con fecha_produccion, estado y fecha_entrega
-        $consulta = "UPDATE pedido SET codficha_tecnica = '$codficha_tecnica', fecha_produccion = '$fecha_produccion', estado = 'Pedido', fecha_entrega = '$fecha_entrega' WHERE id_pedido = '$id_pedido'";
+        $consulta = "INSERT INTO prenda_comprada (nombre_producto, precio_compra, id_proveedor,  fecha_actualizacion) 
+        VALUES ('$nombre_producto', '$precio_compra', '$id_proveedor', '$fecha_actualizacion')";
+        
         $resultado = mysqli_query($enlace, $consulta);
+        header("Location: prenda_comprada.php");
+        exit();
+    }
     
-        // Redirige a la página de pedidos activos
-        header("Location: pedidos_activos.php?id_usuario=$id_usuario");
+    if (isset($_POST['submit_editar'])) {
+        $consulta = "UPDATE prenda_comprada SET nombre_producto = '$nombre_producto', precio_compra = '$precio_compra', id_proveedor = '$id_proveedor', fecha_actualizacion = NOW()
+        WHERE id_prendacomprada = '$id_prendacomprada'";
+        $resultado = mysqli_query($enlace, $consulta);
+        header("Location: prenda_comprada.php");
         exit();
     }
 
     if (isset($_POST['submit_eliminar'])) {
-        $consulta = "UPDATE pedido SET estado = 'Inactivo' WHERE id_pedido = '$id_pedido'";
+        $consulta = "DELETE FROM prenda_comprada WHERE id_prendacomprada = '$id_prendacomprada'";
         $resultado = mysqli_query($enlace, $consulta);
-        header("Location: pedidos_activos.php?id_usuario=$id_usuario");
+        header("Location: prenda_comprada.php");
         exit();
-    }  
-    
-    if (isset($_POST['calcular_anticipo'])) {
-        $id_pedido = $_POST['id_pedido'];
-        $id_anticipo = $_POST['id_anticipo'];
-        $total_factura = $_POST['total_factura'];
-    
-        $consulta1 = "SELECT anticipo.id_anticipo, anticipo.valor_porcentaje FROM anticipo WHERE id_anticipo = '$id_anticipo'";
-        $valores = mysqli_query($enlace, $consulta1);
-    
-        if ($valores) {
-            $fila = mysqli_fetch_assoc($valores);
-
-            $valor_porcentaje = $fila['valor_porcentaje'];
-            $valor_anticipo = floatval($total_factura) * floatval($valor_porcentaje);
-
-            $consulta = "UPDATE pedido SET id_anticipo = '$id_anticipo', valor_anticipo = '$valor_anticipo' WHERE id_pedido = '$id_pedido'";
-            $resultado = mysqli_query($enlace, $consulta);
-            header("Location: pedidos_activos.php");
-            exit();
-        }
     }
-
-    if (isset($_POST['submit_activar'])) {
-        $consulta = "UPDATE pedido SET estado = 'Espera' WHERE id_pedido = '$id_pedido'";
-        $resultado = mysqli_query($enlace, $consulta);
-        header("Location: pedidos_activos.php?id_usuario=$id_usuario");
-        exit();
-    } 
+    
 ?>
 
 <!DOCTYPE html>
@@ -175,7 +67,7 @@
         <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
         <link rel="icon" type="image/png" href="../../img/Logo.png">
         
-        <title>Comercial | Pedidos Activos</title>
+        <title>Inventario | Inventario de Prendas Compradas</title>
     <head>
 
     <body id="page-top">
@@ -185,12 +77,12 @@
                 <!-- LOGO -->
                 <div class="d-flex justify-content-center align-items-center">
                     <!-- PC -->
-                    <a class="navbar-brand d-none d-md-block text-center" href="inicio_comercial.php?id_usuario=<?php echo $id_usuario; ?>">
+                    <a class="navbar-brand d-none d-md-block text-center" href="inicio_inventario.php">
                         <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 80px;">
                     </a>
 
                     <!-- Mobile -->
-                    <a class="navbar-brand d-block d-md-none text-center" href="inicio_comercial.php?id_usuario=<?php echo $id_usuario; ?>">
+                    <a class="navbar-brand d-block d-md-none text-center" href="inicio_inventario.php">
                         <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 60px;">
                     </a>
                 </div>
@@ -199,32 +91,26 @@
                 <!-- MENU -->
                 <div class="px-2 mt-3">
                     <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="inicio_comercial.php?id_usuario=<?php echo $id_usuario; ?>">
-                            <i class="bi bi-list-ul sidebar-icon"></i><span>Registro de Visitas</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseClientes">
+                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTelas">
                             <div class="d-flex align-items-center w-100">
                                 <div>
-                                    <i class="bi bi-people-fill sidebar-icon"></i><span>Gestión de Clientes</span>
+                                    <i class="bi bi-journal-text sidebar-icon"></i><span>Telas</span>
                                 </div>
                                 <i class="bi bi-chevron-down ms-auto small"></i>
                             </div>
                         </a>
-                        <div id="collapseClientes" class="collapse" data-bs-parent="#accordionSidebar">
+
+                        <div id="collapseTelas" class="collapse" data-bs-parent="#accordionSidebar">
                             <div class="collapse-inner rounded bg-white shadow-sm py-2">
-                                <h6 class="collapse-header text-primary fw-bold">Tipos de Clientes</h6>
+                                <h6 class="collapse-header text-primary fw-bold">Tipos de telas</h6>
 
                                 <?php
-                                $consulta = "SELECT id_entidad, tipo_entidad FROM entidad";
+                                $consulta = "SELECT id_tipo_tela, tipo_tela FROM tipo_tela WHERE id_tipo_tela > 0";
                                 $resultado = mysqli_query($enlace, $consulta);
 
                                 if ($resultado->num_rows > 0) {
                                     while ($fila = mysqli_fetch_array($resultado)) {
-                                        echo '
-                                        <a class="collapse-item text-wrap" href="clientes.php?id_entidad=' . $fila["id_entidad"] . '&id_usuario=' . $id_usuario . '"> ' . $fila["tipo_entidad"] . '
+                                        echo '<a class="collapse-item text-wrap" href="telas.php?id_tipo_tela=' . $fila["id_tipo_tela"] . '"> ' . $fila["tipo_tela"] . '
                                         </a>';
                                     }
                                 }
@@ -234,66 +120,39 @@
                     </li>
 
                     <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePrendas" aria-expanded="false">
+                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseInsumos">
                             <div class="d-flex align-items-center w-100">
                                 <div>
-                                    <i class="bi bi-universal-access sidebar-icon"></i><span>Gestión de Prendas</span>
+                                    <i class="bi bi-journal-text sidebar-icon"></i><span>Insumos</span>
                                 </div>
                                 <i class="bi bi-chevron-down ms-auto small"></i>
                             </div>
                         </a>
 
-                        <div id="collapsePrendas" class="collapse" data-bs-parent="#accordionSidebar">
+                        <div id="collapseInsumos" class="collapse" data-bs-parent="#accordionSidebar">
                             <div class="collapse-inner rounded bg-white shadow-sm py-2">
-                                <h6 class="collapse-header text-primary fw-bold">Tipo de Prenda</h6>
+                                <h6 class="collapse-header text-primary fw-bold">Listado de insumos</h6>
 
                                 <?php
-                                $consulta = "SELECT id_tipo_prenda, tipo_prenda FROM tipo_prenda WHERE id_tipo_prenda > 0";
+                                $consulta = "SELECT id_tipoinsumo, nombre FROM tipo_insumo WHERE id_tipoinsumo > 0 ORDER BY nombre ASC";
                                 $resultado = mysqli_query($enlace, $consulta);
 
                                 if ($resultado->num_rows > 0) {
                                     while ($fila = mysqli_fetch_array($resultado)) {
-                                        echo '
-                                        <a class="collapse-item text-wrap" href="prendas.php?id_tipo_prenda=' . $fila["id_tipo_prenda"] . '">' . $fila["tipo_prenda"] . '
+                                        echo ' <a class="collapse-item text-wrap" href="insumos.php?id_tipoinsumo=' . $fila["id_tipoinsumo"] . '"> ' . $fila["nombre"] . '
                                         </a>';
                                     }
                                 }
                                 ?>
-
                             </div>
                         </div>
                     </li>
 
                     <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="solicitudes.php?id_usuario=<?php echo $id_usuario; ?>">
-                            <i class="bi bi-file-text sidebar-icon"></i><span>Solicitud de Cotizaciones</span>
+                        <a class="nav-link" href="prenda_comprada.php">
+                            <i class="bi bi-bag-plus-fill"></i><span>Prendas Compradas</span>
                         </a>
                     </li>
-
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="pedido_confirmado_comercial.php?id_usuario=<?php echo $id_usuario; ?>">
-                            <i class="bi bi-ui-checks sidebar-icon"></i><span>Pedidos por Confirmar</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="pedidos_activos.php?id_usuario=<?php echo $id_usuario; ?>">
-                            <i class="bi bi-bag-fill sidebar-icon"></i><span>Pedidos Aceptados</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="pedidos_finalizadosC.php?id_usuario=<?php echo $id_usuario; ?>">
-                            <i class="bi bi-bag-check-fill sidebar-icon"></i><span>Pedidos Finalizados</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="reportes_pedido.php?id_usuario=<?php echo $id_usuario; ?>">
-                            <i class="bi bi-speedometer2 sidebar-icon"></i><span>Reporte</span>
-                        </a>
-                    </li>
-
                 </div>
             </ul>
 
@@ -330,82 +189,97 @@
                     </nav>
                     <!-- medio -->
                     <div class="text-center mt-3">
-                        <h1 style="font-family: 'Times New Roman'">Pedidos Activos</h1><br>
+                        <h1 style="font-family: 'Times New Roman'">Listado de Prendas Compradas</h1>
                     </div>
                     <!-- DataTable -->
                     <div class="container-fluid">
                         <div class="card-body">
-                            <div class="row">
+                            <d class="row">
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrear">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                    <!-- Modal Crear -->
+                                    <div class="modal fade" id="modalCrear" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content shadow rounded-4 border-0">
+
+                                                <div class="modal-header text-white rounded-top-4" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
+                                                    <h5 class="modal-title fw-semibold"><i class="bi bi-box-seam me-2"></i>Datos de la Nueva prenda</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+
+                                                <div class="modal-body p-4">
+                                                    <form action="" method="post" id="formulario" enctype="multipart/form-data">
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Ingrese el nombre de la prenda</label>
+                                                            <input type="text" class="form-control" name="nombre_producto" placeholder="Escribe el nombre del Insumo..." pattern="[A-Za-z0-9,\sáéíóúÁÉÍÓÚñÑ]+" minlength="3" maxlength="200" required>
+                                                        </div>
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-semibold">Ingrese el precio del insumo</label>
+                                                                <input type="number" class="form-control" name="precio_compra" placeholder="0.00" min="0" step="any" required>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-semibold">Elija un Proveedor</label>
+                                                                <select name="id_proveedor" class="form-select">
+                                                                    <option value="0">Elija el proveedor</option>
+                                                                    <?php
+                                                                    $consulta_mysql = 'select * from proveedor WHERE id_proveedor >= 1';
+                                                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                                                        echo "<option value='" . $lista["id_proveedor"] . "'>" . $lista["nombre"] . "</option>";
+                                                                    }
+                                                                    ?>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="modal-footer border-0 mt-4">
+                                                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                                                            <button type="submit" name="submit_crear" class="btn btn-success">Crear Prenda</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <br><br>
                                 <div class="table-responsive">
                                 <table id="mytabla" class="table table-striped table-bordered" style="width:100%">
                                     <thead>
                                         <tr>
-                                            <th style="text-align: center; vertical-align: middle; width: 10%;">Consecutivo</th>
-                                            <th style="text-align: center; vertical-align: middle; width: 22%;">Cliente</th>
-                                            <th style="text-align: center; vertical-align: middle; width: 22%;">Contacto</th>
-                                            <th style="text-align: center; vertical-align: middle; width: 15%;">Fecha <br>Realización Pedido</th>
-                                            <th style="text-align: center; vertical-align: middle; width: 10%;">Valor Factura</th>
-                                            <th style="text-align: center; vertical-align: middle; width: 18%;">Opciones</th>
+                                            <th style="text-align: center; vertical-align: middle; width: 30%;">Tipo de Prenda</th>
+                                            <th style="text-align: center; vertical-align: middle; width: 20%;">proveedor</th>
+                                            <th style="text-align: center; vertical-align: middle; width: 20%;">Precio</th>
+                                            <th style="text-align: center; vertical-align: middle; width: 10%;">Fecha Actualizacion</th>
+                                            <th style="text-align: center; vertical-align: middle; width: 20%;">Opciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
-                                            $consulta = "SELECT usuario.id_usuario, usuario.encargado, cliente.nit, cliente.cliente, cliente.representante_legal, cliente.celular_representante, cliente.correo_representante, cliente.contacto, cliente.cargo, cliente.celular_contacto, 
-                                            cliente.correo_contacto, pedido.id_pedido, pedido.fecha_pedido, pedido.estado, pedido.total_factura, pedido.listado_empleados, pedido.orden_compra, pedido.consecutivo 
-                                            FROM cliente  
-                                            LEFT JOIN pedido ON pedido.nit = cliente.nit 
-                                            LEFT JOIN usuario ON pedido.id_usuario = usuario.id_usuario
-                                            WHERE pedido.estado = 'Activo'
-                                            ORDER BY pedido.fecha_pedido DESC;";
-                        
+                                        $consulta = "SELECT prenda_comprada.id_prendacomprada, prenda_comprada.nombre_producto, prenda_comprada.precio_compra, prenda_comprada.fecha_actualizacion, proveedor.id_proveedor, proveedor.nombre
+                                        FROM prenda_comprada LEFT JOIN proveedor ON prenda_comprada.id_proveedor = proveedor.id_proveedor
+                                        WHERE prenda_comprada.id_prendacomprada > 0
+                                        ORDER BY prenda_comprada.id_prendacomprada";
 
                                         $resultado = mysqli_query($enlace, $consulta);
 
                                         while ($fila = mysqli_fetch_array($resultado)) {
                                             ?>
                                             <tr>
-                                                <td class="text-center align-middle"><?php echo $fila['consecutivo']; ?></td>
-                                                <td class="text-center align-middle"><?php echo $fila['cliente']; ?></td>
-                                                <td class="text-center align-middle">
-                                                        <?php 
-                                                        $hasData = false;
-                                                        
-                                                        if (!empty($fila['contacto'])) {
-                                                            if (!empty($fila['cargo'])) {
-                                                                echo '<strong>' . $fila['cargo'] . ': </strong>';
-                                                            }
-                                                            echo $fila['contacto'] . '<br>';
-                                                            $hasData = true;
-                                                        }
-
-                                                        if (!empty($fila['celular_contacto'])) {
-                                                            echo '<strong>Cel:</strong> ' . $fila['celular_contacto'] . '<br>';
-                                                            $hasData = true;
-                                                        }
-
-                                                        if (!empty($fila['correo_contacto'])) {
-                                                            echo '<strong>Correo electrónico:</strong> ' . $fila['correo_contacto'];
-                                                            $hasData = true;
-                                                        }
-
-                                                        if (!$hasData) {
-                                                            echo 'No hay datos almacenados';
-                                                        }
-                                                        ?>
-                                                </td>
-                                                <td class="text-center align-middle"><?php setlocale(LC_TIME, 'spanish');echo strftime('%d de %B del %Y', strtotime($fila['fecha_pedido'])); ?></td>
-                                                <td class="text-center align-middle"><?php $precio_formateado = number_format($fila['total_factura'], 2, ',', '.'); ?>$<?= $precio_formateado ?></center></td>
-                                                <td class="text-center align-middle">
-                                                    <div>
-                                                        <a class="btn btn-info btn-block mb-2" href="mostrar_pedidos_activos.php?id_pedido=<?php echo $fila['id_pedido']; ?>&id_usuario=<?php echo $_SESSION['id_usuario']; ?>&nit=<?php echo $fila['nit']; ?>&recibido=0">
-                                                            <i class="bi bi-search"></i> Mostrar Prendas
-                                                        </a>
-                                                        <button type="button" class="btn btn-danger btn-block mb-2" data-bs-toggle="modal" data-bs-target="#modalEliminar<?php echo $fila['id_pedido']; ?>">
-                                                            <i class="bi bi-trash"></i> Eliminar Pedido
+                                                <td class="text-center align-middle"><?php echo $fila['nombre_producto']; ?></td>
+                                                <td class="text-center align-middle"><?php echo $fila['nombre']; ?></td>
+                                                <td class="text-center align-middle"><?php $precio = $fila['precio_compra']; $precio_formateado = $precio == intval($precio) ? number_format($precio, 0, ',', '.') : number_format($precio, 2, ',', '.');?>$<?= $precio_formateado ?></td>
+                                                <td class="text-center align-middle"><?php echo $fila['fecha_actualizacion']; ?></td>
+                                                <td>
+                                                    <div class="d-flex justify-content-center">
+                                                        <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#modalEditar<?php echo $fila['id_prendacomprada']; ?>">
+                                                            <i class="bi bi-pencil-square"></i>
                                                         </button>
-                                                        <button type="button" class="btn btn-warning btn-block mb-2" data-bs-toggle="modal" data-bs-target="#modalActivar<?php echo $fila['id_pedido']; ?>">
-                                                            <i class="bi bi-arrow-bar-right"></i> Devolver a Costeo
+                                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar<?php echo $fila['id_prendacomprada']; ?>">
+                                                            <i class="bi bi-trash-fill"></i>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -419,47 +293,70 @@
 
                                 while ($fila = mysqli_fetch_array($resultado)) {
                                 ?>
-                                <!-- Modal Activar -->
-                                <div class="modal fade" id="modalActivar<?php echo $fila['id_pedido']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
+                                <!-- Modal Editar -->
+                                <div class="modal fade" id="modalEditar<?php echo $fila['id_prendacomprada']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                                         <div class="modal-content rounded-4">
-                                            <div class="modal-header text-white rounded-top" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                                <h5 class="modal-title" id="exampleModalLabel" style="color: white; text-align: center;">¿Realmente desea Continuar?</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            <div class="modal-header text-white rounded-top-4" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
+                                                <h5 class="modal-title fw-semibold"><i class="bi bi-box-seam me-2"></i>Datos a editar de la prenda</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                             </div>
-                                            <div class="modal-body">
-                                                <div class="alert alert-warning" role="alert">
-                                                    Si oprime continuar el pedido volvera al usuario anterior al realizar su costeo.
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
+
+                                            <div class="modal-body p-4">
                                                 <form action="" method="post" id="formulario" enctype="multipart/form-data">
-                                                    <input type="hidden" name="id_pedido" value="<?php echo $fila['id_pedido']; ?>">
-                                                    <button type="submit" name="submit_activar" class="btn btn-success">continuar</button>
+                                                    <input type="hidden" name="id_prendacomprada" value="<?php echo $fila['id_prendacomprada']; ?>">
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Ingrese el nombre de la prenda</label>
+                                                        <input type="text" class="form-control" name="nombre_producto" value="<?php echo $fila['nombre_producto']; ?>" pattern="[A-Za-z0-9,\sáéíóúÁÉÍÓÚñÑ]+" minlength="3" maxlength="200" required>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label fw-semibold">Ingrese el precio del insumo</label>
+                                                            <?php $value = str_replace(['.', ','], ['', '.'], $fila['precio_compra']);?>
+                                                            <input type="number" class="form-control" name="precio_compra" value="<?php echo $value; ?>" min="0" step="any" required>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label fw-semibold">Elija un Proveedor</label>
+                                                            <select name="id_proveedor" class="form-select">
+                                                                <option value="0">Seleccione una opción</option> 
+                                                                <?php $consulta_mysql = 'select * from proveedor WHERE id_proveedor >= 1'; $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                                                    $id = $lista["id_proveedor"];
+                                                                    $nombreProveedor = $lista["nombre"];
+                                                                    $selected = ($nombreProveedor == $fila['nombre']) ? 'selected' : ''; 
+                                                                    echo "<option value='$id' $selected>$nombreProveedor</option>";
+                                                                }
+                                                                ?>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="modal-footer border-0 mt-4">
+                                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="submit" name="submit_editar" class="btn btn-success">Editar Datos</button>
+                                                    </div>
                                                 </form>
-                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Volver</button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Modal Eliminar -->
-                                <div class="modal fade" id="modalEliminar<?php echo $fila['id_pedido']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <!-- Modal Eliminar -->                   
+                                <div class="modal fade" id="modalEliminar<?php echo $fila['id_prendacomprada']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content rounded-4">
                                             <div class="modal-header text-white rounded-top" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                                <h5 class="modal-title" id="exampleModalLabel" style="color: white; text-align: center;">¿Realmente desea proceseder con su Operacion?</h5>
+                                                <h5 class="modal-title" id="exampleModalLabel" style="color: white; text-align: center;">¿Realmente desea eliminar la prenda: <?php echo $fila['nombre_producto']; ?>?</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                             </div>
                                             <div class="modal-body">
                                                 <div class="alert alert-warning" role="alert">
-                                                    Si continúa, el pedido pasara a estar a estado Inactivo pero este no sera eliminado de los registros.
+                                                    Si continúa, la Prenda sera eliminado de la base de datos.
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <form action="" method="post" id="formulario" enctype="multipart/form-data">
-                                                    <input type="hidden" name="id_pedido" value="<?php echo $fila['id_pedido']; ?>">
-                                                    <button type="submit" name="submit_eliminar" class="btn btn-danger">Continuar</button>
+                                                    <input type="hidden" name="id_prendacomprada" value="<?php echo $fila['id_prendacomprada']; ?>">
+                                                    <button type="submit" name="submit_eliminar" class="btn btn-danger">Eliminar</button>
                                                 </form>
                                                 <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancelar</button>
                                             </div>
@@ -476,19 +373,18 @@
         </div>
 
         <!-- Bootstrap JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-        
-        <!-- Datatables -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
-        <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+            
+            <!-- Datatables -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
+            <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>
         
         <!-- Configuración de DataTable -->
         <script>
             $(document).ready(function() {
                 var table = new DataTable('#mytabla', {
-                    "ordering": false, 
                     language: {
                         "processing": "Procesando...",
                         "lengthMenu": "Mostrar _MENU_ registros",
@@ -732,7 +628,7 @@
                             "renameLabel": "Nuevo nombre para %s:"
                         },
                         "infoThousands": "."
-                    } 
+                    }
                 });
             });
         </script>

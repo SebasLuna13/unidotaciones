@@ -49,7 +49,7 @@
         // Segunda consulta: actualizar producto
         $consulta2 = "UPDATE producto SET color_tela = '$color_tela', color_telacombi = '$color_telacombi', color_telaforro = '$color_telaforro', frentes = '$frentes', 
                                 espalda = '$espalda', mangas = '$mangas', cuello = '$cuello', puño = '$puño', delanteros = '$delanteros', traseros = '$traseros', pretina = '$pretina', 
-                                ensamble = '$ensamble', fajon = '$fajon', forro = '$forro', otros = '$otros', fecha_produccion = '$fecha_produccion', estado = 'Compras' WHERE id_producto = '$id_producto'";
+                                ensamble = '$ensamble', fajon = '$fajon', forro = '$forro', otros = '$otros', fecha_produccion = '$fecha_produccion', estado = 'AceptadoD' WHERE id_producto = '$id_producto'";
 
         $resultado2 = mysqli_query($enlace, $consulta2);
 
@@ -340,70 +340,52 @@
                                                                         <tr>
                                                                             <th colspan="5" class="text-center fw-bold table-primary"> REPRESENTACIÓN GRÁFICA</th>
                                                                         </tr>
+
+                                                                        <!-- Mostrar imagenes -->
                                                                         <?php
-                                                                        $imagenProducto1 = $filaFicha['imagen'];
-                                                                        $imagenProducto2 = $filaFicha['imagen2'];
-                                                                        $imagenProducto3 = $filaFicha['imagen3'];
-                                                                        $imagenProducto4 = $filaFicha['imagen4'];
+                                                                            $imagenes = array_filter([
+                                                                                $filaFicha['imagen'],
+                                                                                $filaFicha['imagen2'],
+                                                                                $filaFicha['imagen3'],
+                                                                                $filaFicha['imagen4']
+                                                                            ]);
                                                                         ?>
-                                                                        <?php if (!empty($imagenProducto1) || !empty($imagenProducto2) || !empty($imagenProducto3) || !empty($imagenProducto4)): ?>
+
+                                                                        <?php if ($imagenes): ?>
                                                                             <tr>
                                                                                 <td colspan="5">
-                                                                                    <div>
-                                                                                        <div class="d-flex justify-content-center flex-wrap gap-2">
-                                                                                            <?php if (!empty($imagenProducto1)): ?>
-                                                                                                <div class="text-center">
-                                                                                                    <a href="img/pedidos/<?= $imagenProducto1 ?>" download>
-                                                                                                        <img src="img/pedidos/<?= $imagenProducto1 ?>" class="img-fluid rounded shadow-sm img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
-                                                                                                    </a>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                            <?php if (!empty($imagenProducto2)): ?>
-                                                                                                <div class="text-center">
-                                                                                                    <a href="img/pedidos/<?= $imagenProducto2 ?>" download>
-                                                                                                        <img src="img/pedidos/<?= $imagenProducto2 ?>" class="img-fluid rounded shadow-sm img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
-                                                                                                    </a>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                            <?php if (!empty($imagenProducto3)): ?>
-                                                                                                <div class="text-center">
-                                                                                                    <a href="img/pedidos/<?= $imagenProducto3 ?>" download>
-                                                                                                        <img src="img/pedidos/<?= $imagenProducto3 ?>" class="img-fluid rounded shadow-sm img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
-                                                                                                    </a>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                            <?php if (!empty($imagenProducto4)): ?>
-                                                                                                <div class="text-center">
-                                                                                                    <a href="img/pedidos/<?= $imagenProducto4 ?>" download>
-                                                                                                        <img src="img/pedidos/<?= $imagenProducto4 ?>" class="img-fluid rounded shadow-sm img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
-                                                                                                    </a>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                        </div>
+                                                                                    <div class="d-flex justify-content-center flex-wrap gap-2">
+                                                                                        <?php foreach ($imagenes as $img): ?>
+                                                                                            <div class="text-center">
+                                                                                                <a href="../../img/pedidos/<?= $img ?>" download>
+                                                                                                    <img src="../../img/pedidos/<?= $img ?>" class="img-fluid rounded shadow-sm img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
+                                                                                                </a>
+                                                                                            </div>
+                                                                                        <?php endforeach; ?>
                                                                                     </div>
                                                                                 </td>
                                                                             </tr>
                                                                         <?php endif; ?>
 
-                                                                        <!-- Mostrar Logos -->
+                                                                        <!-- Mostrar logos -->
                                                                         <?php
-                                                                        $logoProducto1 = $filaFicha['logo1'];
-                                                                        $logoProducto2 = $filaFicha['logo2'];
-                                                                        $logoProducto3 = $filaFicha['logo3'];
-                                                                        $logoProducto4 = $filaFicha['logo4'];
+                                                                            $logoProducto1 = $filaFicha['logo1'];
+                                                                            $logoProducto2 = $filaFicha['logo2'];
+                                                                            $logoProducto3 = $filaFicha['logo3'];
+                                                                            $logoProducto4 = $filaFicha['logo4'];
 
-                                                                        if (!function_exists('displayFile')) {
-                                                                            function displayFile($file)
-                                                                            {
-                                                                                $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
-                                                                                $fileName = basename($file);
-                                                                                if (in_array($fileExtension, ['pdf', 'doc', 'docx'])) {
-                                                                                    echo '<a href="logos_empresas/' . $file . '" class="btn btn-outline-primary mx-1 mb-2" target="_blank" download>' . $fileName . '</a>';
-                                                                                } else {
-                                                                                    echo '<a href="logos_empresas/' . $file . '" target="_blank" download class="d-block mx-1 mb-2"><img src="logos_empresas/' . $file . '" alt="' . $fileName . '" class="img-fluid rounded shadow-sm" style="max-width: 130px;"></a>';
+                                                                            if (!function_exists('displayFile')) {
+                                                                                function displayFile($file)
+                                                                                {
+                                                                                    $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
+                                                                                    $fileName = basename($file);
+                                                                                    if (in_array($fileExtension, ['pdf', 'doc', 'docx'])) {
+                                                                                        echo '<a href="../../logos_empresas/' . $file . '" class="btn btn-outline-primary mx-1 mb-2" target="_blank" download>' . $fileName . '</a>';
+                                                                                    } else {
+                                                                                        echo '<a href="../../logos_empresas/' . $file . '" target="_blank" download class="d-block mx-1 mb-2"><img src="../../logos_empresas/' . $file . '" alt="' . $fileName . '" class="img-fluid rounded shadow-sm" style="max-width: 130px;"></a>';
+                                                                                    }
                                                                                 }
                                                                             }
-                                                                        }
                                                                         ?>
                                                                         <?php if (!empty($logoProducto1) || !empty($logoProducto2) || !empty($logoProducto3) || !empty($logoProducto4)): ?>
                                                                             <tr>

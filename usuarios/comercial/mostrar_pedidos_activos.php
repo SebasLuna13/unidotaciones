@@ -420,7 +420,6 @@
         <title>Comercial | Mostrar Pedidos Activos</title>
     <head>
 
-
     <body>
         <?php
         $consulta = "SELECT usuario.id_usuario, pedido.id_usuario, producto.id_producto, producto.num_ficha, producto.estado, producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, producto.logo1, producto.logo2, producto.logo3, producto.logo4,producto.precio_venta, producto.precio_iva, producto.cant_tallas, producto.cant_prendas, producto.suma_prendas, producto.precio_total, producto.talla_XS, producto.talla_S, producto.talla_M, producto.talla_L, producto.talla_XL, producto.talla_2XL, producto.talla_3XL, producto.talla_4XL, producto.talla_5XL, producto.talla_6XL, producto.talla_2, producto.talla_4, producto.talla_6, producto.talla_8, producto.talla_10, producto.talla_12, producto.talla_14, 
@@ -578,7 +577,7 @@
                                                 <div class="d-flex justify-content-center mb-2">
                                                     <?php foreach ($imagenesValidas as $imagen): ?>
                                                         <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                            <img src="img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
+                                                            <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
                                                         </div>
                                                     <?php endforeach; ?>
                                                 </div>
@@ -778,7 +777,7 @@
                                                 <div class="d-flex justify-content-center mb-2">
                                                     <?php foreach ($imagenesValidas as $imagen): ?>
                                                         <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                            <img src="img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
+                                                            <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
                                                         </div>
                                                     <?php endforeach; ?>
                                                 </div>
@@ -964,10 +963,18 @@
             <div class="modal fade" id="Editar<?php echo $fila['id_producto']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content rounded-4">
-                        <div class="modal-header" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                            <h5 class="modal-title text-white" id="exampleModalLabel">Ingresa los Datos y Tallas de la Prenda: <?php echo $fila['nombre_producto']; ?></h5>
-                            <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
+                        <?php if ($fila['id_tipo_producto'] != 8): ?>
+                            <div class="modal-header justify-content-center" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); position: relative;">
+                                <h5 class="modal-title text-white fw-bold text-center w-100" id="exampleModalLabel">Ingresa los Datos y Tallas de la Prenda:<br><?= $fila['nombre_prenda'] ?></h5>
+                                <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($fila['id_tipo_producto'] == 8): ?>
+                            <div class="modal-header justify-content-center" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); position: relative;">
+                                <h5 class="modal-title text-white fw-bold text-center w-100" id="exampleModalLabel">Ingresa los Datos y Tallas de la Prenda:<br><?= $fila['nombre_producto'] ?></h5>
+                                <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                        <?php endif; ?>
                         <div class="modal-body">
                             <form action="" method="post" id="formulario" enctype="multipart/form-data">
                                 <input type="hidden" name="id_producto" value="<?php echo $fila['id_producto']; ?>">
@@ -1055,7 +1062,7 @@
                                             <div class="d-flex justify-content-center mb-2">
                                                 <?php foreach ($imagenes_validas as $imagen): ?>
                                                     <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                        <img src="img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid">
+                                                        <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid">
                                                     </div>
                                                 <?php endforeach; ?>
                                             </div>
@@ -4587,7 +4594,7 @@
                                                         <div class="d-flex justify-content-center mb-2">
                                                             <?php foreach ($imagenesValidas as $imagen): ?>
                                                                 <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                                    <img src="img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
+                                                                    <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
                                                                 </div>
                                                             <?php endforeach; ?>
                                                         </div>
@@ -4970,7 +4977,7 @@
                                                     <div class="d-flex justify-content-center mb-2">
                                                         <?php foreach ($imagenesValidas as $imagen): ?>
                                                             <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                                <img src="img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
+                                                                <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
                                                             </div>
                                                         <?php endforeach; ?>
                                                     </div>
