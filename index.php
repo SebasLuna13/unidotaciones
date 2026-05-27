@@ -22,6 +22,7 @@ if (isset($_POST['user']) && isset($_POST['pass'])) {
             case 'comercial2':
             case 'comercial3':
             case 'comercial4':
+            case 'comercial5':
                 header("Location: usuarios/comercial/inicio_comercial.php?id_usuario=$id_usuario");
                 exit();
             case 'compras':

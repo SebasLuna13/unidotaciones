@@ -2,7 +2,7 @@
     require_once('../../conexion.php');
     session_start();
 
-    $roles_permitidos = ['comercial', 'comercial2', 'comercial3', 'comercial4'];
+    $roles_permitidos = ['comercial', 'comercial2', 'comercial3', 'comercial4', 'comercial5'];
 
     if (!isset($_SESSION['rol'])) {
         header("Location: index.php");
