@@ -3041,12 +3041,12 @@
             document.getElementById('downloadExcel').addEventListener('click', function() {
                 // Obtener datos desde PHP
                 <?php
-                $consulta = "SELECT pedido.estado, pedido.id_usuario, pedido.consecutivo, producto.color_tela, producto.color_tela, producto.color_telacombi, producto.color_telaforro, producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, 
+                $consulta = "SELECT pedido.estado, pedido.id_usuario, pedido.consecutivo, producto.color_tela, producto.color_tela, producto.color_telacombi, producto.color_telaforro, producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, producto.id_mano_obra, producto.precio_obra, producto.margen_bruto,
                             producto.id_producto, producto.precio_venta, producto.precio_iva, producto.cant_tallas, producto.cant_prendas, producto.mas_prendas, producto.suma_prendas, producto.nombre_producto, producto.nombre_proveedor, producto.precio_compra, producto.observaciones, producto.precio_cuello, producto.consumo_cuello, producto.precio_puño, producto.consumo_puño, producto.precio_boton, producto.cant_boton, 
                             producto.promedio_consumo, producto.precio_tela, producto.promedio_telacombi, producto.precio_telacombinada, producto.promedio_forro, producto.precio_forro, producto.cant_cinta, producto.consumo_fusionado, producto.cant_entretela, producto.cant_cremallera, producto.cant_velcro, producto.cant_resorte, producto.cant_hombrera, producto.cant_sesgo, producto.cant_trabilla, producto.cant_vivo, 
                             producto.cant_faya, producto.cant_guata, producto.cant_pretina, producto.cant_broche, producto.cant_cordon, producto.cant_puntera, producto.valor_flete, producto.valor_tela, producto.valor_telacombi, producto.valor_cuello, producto.valor_puño, producto.valor_boton,
                             producto.valor_cinta, producto.valor_cremallera, producto.valor_entretela, producto.valor_fusionado, producto.valor_velcro, producto.valor_resorte, producto.valor_hombrera, producto.valor_sesgo, producto.valor_trabilla, producto.valor_vivo, producto.valor_faya, producto.valor_guata, producto.valor_forro, 
-                            producto.valor_pretina, producto.valor_broche, producto.valor_cordon, producto.valor_puntera, producto.valor_flete, producto.precio_obra, producto.costo_total, producto.telaa, producto.telacombinada, producto.telaforro, 
+                            producto.valor_pretina, producto.valor_broche, producto.valor_cordon, producto.valor_puntera, producto.valor_flete, producto.costo_total, producto.telaa, producto.telacombinada, producto.telaforro, 
                             producto.mangas, producto.cuello, producto.puño, producto.pretina, producto.fajon, producto.boton, producto.cremallera, producto.ubica_combi, producto.ubica_reflectivos, producto.valor_agregado, producto.logo, tipo_logo.id_tipo_logo, tipo_logo.tipo_logo, cartera.id_cartera, cartera.tipo_cartera, tablon.id_tablon, tablon.tipo_tablon,
                             pedido.id_pedido, pedido.total_factura, prenda.id_prenda, prenda.nombre_prenda, tipo_prenda.id_tipo_prenda, tipo_prenda.tipo_prenda, cargo.id_cargo, producto.precio_fusionado, producto.precio_entretela, producto.precio_cremallera, producto.precio_velcro, producto.precio_resorte, producto.precio_hombrera, producto.precio_sesgo, producto.precio_trabilla, producto.precio_vivo, 
                             producto.precio_cinta, producto.precio_faya, producto.precio_guata, producto.precio_pretina, producto.precio_broche, producto.precio_cordon, producto.precio_puntera, producto.precio_bordado, producto.precio_estampado, producto.precio_total, cliente.cliente,
@@ -3057,7 +3057,7 @@
                             entretela.id_entretela, entretela.insumo AS insumo_entretela, entretela2.id_entretela2, entretela2.insumo AS insumo_entretela2, cremallera.id_cremallera, cremallera.insumo AS insumo_cremallera, velcro.id_velcro, velcro.insumo AS insumo_velcro, resorte.id_resorte, resorte.insumo AS insumo_resorte, hombrera.id_hombrera, hombrera.insumo AS insumo_hombrera, 
                             sesgo.id_sesgo, sesgo.insumo AS insumo_sesgo, trabilla.id_trabilla, trabilla.insumo AS insumo_trabilla, vivo.id_vivo, vivo.insumo AS insumo_vivo, cinta_faya.id_faya, cinta_faya.insumo AS insumo_faya, guata.id_guata, guata.insumo AS insumo_guata, pretina.id_pretina, pretina.insumo AS insumo_pretina, hiladilla.id_hiladilla, hiladilla.insumo AS insumo_hiladilla,
                             broche.id_broche, broche.insumo AS insumo_broche, cordon.id_cordon, cordon.insumo AS insumo_cordon, puntera.id_puntera, puntera.insumo AS insumo_puntera, bolsillo.id_bolsillo, bolsillo.tipo_bolsillo, producto.cant_bolsillos, cremallera2.id_cremallera2, cremallera2.insumo AS insumo_cremallera2, producto.precio_cremallera2, producto.cant_cremallera2, producto.valor_cremallera2, resorte2.id_resorte2, resorte2.insumo AS insumo_resorte2, producto.precio_resorte2, producto.cant_resorte2, producto.valor_resorte2,
-                            mano_obra.id_mano_obra, mano_obra.producto, diseño.id_diseño, diseño.opcion_diseño, corte.id_corte, corte.cant_corte, entrega.id_entrega, entrega.tipo_entrega, entrega.precio_entrega AS entrega_precio_entrega, producto.precio_entrega AS producto_precio_entrega, producto.id_tipo_producto, entidad.id_entidad, entidad.tipo_entidad, cliente.nit, cliente.id_entidad, pedido.nit, producto.margen_bruto, producto.valor_porcentajeestampilla, encarterada.id_encarterada, encarterada.tipo_encarterada, producto.precio_encarterada, 
+                            mano_obra.id_mano_obra, mano_obra.producto, diseño.id_diseño, diseño.opcion_diseño, corte.id_corte, corte.cant_corte, entrega.id_entrega, entrega.tipo_entrega, entrega.precio_entrega AS entrega_precio_entrega, producto.precio_entrega AS producto_precio_entrega, producto.id_tipo_producto, entidad.id_entidad, entidad.tipo_entidad, cliente.nit, cliente.id_entidad, pedido.nit, producto.valor_porcentajeestampilla, encarterada.id_encarterada, encarterada.tipo_encarterada, producto.precio_encarterada, 
                             tela.ancho AS ancho_tela, tela.peso AS peso_tela, tela.caracteristicas, tela.rendimiento, tela.encogimiento, 
                             tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho AS ancho_telacombi, tela_combinada.peso AS peso_telacombi, tela_combinada.caracteristicas AS caract_telacombi, tela_combinada.rendimiento AS rend_telacombi, tela_combinada.encogimiento AS encog_telacombi,
                             tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho AS ancho_forro, tela_forro.peso AS peso_forro, tela_forro.caracteristicas AS caract_forro, tela_forro.rendimiento AS rend_forro, tela_forro.encogimiento AS encog_forro
@@ -3088,7 +3088,7 @@
 
                 // Crear hoja de trabajo y agregar datos
                 const ws_data = [
-                    ['Producto', 'Descripción', 'Unidades', 'Precio Unidad', 'Valor Total con IVA del 19%', 'Costo Total Producto']
+                    ['Producto', 'Descripción', 'Unidades', 'Precio Mano de Obra', '% Margen Bruto', 'Precio Unidad', 'Valor Total con IVA del 19%', 'Costo Total Producto']
                 ];
 
                 // Iterar sobre los datos para construir las filas
@@ -3126,6 +3126,8 @@
                             item.nombre_producto,
                             descripcion,
                             item.suma_prendas,
+                            `$${parseFloat(item.precio_obra).toLocaleString('es-CO')}`,
+                            `${parseFloat(item.margen_bruto).toFixed(2)}%`,
                             `$${parseFloat(item.precio_venta).toLocaleString('es-CO')}`,
                             `$${parseFloat(item.precio_iva).toLocaleString('es-CO')}`,
                             `$${parseFloat(item.precio_total).toLocaleString('es-CO')}`
@@ -3135,6 +3137,8 @@
                             item.nombre_prenda,
                             descripcion,
                             item.suma_prendas,
+                            `$${parseFloat(item.precio_obra).toLocaleString('es-CO')}`,
+                            `${parseFloat(item.margen_bruto).toFixed(2)}%`,
                             `$${parseFloat(item.precio_venta).toLocaleString('es-CO')}`,
                             `$${parseFloat(item.precio_iva).toLocaleString('es-CO')}`,
                             `$${parseFloat(item.precio_total).toLocaleString('es-CO')}`

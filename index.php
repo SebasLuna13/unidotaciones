@@ -38,6 +38,9 @@ if (isset($_POST['user']) && isset($_POST['pass'])) {
             case 'inventario':
                 header("Location: usuarios/inventario/inicio_inventario.php?id_usuario=$id_usuario");
                 exit();
+            case 'planeacion':
+                header("Location: usuarios/planeacion/inicio_planeacion.php?id_usuario=$id_usuario");
+                exit();
             case 'produccion':
                 header("Location: usuarios/produccion/inicio_produccion.php?id_usuario=$id_usuario");
                 exit();
