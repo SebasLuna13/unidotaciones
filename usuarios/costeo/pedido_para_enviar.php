@@ -3086,80 +3086,394 @@
                 const totalFactura = data.length > 0 ? data[0].total_factura : 0;
                 const clienteNombre = "<?php echo $clienteNombre; ?>";
 
-                // Crear hoja de trabajo y agregar datos
-                const ws_data = [
-                    ['Producto', 'Descripción', 'Unidades', 'Precio Mano de Obra', '% Margen Bruto', 'Precio Unidad', 'Valor Total con IVA del 19%', 'Costo Total Producto']
-                ];
+                // ==========================================
+                // CREAR DATOS
+                // ==========================================
 
-                // Iterar sobre los datos para construir las filas
+                const fechaActual = new Date().toLocaleDateString('es-CO');
+
+                const ws_data = [];
+
+                // TITULO
+                ws_data.push([`COTIZACIÓN GENERAL`]);
+                ws_data.push([`Cliente: ${clienteNombre}`]);
+                ws_data.push([`Fecha: ${fechaActual}`]);
+                ws_data.push([]);
+
+                // ENCABEZADOS
+                ws_data.push([
+                    'PRODUCTO',
+                    'DESCRIPCIÓN',
+                    'UNIDADES',
+                    'MANO OBRA',
+                    '% MARGEN',
+                    'PRECIO UNITARIO',
+                    'PRECIO + IVA',
+                    'TOTAL'
+                ]);
+
+                // PRODUCTOS
                 data.forEach(item => {
-                    const descripcion = [
-                        item.id_tela != 0 ? `Tipo de Tela: ${item.tela}` : null,
-                        item.id_telacombi != 0 ? `Tipo de Tela Combinada: ${item.telacombi}` : null,
-                        item.id_telaforro != 0 ? `Tipo de Tela Forro: ${item.telaforro}` : null,
-                        item.id_cuello != 0 ? `Tipo de Cuello: ${item.insumo_cuello}` : null,
-                        item.id_puño != 0 ? `Tipo de Puño: ${item.insumo_puño}` : null,
-                        item.id_boton != 0 ? `Tipo de Botón: ${item.insumo_boton}` : null,
-                        item.id_entretela != 0 ? `Tipo de Entretela: ${item.insumo_entretela}` : null,
-                        item.id_fusionado != 0 ? `Tipo de Fusionado: ${item.insumo_fusionado}` : null,
-                        item.id_cremallera != 0 ? `Tipo de Cremallera: ${item.insumo_cremallera}` : null,
-                        item.id_cremallera2 != 0 ? `Tipo de Cremallera 2: ${item.insumo_cremallera2}` : null,
-                        item.id_velcro != 0 ? `Tipo de Velcro: ${item.insumo_velcro}` : null,
-                        item.id_cinta != 0 ? `Tipo de Cinta: ${item.insumo_cinta}` : null,
-                        item.id_faya != 0 ? `Tipo de Faya: ${item.insumo_faya}` : null,
-                        item.id_resorte != 0 ? `Tipo de Resorte: ${item.insumo_resorte}` : null,
-                        item.id_resorte2 != 0 ? `Tipo de Resorte 2: ${item.insumo_resorte2}` : null,
-                        item.id_hombrera != 0 ? `Tipo de Hombrera: ${item.insumo_hombrera}` : null,
-                        item.id_sesgo != 0 ? `Tipo de Sesgo: ${item.insumo_sesgo}` : null,
-                        item.id_trabilla != 0 ? `Tipo de Trabilla: ${item.insumo_trabilla}` : null,
-                        item.id_vivo != 0 ? `Tipo de Vivo: ${item.insumo_vivo}` : null,
-                        item.id_guata != 0 ? `Tipo de Guata: ${item.insumo_guata}` : null,
-                        item.id_pretina != 0 ? `Tipo de Pretina: ${item.insumo_pretina}` : null,
-                        item.id_broche != 0 ? `Tipo de Broche: ${item.insumo_broche}` : null,
-                        item.id_cordon != 0 ? `Tipo de Cordón: ${item.insumo_cordon}` : null,
-                        item.id_puntera != 0 ? `Tipo de Puntera: ${item.insumo_puntera}` : null,
-                    ].filter(Boolean).join(',  \n');
 
-                    // 👉 Condición solicitada
-                    if (parseInt(item.id_tipo_producto) == 8) {
-                        ws_data.push([
-                            item.nombre_producto,
-                            descripcion,
-                            item.suma_prendas,
-                            `$${parseFloat(item.precio_obra).toLocaleString('es-CO')}`,
-                            `${parseFloat(item.margen_bruto).toFixed(2)}%`,
-                            `$${parseFloat(item.precio_venta).toLocaleString('es-CO')}`,
-                            `$${parseFloat(item.precio_iva).toLocaleString('es-CO')}`,
-                            `$${parseFloat(item.precio_total).toLocaleString('es-CO')}`
-                        ]);
-                    } else {
-                        ws_data.push([
-                            item.nombre_prenda,
-                            descripcion,
-                            item.suma_prendas,
-                            `$${parseFloat(item.precio_obra).toLocaleString('es-CO')}`,
-                            `${parseFloat(item.margen_bruto).toFixed(2)}%`,
-                            `$${parseFloat(item.precio_venta).toLocaleString('es-CO')}`,
-                            `$${parseFloat(item.precio_iva).toLocaleString('es-CO')}`,
-                            `$${parseFloat(item.precio_total).toLocaleString('es-CO')}`
-                        ]);
-                    }
+                    const descripcion = [
+                        item.id_tela != 0 ? `Tela: ${item.tela}` : null,
+                        item.id_telacombi != 0 ? `Tela Combinada: ${item.telacombi}` : null,
+                        item.id_telaforro != 0 ? `Forro: ${item.telaforro}` : null,
+                        item.id_cuello != 0 ? `Cuello: ${item.insumo_cuello}` : null,
+                        item.id_puño != 0 ? `Puño: ${item.insumo_puño}` : null,
+                        item.id_boton != 0 ? `Botón: ${item.insumo_boton}` : null,
+                        item.id_entretela != 0 ? `Entretela: ${item.insumo_entretela}` : null,
+                        item.id_cremallera != 0 ? `Cremallera: ${item.insumo_cremallera}` : null,
+                        item.id_velcro != 0 ? `Velcro: ${item.insumo_velcro}` : null,
+                        item.id_resorte != 0 ? `Resorte: ${item.insumo_resorte}` : null,
+                        item.id_sesgo != 0 ? `Sesgo: ${item.insumo_sesgo}` : null,
+                        item.id_trabilla != 0 ? `Trabilla: ${item.insumo_trabilla}` : null,
+                        item.id_vivo != 0 ? `Vivo: ${item.insumo_vivo}` : null,
+                    ].filter(Boolean).join('\n');
+
+                    const producto =
+                        parseInt(item.id_tipo_producto) == 8
+                            ? item.nombre_producto
+                            : item.nombre_prenda;
+
+                    ws_data.push([
+                        producto,
+                        descripcion,
+                        item.suma_prendas,
+                        parseFloat(item.precio_obra),
+                        parseFloat(item.margen_bruto),
+                        parseFloat(item.precio_venta),
+                        parseFloat(item.precio_iva),
+                        parseFloat(item.precio_total)
+                    ]);
                 });
 
-                // Agregar fila de total
-                ws_data.push(['Total', '', '', '', '', `$${parseFloat(totalFactura).toLocaleString('es-CO')}`]);
+                // FILA VACÍA
+                ws_data.push([]);
 
-                // Crear libro y hoja
+                // TOTAL
+                ws_data.push([
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    'TOTAL FACTURA',
+                    parseFloat(totalFactura)
+                ]);
+
+                // ==========================================
+                // CREAR LIBRO
+                // ==========================================
+
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.aoa_to_sheet(ws_data);
 
-                // Agregar hoja al libro
-                XLSX.utils.book_append_sheet(wb, ws, "Prendas a Cotizar");
+                // ==========================================
+                // COMBINAR CELDAS
+                // ==========================================
 
-                // Crear el nombre del archivo usando el nombre del cliente
-                const fileName = `Costeo_${clienteNombre}.xlsx`;
+                ws['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }
+                ];
 
-                // Descargar el archivo
+                // ==========================================
+                // ANCHO COLUMNAS
+                // ==========================================
+
+                ws['!cols'] = [
+                    { wch: 30 },
+                    { wch: 55 },
+                    { wch: 12 },
+                    { wch: 18 },
+                    { wch: 14 },
+                    { wch: 20 },
+                    { wch: 20 },
+                    { wch: 20 }
+                ];
+
+                // ==========================================
+                // ALTURA FILAS
+                // ==========================================
+
+                ws['!rows'] = ws_data.map((_, i) => {
+
+                    if (i === 0) return { hpt: 35 };
+
+                    if (i >= 4 && i < ws_data.length - 2) {
+                        return { hpt: 80 };
+                    }
+
+                    return { hpt: 25 };
+                });
+
+                // ==========================================
+                // ESTILOS
+                // ==========================================
+
+                const blue = "0B5ED7";
+                const darkBlue = "084298";
+                const lightGray = "F8F9FA";
+                const borderColor = "D9D9D9";
+                const green = "198754";
+
+                const range = XLSX.utils.decode_range(ws['!ref']);
+
+                // ==========================================
+                // COLORES
+                // ==========================================
+
+                const primaryBlue = "1F4E78";
+                const secondaryBlue = "D9EAF7";
+                const headerBlue = "0B5ED7";
+                const grayRow = "F4F6F9";
+                const totalGreen = "198754";
+
+                const thinBorder = {
+                    style: "thin",
+                    color: { rgb: "BFBFBF" }
+                };
+
+                const mediumBorder = {
+                    style: "medium",
+                    color: { rgb: "7F7F7F" }
+                };
+
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+
+                        const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+
+                        if (!ws[cellRef]) continue;
+
+                        // ==========================================
+                        // ESTILO BASE
+                        // ==========================================
+
+                        ws[cellRef].s = {
+                            font: {
+                                name: "Calibri",
+                                sz: 11,
+                                color: { rgb: "000000" }
+                            },
+
+                            alignment: {
+                                vertical: "center",
+                                horizontal: "left",
+                                wrapText: true
+                            },
+
+                            border: {
+                                top: thinBorder,
+                                bottom: thinBorder,
+                                left: thinBorder,
+                                right: thinBorder
+                            }
+                        };
+
+                        // ==========================================
+                        // TITULO PRINCIPAL
+                        // ==========================================
+
+                        if (R === 0) {
+
+                            ws[cellRef].s = {
+                                font: {
+                                    bold: true,
+                                    sz: 24,
+                                    color: { rgb: "FFFFFF" },
+                                    name: "Calibri"
+                                },
+
+                                fill: {
+                                    fgColor: { rgb: primaryBlue }
+                                },
+
+                                alignment: {
+                                    horizontal: "center",
+                                    vertical: "center"
+                                },
+
+                                border: {
+                                    top: mediumBorder,
+                                    bottom: mediumBorder,
+                                    left: mediumBorder,
+                                    right: mediumBorder
+                                }
+                            };
+                        }
+
+                        // ==========================================
+                        // CLIENTE Y FECHA
+                        // ==========================================
+
+                        if (R === 1 || R === 2) {
+
+                            ws[cellRef].s = {
+                                font: {
+                                    bold: true,
+                                    sz: 12,
+                                    color: { rgb: primaryBlue }
+                                },
+
+                                fill: {
+                                    fgColor: { rgb: secondaryBlue }
+                                },
+
+                                alignment: {
+                                    horizontal: "left",
+                                    vertical: "center"
+                                },
+
+                                border: {
+                                    top: thinBorder,
+                                    bottom: thinBorder,
+                                    left: thinBorder,
+                                    right: thinBorder
+                                }
+                            };
+                        }
+
+                        // ==========================================
+                        // ENCABEZADOS TABLA
+                        // ==========================================
+
+                        if (R === 4) {
+
+                            ws[cellRef].s = {
+                                font: {
+                                    bold: true,
+                                    sz: 12,
+                                    color: { rgb: "FFFFFF" }
+                                },
+
+                                fill: {
+                                    fgColor: { rgb: headerBlue }
+                                },
+
+                                alignment: {
+                                    horizontal: "center",
+                                    vertical: "center",
+                                    wrapText: true
+                                },
+
+                                border: {
+                                    top: mediumBorder,
+                                    bottom: mediumBorder,
+                                    left: mediumBorder,
+                                    right: mediumBorder
+                                }
+                            };
+                        }
+
+                        // ==========================================
+                        // FILAS TABLA
+                        // ==========================================
+
+                        if (R > 4 && R < ws_data.length - 1) {
+
+                            const even = R % 2 === 0;
+
+                            ws[cellRef].s.fill = {
+                                fgColor: {
+                                    rgb: even ? "FFFFFF" : grayRow
+                                }
+                            };
+
+                            ws[cellRef].s.border = {
+                                top: thinBorder,
+                                bottom: thinBorder,
+                                left: thinBorder,
+                                right: thinBorder
+                            };
+                        }
+
+                        // ==========================================
+                        // COLUMNAS CENTRADAS
+                        // ==========================================
+
+                        if ([2,3,4,5,6,7].includes(C) && R >= 4) {
+
+                            ws[cellRef].s.alignment.horizontal = "center";
+                        }
+
+                        // ==========================================
+                        // FORMATO MONEDA
+                        // ==========================================
+
+                        if ([3,5,6,7].includes(C) && R > 4) {
+
+                            ws[cellRef].z = '$ #,##0';
+                        }
+
+                        // ==========================================
+                        // TOTAL FINAL
+                        // ==========================================
+
+                        if (R === ws_data.length - 1) {
+
+                            ws[cellRef].s = {
+                                font: {
+                                    bold: true,
+                                    sz: 13,
+                                    color: { rgb: "FFFFFF" }
+                                },
+
+                                fill: {
+                                    fgColor: { rgb: totalGreen }
+                                },
+
+                                alignment: {
+                                    horizontal: "center",
+                                    vertical: "center"
+                                },
+
+                                border: {
+                                    top: mediumBorder,
+                                    bottom: mediumBorder,
+                                    left: mediumBorder,
+                                    right: mediumBorder
+                                }
+                            };
+
+                            ws[cellRef].z = '$ #,##0';
+                        }
+                    }
+                }
+
+                // ==========================================
+                // FILTROS
+                // ==========================================
+
+                ws['!autofilter'] = {
+                    ref: `A5:H${ws_data.length - 2}`
+                };
+
+                // ==========================================
+                // CONGELAR PANEL
+                // ==========================================
+
+                ws['!freeze'] = {
+                    xSplit: 0,
+                    ySplit: 5
+                };
+
+                // ==========================================
+                // AGREGAR HOJA
+                // ==========================================
+
+                XLSX.utils.book_append_sheet(wb, ws, "Cotización");
+
+                // ==========================================
+                // DESCARGAR
+                // ==========================================
+
+                const fileName = `Cotizacion_${clienteNombre}.xlsx`;
+
                 XLSX.writeFile(wb, fileName);
             });
         </script>
