@@ -3041,45 +3041,87 @@
             document.getElementById('downloadExcel').addEventListener('click', function() {
                 // Obtener datos desde PHP
                 <?php
-                $consulta = "SELECT pedido.estado, pedido.id_usuario, pedido.consecutivo, producto.color_tela, producto.color_tela, producto.color_telacombi, producto.color_telaforro, producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, producto.id_mano_obra, producto.precio_obra, producto.margen_bruto,
-                            producto.id_producto, producto.precio_venta, producto.precio_iva, producto.cant_tallas, producto.cant_prendas, producto.mas_prendas, producto.suma_prendas, producto.nombre_producto, producto.nombre_proveedor, producto.precio_compra, producto.observaciones, producto.precio_cuello, producto.consumo_cuello, producto.precio_puño, producto.consumo_puño, producto.precio_boton, producto.cant_boton, 
-                            producto.promedio_consumo, producto.precio_tela, producto.promedio_telacombi, producto.precio_telacombinada, producto.promedio_forro, producto.precio_forro, producto.cant_cinta, producto.consumo_fusionado, producto.cant_entretela, producto.cant_cremallera, producto.cant_velcro, producto.cant_resorte, producto.cant_hombrera, producto.cant_sesgo, producto.cant_trabilla, producto.cant_vivo, 
-                            producto.cant_faya, producto.cant_guata, producto.cant_pretina, producto.cant_broche, producto.cant_cordon, producto.cant_puntera, producto.valor_flete, producto.valor_tela, producto.valor_telacombi, producto.valor_cuello, producto.valor_puño, producto.valor_boton,
-                            producto.valor_cinta, producto.valor_cremallera, producto.valor_entretela, producto.valor_fusionado, producto.valor_velcro, producto.valor_resorte, producto.valor_hombrera, producto.valor_sesgo, producto.valor_trabilla, producto.valor_vivo, producto.valor_faya, producto.valor_guata, producto.valor_forro, 
-                            producto.valor_pretina, producto.valor_broche, producto.valor_cordon, producto.valor_puntera, producto.valor_flete, producto.costo_total, producto.telaa, producto.telacombinada, producto.telaforro, 
-                            producto.mangas, producto.cuello, producto.puño, producto.pretina, producto.fajon, producto.boton, producto.cremallera, producto.ubica_combi, producto.ubica_reflectivos, producto.valor_agregado, producto.logo, tipo_logo.id_tipo_logo, tipo_logo.tipo_logo, cartera.id_cartera, cartera.tipo_cartera, tablon.id_tablon, tablon.tipo_tablon,
-                            pedido.id_pedido, pedido.total_factura, prenda.id_prenda, prenda.nombre_prenda, tipo_prenda.id_tipo_prenda, tipo_prenda.tipo_prenda, cargo.id_cargo, producto.precio_fusionado, producto.precio_entretela, producto.precio_cremallera, producto.precio_velcro, producto.precio_resorte, producto.precio_hombrera, producto.precio_sesgo, producto.precio_trabilla, producto.precio_vivo, 
-                            producto.precio_cinta, producto.precio_faya, producto.precio_guata, producto.precio_pretina, producto.precio_broche, producto.precio_cordon, producto.precio_puntera, producto.precio_bordado, producto.precio_estampado, producto.precio_total, cliente.cliente,
-                            producto.id_logistica, logistica.id_logistica, logistica.precio, producto.precio_logistica, producto.logo1, producto.logo2, producto.logo3, producto.logo4, producto.valor_diseño, producto.valor_corte, corte.precio_corte, producto.observaciones_cotizacion, producto.observaciones_produccion, producto.observaciones_comercial,
-                            tipo_producto.id_tipo_producto, tipo_producto.tipo_producto, cargo.cargo, tela.id_tela, tela.tela, tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_forro.id_telaforro, tela_forro.tela_forro, cuello.id_cuello, cuello.insumo AS insumo_cuello, puño.id_puño, puño.insumo AS insumo_puño, boton.id_boton, boton.insumo AS insumo_boton, 
-                            boton2.id_boton2, boton2.insumo AS insumo_boton2, producto.precio_boton2, producto.cant_boton2, producto.valor_boton2, plumilla.id_plumilla, plumilla.insumo AS insumo_plumilla, producto.precio_plumilla, producto.cant_plumilla, producto.valor_plumilla, vinilo.id_vinilo, vinilo.insumo AS insumo_vinilo, producto.precio_vinilo, producto.cant_vinilo, producto.valor_vinilo,
-                            cinta_reflectiva.id_cinta, cinta_reflectiva.insumo AS insumo_reflectiva, bolsa.id_bolsa, bolsa.insumo AS insumo_bolsa, bolsa.precio AS precio_bolsa, marquilla.id_marquilla, marquilla.precio AS precio_marquilla, acabado.id_acabado, acabado.insumo AS insumo_acabado, fusionado.id_fusionado, fusionado.insumo AS insumo_fusionado, 
-                            entretela.id_entretela, entretela.insumo AS insumo_entretela, entretela2.id_entretela2, entretela2.insumo AS insumo_entretela2, cremallera.id_cremallera, cremallera.insumo AS insumo_cremallera, velcro.id_velcro, velcro.insumo AS insumo_velcro, resorte.id_resorte, resorte.insumo AS insumo_resorte, hombrera.id_hombrera, hombrera.insumo AS insumo_hombrera, 
-                            sesgo.id_sesgo, sesgo.insumo AS insumo_sesgo, trabilla.id_trabilla, trabilla.insumo AS insumo_trabilla, vivo.id_vivo, vivo.insumo AS insumo_vivo, cinta_faya.id_faya, cinta_faya.insumo AS insumo_faya, guata.id_guata, guata.insumo AS insumo_guata, pretina.id_pretina, pretina.insumo AS insumo_pretina, hiladilla.id_hiladilla, hiladilla.insumo AS insumo_hiladilla,
-                            broche.id_broche, broche.insumo AS insumo_broche, cordon.id_cordon, cordon.insumo AS insumo_cordon, puntera.id_puntera, puntera.insumo AS insumo_puntera, bolsillo.id_bolsillo, bolsillo.tipo_bolsillo, producto.cant_bolsillos, cremallera2.id_cremallera2, cremallera2.insumo AS insumo_cremallera2, producto.precio_cremallera2, producto.cant_cremallera2, producto.valor_cremallera2, resorte2.id_resorte2, resorte2.insumo AS insumo_resorte2, producto.precio_resorte2, producto.cant_resorte2, producto.valor_resorte2,
-                            mano_obra.id_mano_obra, mano_obra.producto, diseño.id_diseño, diseño.opcion_diseño, corte.id_corte, corte.cant_corte, entrega.id_entrega, entrega.tipo_entrega, entrega.precio_entrega AS entrega_precio_entrega, producto.precio_entrega AS producto_precio_entrega, producto.id_tipo_producto, entidad.id_entidad, entidad.tipo_entidad, cliente.nit, cliente.id_entidad, pedido.nit, producto.valor_porcentajeestampilla, encarterada.id_encarterada, encarterada.tipo_encarterada, producto.precio_encarterada, 
-                            tela.ancho AS ancho_tela, tela.peso AS peso_tela, tela.caracteristicas, tela.rendimiento, tela.encogimiento, 
-                            tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho AS ancho_telacombi, tela_combinada.peso AS peso_telacombi, tela_combinada.caracteristicas AS caract_telacombi, tela_combinada.rendimiento AS rend_telacombi, tela_combinada.encogimiento AS encog_telacombi,
-                            tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho AS ancho_forro, tela_forro.peso AS peso_forro, tela_forro.caracteristicas AS caract_forro, tela_forro.rendimiento AS rend_forro, tela_forro.encogimiento AS encog_forro
-                            FROM producto
-                            LEFT JOIN pedido ON producto.id_pedido = pedido.id_pedido LEFT JOIN cliente ON pedido.nit = cliente.nit LEFT JOIN entidad ON cliente.id_entidad = entidad.id_entidad LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda LEFT JOIN tipo_prenda ON prenda.id_tipo_prenda = tipo_prenda.id_tipo_prenda LEFT JOIN tela ON producto.id_tela = tela.id_tela 
-                            LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro LEFT JOIN cargo ON producto.id_cargo = cargo.id_cargo LEFT JOIN cuello ON producto.id_cuello = cuello.id_cuello LEFT JOIN puño ON producto.id_puño = puño.id_puño LEFT JOIN boton ON producto.id_boton = boton.id_boton LEFT JOIN boton2 ON producto.id_boton2 = boton2.id_boton2 LEFT JOIN plumilla ON producto.id_plumilla = plumilla.id_plumilla LEFT JOIN vinilo ON producto.id_vinilo = vinilo.id_vinilo
-                            LEFT JOIN cinta_reflectiva ON producto.id_cinta = cinta_reflectiva.id_cinta LEFT JOIN bolsa ON producto.id_bolsa = bolsa.id_bolsa LEFT JOIN acabado ON producto.id_acabado = acabado.id_acabado LEFT JOIN fusionado ON producto.id_fusionado = fusionado.id_fusionado LEFT JOIN encarterada ON producto.id_encarterada = encarterada.id_encarterada
-                            LEFT JOIN entretela ON producto.id_entretela = entretela.id_entretela  LEFT JOIN entretela2 ON producto.id_entretela2 = entretela2.id_entretela2 LEFT JOIN cremallera ON producto.id_cremallera = cremallera.id_cremallera LEFT JOIN velcro ON producto.id_velcro = velcro.id_velcro  LEFT JOIN resorte ON producto.id_resorte = resorte.id_resorte  LEFT JOIN hombrera ON producto.id_hombrera = hombrera.id_hombrera  LEFT JOIN sesgo ON producto.id_sesgo = sesgo.id_sesgo  
-                            LEFT JOIN trabilla ON producto.id_trabilla = trabilla.id_trabilla  LEFT JOIN vivo ON producto.id_vivo = vivo.id_vivo  LEFT JOIN cinta_faya ON producto.id_faya = cinta_faya.id_faya  LEFT JOIN guata ON producto.id_guata = guata.id_guata  LEFT JOIN pretina ON producto.id_pretina = pretina.id_pretina  LEFT JOIN broche ON producto.id_broche = broche.id_broche  LEFT JOIN cordon ON producto.id_cordon = cordon.id_cordon  
-                            LEFT JOIN puntera ON producto.id_puntera = puntera.id_puntera LEFT JOIN bolsillo ON producto.id_bolsillo  = bolsillo.id_bolsillo  LEFT JOIN mano_obra ON producto.id_mano_obra = mano_obra.id_mano_obra  LEFT JOIN diseño ON producto.id_diseño = diseño.id_diseño  LEFT JOIN corte ON producto.id_corte = corte.id_corte LEFT JOIN hiladilla ON producto.id_hiladilla = hiladilla.id_hiladilla
-                            LEFT JOIN entrega ON producto.id_entrega = entrega.id_entrega LEFT JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto LEFT JOIN logistica ON producto.id_logistica = logistica.id_logistica LEFT JOIN cremallera2 ON producto.id_cremallera2 = cremallera2.id_cremallera2 LEFT JOIN resorte2 ON producto.id_resorte2 = resorte2.id_resorte2
-                            LEFT JOIN cartera ON producto.id_cartera = cartera.id_cartera LEFT JOIN tipo_logo ON producto.id_tipo_logo = tipo_logo.id_tipo_logo LEFT JOIN tablon ON producto.id_tablon = tablon.id_tablon LEFT JOIN marquilla ON producto.id_marquilla = marquilla.id_marquilla
-                            WHERE pedido.id_pedido = $id_pedido";
+                    $consulta = "SELECT pedido.id_pedido, producto.id_producto, prenda.id_prenda, cliente.nit, cliente.cliente, producto.nombre_producto, prenda.nombre_prenda, producto.suma_prendas, 
+                    producto.id_mano_obra, producto.precio_obra, producto.margen_bruto, producto.precio_venta, producto.precio_iva, producto.precio_total, pedido.total_factura, tipo_producto.id_tipo_producto, producto.id_tipo_producto,
+                    producto.id_tela, tela.id_tela, tela.tela, 
+                    producto.id_telacombi, tela_combinada.id_telacombi, tela_combinada.tela_combi, 
+                    producto.id_telaforro, tela_forro.id_telaforro, tela_forro.tela_forro,
+                    producto.id_entretela, entretela.id_entretela, entretela.insumo AS insumo_entretela, 
+                    producto.id_entretela2, entretela2.id_entretela2, entretela2.insumo AS insumo_entretela2,
+                    producto.id_bolsa , bolsa.id_bolsa, bolsa.insumo AS insumo_bolsa,
+                    producto.id_boton, boton.id_boton, boton.insumo AS insumo_boton,
+                    producto.id_boton2, boton2.id_boton2, boton2.insumo AS insumo_boton2,
+                    producto.id_broche, broche.id_broche, broche.insumo AS insumo_broche,
+                    producto.id_faya, cinta_faya.id_faya, cinta_faya.insumo AS insumo_faya,
+                    producto.id_cinta, cinta_reflectiva.id_cinta, cinta_reflectiva.insumo AS insumo_cinta,
+                    producto.id_cordon, cordon.id_cordon, cordon.insumo AS insumo_cordon,
+                    producto.id_cremallera, cremallera.id_cremallera, cremallera.insumo AS insumo_cremallera,
+                    producto.id_cremallera2, cremallera2.id_cremallera2, cremallera2.insumo AS insumo_cremallera2,
+                    producto.id_cuello, cuello.id_cuello, cuello.insumo AS insumo_cuello,
+                    producto.id_deslizador, deslizador.id_deslizador, deslizador.insumo AS insumo_deslizador,
+                    producto.id_fajon_cintura, fajon_cintura.id_fajon_cintura, fajon_cintura.insumo AS insumo_fajon,
+                    producto.id_guata, guata.id_guata, guata.insumo AS insumo_guata,
+                    producto.id_hiladilla, hiladilla.id_hiladilla, hiladilla.insumo AS insumo_hiladilla,
+                    producto.id_hombrera, hombrera.id_hombrera, hombrera.insumo AS insumo_hombrera,
+                    producto.id_marquilla, marquilla.id_marquilla, marquilla.insumo AS insumo_marquilla,
+                    producto.id_plumilla, plumilla.id_plumilla, plumilla.insumo AS insumo_plumilla,
+                    producto.id_pretina, pretina.id_pretina, pretina.insumo AS insumo_pretina,
+                    producto.id_puntera, puntera.id_puntera, puntera.insumo AS insumo_puntera,
+                    producto.id_puño, puño.id_puño, puño.insumo AS insumo_puño,
+                    producto.id_resorte, resorte.id_resorte, resorte.insumo AS insumo_resorte,
+                    producto.id_resorte2, resorte2.id_resorte2, resorte2.insumo AS insumo_resorte2,
+                    producto.id_sesgo, sesgo.id_sesgo, sesgo.insumo AS insumo_sesgo,
+                    producto.id_trabilla, trabilla.id_trabilla, trabilla.insumo AS insumo_trabilla,
+                    producto.id_velcro, velcro.id_velcro, velcro.insumo AS insumo_velcro,
+                    producto.id_vinilo, vinilo.id_vinilo, vinilo.insumo AS insumo_vinilo,
+                    producto.id_vivo, vivo.id_vivo, vivo.insumo AS insumo_vivo
+                    FROM producto
+                    JOIN pedido ON producto.id_pedido = pedido.id_pedido
+                    LEFT JOIN cliente ON pedido.nit = cliente.nit
+                    LEFT JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto
+                    LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda
+                    LEFT JOIN tela ON producto.id_tela = tela.id_tela
+                    LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi
+                    LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro
+                    LEFT JOIN entretela ON producto.id_entretela = entretela.id_entretela
+                    LEFT JOIN entretela2 ON producto.id_entretela2 = entretela2.id_entretela2
+                    LEFT JOIN bolsa ON producto.id_bolsa = bolsa.id_bolsa
+                    LEFT JOIN boton ON producto.id_boton = boton.id_boton
+                    LEFT JOIN boton2 ON producto.id_boton2 = boton2.id_boton2
+                    LEFT JOIN broche ON producto.id_broche = broche.id_broche
+                    LEFT JOIN cinta_faya ON producto.id_faya = cinta_faya.id_faya
+                    LEFT JOIN cinta_reflectiva ON producto.id_cinta = cinta_reflectiva.id_cinta
+                    LEFT JOIN cordon ON producto.id_cordon = cordon.id_cordon
+                    LEFT JOIN cremallera ON producto.id_cremallera = cremallera.id_cremallera
+                    LEFT JOIN cremallera2 ON producto.id_cremallera2 = cremallera2.id_cremallera2
+                    LEFT JOIN cuello ON producto.id_cuello = cuello.id_cuello
+                    LEFT JOIN deslizador ON producto.id_deslizador = deslizador.id_deslizador
+                    LEFT JOIN fajon_cintura ON producto.id_fajon_cintura = fajon_cintura.id_fajon_cintura
+                    LEFT JOIN guata ON producto.id_guata = guata.id_guata
+                    LEFT JOIN hiladilla ON producto.id_hiladilla = hiladilla.id_hiladilla
+                    LEFT JOIN hombrera ON producto.id_hombrera = hombrera.id_hombrera
+                    LEFT JOIN marquilla ON producto.id_marquilla = marquilla.id_marquilla
+                    LEFT JOIN plumilla ON producto.id_plumilla = plumilla.id_plumilla
+                    LEFT JOIN pretina ON producto.id_pretina = pretina.id_pretina
+                    LEFT JOIN puntera ON producto.id_puntera = puntera.id_puntera
+                    LEFT JOIN puño ON producto.id_puño = puño.id_puño
+                    LEFT JOIN resorte ON producto.id_resorte = resorte.id_resorte
+                    LEFT JOIN resorte2 ON producto.id_resorte2 = resorte2.id_resorte2
+                    LEFT JOIN sesgo ON producto.id_sesgo = sesgo.id_sesgo
+                    LEFT JOIN trabilla ON producto.id_trabilla = trabilla.id_trabilla
+                    LEFT JOIN velcro ON producto.id_velcro = velcro.id_velcro
+                    LEFT JOIN vinilo ON producto.id_vinilo = vinilo.id_vinilo
+                    LEFT JOIN vivo ON producto.id_vivo = vivo.id_vivo
+                    WHERE pedido.id_pedido = $id_pedido";
 
-                $resultado = mysqli_query($enlace, $consulta);
+                    $resultado = mysqli_query($enlace, $consulta);
 
-                $productos = [];
-                $clienteNombre = '';
-                while ($fila = mysqli_fetch_assoc($resultado)) {
-                    $productos[] = $fila;
-                    $clienteNombre = $fila['cliente'];
-                }
+                    $productos = [];
+                    $clienteNombre = '';
+                    while ($fila = mysqli_fetch_assoc($resultado)) {
+                        $productos[] = $fila;
+                        $clienteNombre = $fila['cliente'];
+                    }
                 ?>
 
                 const data = <?php echo json_encode($productos); ?>;
@@ -3116,19 +3158,38 @@
                 data.forEach(item => {
 
                     const descripcion = [
-                        item.id_tela != 0 ? `Tela: ${item.tela}` : null,
-                        item.id_telacombi != 0 ? `Tela Combinada: ${item.telacombi}` : null,
-                        item.id_telaforro != 0 ? `Forro: ${item.telaforro}` : null,
-                        item.id_cuello != 0 ? `Cuello: ${item.insumo_cuello}` : null,
-                        item.id_puño != 0 ? `Puño: ${item.insumo_puño}` : null,
-                        item.id_boton != 0 ? `Botón: ${item.insumo_boton}` : null,
-                        item.id_entretela != 0 ? `Entretela: ${item.insumo_entretela}` : null,
-                        item.id_cremallera != 0 ? `Cremallera: ${item.insumo_cremallera}` : null,
-                        item.id_velcro != 0 ? `Velcro: ${item.insumo_velcro}` : null,
-                        item.id_resorte != 0 ? `Resorte: ${item.insumo_resorte}` : null,
-                        item.id_sesgo != 0 ? `Sesgo: ${item.insumo_sesgo}` : null,
-                        item.id_trabilla != 0 ? `Trabilla: ${item.insumo_trabilla}` : null,
-                        item.id_vivo != 0 ? `Vivo: ${item.insumo_vivo}` : null,
+                        item.id_tela != 0 ? `• Tela: ${item.tela}` : null,
+                        item.id_telacombi != 0 ? `• Tela Combinada: ${item.tela_combi}` : null,
+                        item.id_telaforro != 0 ? `• Tela Forro: ${item.tela_forro}` : null,
+                        item.id_entretela != 0 ? `• Entretela: ${item.insumo_entretela}` : null,
+                        item.id_entretela2 != 0 ? `• Entretela 2: ${item.insumo_entretela2}` : null,
+                        item.id_bolsa != 0 ? `• Bolsa: ${item.insumo_bolsa}` : null,
+                        item.id_boton != 0 ? `• Botón: ${item.insumo_boton}` : null,
+                        item.id_boton2 != 0 ? `• Botón 2: ${item.insumo_boton2}` : null,
+                        item.id_broche != 0 ? `• Broche: ${item.insumo_broche}` : null,
+                        item.id_faya != 0 ? `• Cinta Faya: ${item.insumo_faya}` : null,
+                        item.id_cinta != 0 ? `• Cinta Reflectiva: ${item.insumo_cinta}` : null,
+                        item.id_cordon != 0 ? `• Cordón: ${item.insumo_cordon}` : null,
+                        item.id_cremallera != 0 ? `• Cremallera: ${item.insumo_cremallera}` : null,
+                        item.id_cremallera2 != 0 ? `• Cremallera 2: ${item.insumo_cremallera2}` : null,
+                        item.id_cuello != 0 ? `• Cuello: ${item.insumo_cuello}` : null,
+                        item.id_deslizador != 0 ? `• Deslizador: ${item.insumo_deslizador}` : null,
+                        item.id_fajon_cintura != 0 ? `• Fajón Cintura: ${item.insumo_fajon}` : null,
+                        item.id_guata != 0 ? `• Guata: ${item.insumo_guata}` : null,
+                        item.id_hiladilla != 0 ? `• Hiladilla: ${item.insumo_hiladilla}` : null,
+                        item.id_hombrera != 0 ? `• Hombrera: ${item.insumo_hombrera}` : null,
+                        item.id_marquilla != 0 ? `• Marquilla: ${item.insumo_marquilla}` : null,
+                        item.id_plumilla != 0 ? `• Plumilla: ${item.insumo_plumilla}` : null,
+                        item.id_pretina != 0 ? `• Pretina: ${item.insumo_pretina}` : null,
+                        item.id_puntera != 0 ? `• Puntera: ${item.insumo_puntera}` : null,
+                        item.id_puño != 0 ? `• Puño: ${item.insumo_puño}` : null,
+                        item.id_resorte != 0 ? `• Resorte: ${item.insumo_resorte}` : null,
+                        item.id_resorte2 != 0 ? `• Resorte 2: ${item.insumo_resorte2}` : null,
+                        item.id_sesgo != 0 ? `• Sesgo: ${item.insumo_sesgo}` : null,
+                        item.id_trabilla != 0 ? `• Trabilla: ${item.insumo_trabilla}` : null,
+                        item.id_velcro != 0 ? `• Velcro: ${item.insumo_velcro}` : null,
+                        item.id_vinilo != 0 ? `• Vinilo: ${item.insumo_vinilo}` : null,
+                        item.id_vivo != 0 ? `• Vivo: ${item.insumo_vivo}` : null,
                     ].filter(Boolean).join('\n');
 
                     const producto =
@@ -3199,12 +3260,18 @@
                 // ALTURA FILAS
                 // ==========================================
 
-                ws['!rows'] = ws_data.map((_, i) => {
+                ws['!rows'] = ws_data.map((row, i) => {
 
                     if (i === 0) return { hpt: 35 };
 
-                    if (i >= 4 && i < ws_data.length - 2) {
-                        return { hpt: 80 };
+                    if (i >= 5 && i < ws_data.length - 2) {
+
+                        const descripcion = row[1] || '';
+                        const lineas = descripcion.split('\n').length;
+
+                        return {
+                            hpt: Math.max(30, lineas * 18)
+                        };
                     }
 
                     return { hpt: 25 };
@@ -3263,7 +3330,7 @@
 
                             alignment: {
                                 vertical: "center",
-                                horizontal: "left",
+                                horizontal: "center",
                                 wrapText: true
                             },
 
@@ -3294,8 +3361,9 @@
                                 },
 
                                 alignment: {
+                                    vertical: "center",
                                     horizontal: "center",
-                                    vertical: "center"
+                                    wrapText: true
                                 },
 
                                 border: {
@@ -3325,8 +3393,9 @@
                                 },
 
                                 alignment: {
-                                    horizontal: "left",
-                                    vertical: "center"
+                                    vertical: "center",
+                                    horizontal: "center",
+                                    wrapText: true
                                 },
 
                                 border: {
@@ -3356,8 +3425,8 @@
                                 },
 
                                 alignment: {
-                                    horizontal: "center",
                                     vertical: "center",
+                                    horizontal: "center",
                                     wrapText: true
                                 },
 
@@ -3401,6 +3470,12 @@
                             ws[cellRef].s.alignment.horizontal = "center";
                         }
 
+                        if (C === 1 && R > 4 && R < ws_data.length - 2) {
+                            ws[cellRef].s.alignment.horizontal = "left";
+                            ws[cellRef].s.alignment.vertical = "center";
+                            ws[cellRef].s.alignment.wrapText = true;
+                        }
+
                         // ==========================================
                         // FORMATO MONEDA
                         // ==========================================
@@ -3429,7 +3504,8 @@
 
                                 alignment: {
                                     horizontal: "center",
-                                    vertical: "center"
+                                    vertical: "center",
+                                    wrapText: true
                                 },
 
                                 border: {
@@ -3451,15 +3527,6 @@
 
                 ws['!autofilter'] = {
                     ref: `A5:H${ws_data.length - 2}`
-                };
-
-                // ==========================================
-                // CONGELAR PANEL
-                // ==========================================
-
-                ws['!freeze'] = {
-                    xSplit: 0,
-                    ySplit: 5
                 };
 
                 // ==========================================
