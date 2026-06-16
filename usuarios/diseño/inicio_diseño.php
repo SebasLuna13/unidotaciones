@@ -85,13 +85,14 @@
     <body id="page-top">
         <div id="wrapper">
             <!-- Sidebar -->
-            <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%); min-height: 100vh;">
+            <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%);">
                 <div class="d-flex justify-content-center align-items-center">
-                    <a class="navbar-brand" href="inicio_produccion.php">
-                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 80px;">
+                    <a class="navbar-brand text-center" href="inicio_diseño.php">
+                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 60px;">
                     </a>
                 </div>
                 <hr class="sidebar-divider my-0 bg-white opacity-50">
+
                 <div class="px-2 mt-3">
                     <li class="nav-item mb-1">
                         <a class="nav-link sidebar-link" href="inicio_diseño.php">
