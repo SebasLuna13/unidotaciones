@@ -2004,7 +2004,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label" style="color: #000000;">Precio de Corte:</label>
                                 <input type="number" step="any" class="form-control" name="precio_corte" class="precio_corte"
-                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)" readonly>
+                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
                             </div>
                         </div>
                         <!---->
@@ -4058,7 +4058,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label" style="color: #000000;">Precio de Corte:</label>
                                 <input type="number" step="any" class="form-control" name="precio_corte" class="precio_corte"
-                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)" readonly>
+                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
                             </div>
                         </div>
                         <!---->
@@ -5793,7 +5793,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label" style="color: #000000;">Precio de Corte:</label>
                                 <input type="number" step="any" class="form-control" name="precio_corte" class="precio_corte"
-                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)" readonly>
+                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
                             </div>
                         </div>
                         <!---->
@@ -7538,7 +7538,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label" style="color: #000000;">Precio de Corte:</label>
                                 <input type="number" step="any" class="form-control" name="precio_corte" class="precio_corte"
-                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)" readonly>
+                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
                             </div>
                         </div>
                         <!---->
@@ -9373,7 +9373,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label" style="color: #000000;">Precio de Corte:</label>
                                 <input type="number" step="any" class="form-control" name="precio_corte" class="precio_corte"
-                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)" readonly>
+                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
                             </div>
                         </div>
                         <!---->
@@ -11159,7 +11159,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label" style="color: #000000;">Precio de Corte:</label>
                                 <input type="number" step="any" class="form-control" name="precio_corte" class="precio_corte"
-                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)" readonly>
+                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
                             </div>
                         </div>
                         <!---->
@@ -12947,7 +12947,7 @@
                             <div class="col-sm-6">
                                 <label class="form-label" style="color: #000000;">Precio de Corte:</label>
                                 <input type="number" step="any" class="form-control" name="precio_corte" class="precio_corte"
-                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)" readonly>
+                                    value="<?php echo isset($fila['precio_corte']) && $fila['precio_corte'] !== '' ? $fila['precio_corte'] : 0; ?>" pattern="[0-9]+(\.[0-9]+)?" minlength="1" maxlength="10" min="0" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
                             </div>
                         </div>
                         <!---->

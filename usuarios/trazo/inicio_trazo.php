@@ -5,8 +5,8 @@
     if (!isset($_SESSION['rol'])) {
         header("Location: index.php");
     } else {
-        if ($_SESSION['rol'] != 'compras') {
-            header("Location: inicio_compras.php");
+        if ($_SESSION['rol'] != 'trazo') {
+            header("Location: inicio_trazo.php");
         }
     }
 
@@ -36,137 +36,53 @@
         <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
         <link rel="icon" type="image/png" href="../../img/Logo.png">
         
-        <title>Compras | Inicio Compras</title>
+        <title>Trazo | Inicio Trazo</title>
     <head>
 
     <body id="page-top">
         <div id="wrapper">
             <!-- Sidebar -->
-            <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%);">
-                <div class="d-flex justify-content-center align-items-center">
-                    <a class="navbar-brand text-center" href="inicio_compras.php">
-                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 60px;"
-                        >
-                    </a>
-                </div>
-                <hr class="sidebar-divider my-0 bg-white opacity-50">
-                <div class="px-2 mt-3">
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="inicio_compras.php">
-                            <i class="bi bi-bag-fill"></i><span>Ordenes de Compra</span>
-                        </a>
-                    </li>
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="proveedor.php">
-                            <i class="bi bi-file-person-fill"></i><span>Proveedores</span>
-                        </a>
-                    </li>
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link" href="proveedor_tela.php">
-                            <i class="bi bi-person-badge-fill"></i><span>Proveedores de Telas</span>
-                        </a>
-                    </li>
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTelas">
-                            <div class="d-flex align-items-center w-100">
-                                <div>
-                                    <i class="bi bi-journal-text sidebar-icon"></i><span>Telas</span>
-                                </div>
-                                <i class="bi bi-chevron-down ms-auto small"></i>
-                            </div>
-                        </a>
-                        
 
-                        <div id="collapseTelas" class="collapse" data-bs-parent="#accordionSidebar">
-                            <div class="collapse-inner rounded bg-white shadow-sm py-2">
-                                <h6 class="collapse-header text-primary fw-bold">Tipos de telas</h6>
-
-                                <?php
-                                $consulta = "SELECT id_tipo_tela, tipo_tela FROM tipo_tela WHERE id_tipo_tela > 0";
-                                $resultado = mysqli_query($enlace, $consulta);
-
-                                if ($resultado->num_rows > 0) {
-                                    while ($fila = mysqli_fetch_array($resultado)) {
-                                        echo '<a class="collapse-item text-wrap" href="telas.php?id_tipo_tela=' . $fila["id_tipo_tela"] . '"> ' . $fila["tipo_tela"] . '
-                                        </a>';
-                                    }
-                                }
-                                ?>
-                            </div>
-                        </div>
-                    </li>
-
-                    <li class="nav-item mb-1">
-                        <a class="nav-link sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseInsumos">
-                            <div class="d-flex align-items-center w-100">
-                                <div>
-                                    <i class="bi bi-journal-text sidebar-icon"></i><span>Insumos</span>
-                                </div>
-                                <i class="bi bi-chevron-down ms-auto small"></i>
-                            </div>
-                        </a>
-
-                        <div id="collapseInsumos" class="collapse" data-bs-parent="#accordionSidebar">
-                            <div class="collapse-inner rounded bg-white shadow-sm py-2">
-                                <h6 class="collapse-header text-primary fw-bold">Listado de insumos</h6>
-
-                                <?php
-                                $consulta = "SELECT id_tipoinsumo, nombre FROM tipo_insumo WHERE id_tipoinsumo > 0 ORDER BY nombre ASC";
-                                $resultado = mysqli_query($enlace, $consulta);
-
-                                if ($resultado->num_rows > 0) {
-                                    while ($fila = mysqli_fetch_array($resultado)) {
-                                        echo ' <a class="collapse-item text-wrap" href="insumos.php?id_tipoinsumo=' . $fila["id_tipoinsumo"] . '"> ' . $fila["nombre"] . '
-                                        </a>';
-                                    }
-                                }
-                                ?>
-                            </div>
-                        </div>
-                    </li>
-
-                    <li class="nav-item mb-1">
-                        <a class="nav-link" href="prenda_comprada.php">
-                            <i class="bi bi-bag-plus-fill"></i><span>Prendas Compradas</span>
-                        </a>
-                    </li>
-                </div>
-            </ul>
 
             <div id="content-wrapper" class="d-flex flex-column">
                 <div id="content">
-                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                        <ul class="navbar-nav ml-auto">
-                            <div class="navbar-nav mr-auto">
-                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalSalir">Cerrar Sesión <i class="bi bi-box-arrow-right"></i></button>
-                                <!-- Modal Salir -->
-                                <div class="modal fade" id="modalSalir" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                        <div class="modal-content rounded-4">
-                                            <div class="modal-header text-white rounded-top" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                                <h5 class="modal-title" id="exampleModalLabel">¿Está seguro de salir?</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="alert alert-warning" role="alert">
-                                                    Al cerrar la sesión, se desconectará de su cuenta actual. ¿Desea continuar?
+                    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
+                        <div class="container d-flex justify-content-between align-items-center">
+                            <a class="navbar-brand" href="#" style="margin-right: 10px;">
+                                <img src="../../img/Logo.png" alt="Logo" width="60" height="60" class="rounded img-fluid d-inline-block align-text-top">
+                            </a>
+                            <ul class="navbar-nav ml-auto">
+                                <div class="navbar-nav mr-auto">
+                                    <button type="button" class="btn active btn-primary" data-bs-toggle="modal" data-bs-target="#modalSalir">Cerrar Sesión <i class="bi bi-box-arrow-right"></i></button>
+                                    <!-- Modal Salir -->
+                                    <div class="modal fade" id="modalSalir" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                            <div class="modal-content rounded-4">
+                                                <div class="modal-header text-white rounded-top" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
+                                                    <h5 class="modal-title" id="exampleModalLabel">¿Está seguro de salir?</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                                 </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <a href="../../salir.php">
-                                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Sí, cerrar sesión</button>
-                                                </a>
-                                                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancelar</button>
+                                                <div class="modal-body">
+                                                    <div class="alert alert-warning" role="alert">
+                                                        Al cerrar la sesión, se desconectará de su cuenta actual. ¿Desea continuar?
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <a href="../../salir.php">
+                                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Sí, cerrar sesión</button>
+                                                    </a>
+                                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancelar</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </ul>
+                            </ul>
+                        </div>
                     </nav>
                     <!-- medio -->
                     <div class="text-center mt-3">
-                        <h1 style="font-family: 'Times New Roman'">Ordenes de Compra</h1>
+                        <h1 style="font-family: 'Times New Roman'">Prendas para Trazo</h1>
                     </div>
                     <!-- DataTable -->
                     <div class="container-fluid">
@@ -179,19 +95,34 @@
                                     <table id="mytabla" class="table table-striped table-bordered" style="width:100%">
                                         <thead>
                                             <tr>
-                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Nro. Ficha</th>
-                                                <th style="text-align: center; vertical-align: middle; width: 20%;">Tipo de Producto</th>
-                                                <th style="text-align: center; vertical-align: middle; width: 20%;">Cliente</th>
-                                                <th style="text-align: center; vertical-align: middle; width: 15%;">Fecha Llegada<br>a Compras</th>
-                                                <th style="text-align: center; vertical-align: middle; width: 15%;">Fecha Entrega<br>Producto</th>
-                                                <th style="text-align: center; vertical-align: middle; width: 20%;">Opciones</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 5%;">Nro. Ficha</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Cliente</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Prenda</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 5%;">Unidades</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 30%;">Tela</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Promedio</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Consumo</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Fecha Llegada<br>a Trazo</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Fecha de Entrega</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Opciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php
                                             $consulta = "SELECT 
-                                                        pedido.id_pedido, producto.id_producto, producto.num_ficha, producto.nombre_producto, prenda.id_prenda, prenda.nombre_prenda, cliente.nit, cliente.cliente, producto.estado, producto.id_tipo_producto, producto.fecha_fichatecnica, producto.fecha_entrega
-                                                        FROM pedido LEFT JOIN cliente ON pedido.nit = cliente.nit LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda WHERE producto.estado = 'Diseño' OR producto.estado = 'AceptadoD' ORDER BY producto.fecha_fichatecnica DESC";
+                                                        pedido.id_pedido, producto.id_producto, prenda.id_prenda, tela.id_tela, producto.num_ficha, cliente.nit, cliente.cliente, producto.nombre_producto, prenda.nombre_prenda, producto.suma_prendas, 
+                                                        tela.tela, tela.ancho, tela.peso, tela.caracteristicas,
+
+                                                        
+                                                        
+                                                        producto.estado, producto.id_tipo_producto, producto.fecha_fichatecnica, producto.fecha_entrega
+                                                        FROM pedido 
+                                                        LEFT JOIN cliente ON pedido.nit = cliente.nit 
+                                                        LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido 
+                                                        LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda 
+                                                        LEFT JOIN tela ON producto.id_tela = tela.id_tela
+                                                        WHERE producto.estado = 'Diseño' OR producto.estado = 'AceptadoD' 
+                                                        ORDER BY producto.fecha_fichatecnica DESC";
 
                                             $resultado = mysqli_query($enlace, $consulta);
 
@@ -199,12 +130,17 @@
                                             ?>
                                                 <tr>
                                                     <td class="text-center align-middle"><?php echo $fila['num_ficha']; ?></td>
+                                                    <td class="text-center align-middle"><?php echo $fila['cliente']; ?></td>
                                                     <?php if ($fila['id_tipo_producto'] == 8): ?>
                                                         <td class="text-center align-middle"><?php echo htmlspecialchars($fila['nombre_producto']); ?></td>
                                                     <?php else: ?>
                                                         <td class="text-center align-middle"><?php echo htmlspecialchars($fila['nombre_prenda']); ?></td>
                                                     <?php endif; ?>
-                                                    <td class="text-center align-middle"><?php echo $fila['cliente']; ?></td>
+                                                    
+                                                    <td class="text-center align-middle"><?php echo $fila['suma_prendas']; ?></td>
+                                                    <td class="text-center align-middle"><?php echo $fila['tela']; ?></td>
+                                                    <td class="text-center align-middle"><input type="text" class="form-control text-center" name="promedio_trazo" ></td>
+                                                    <td class="text-center align-middle"></td>
                                                     <td class="text-center align-middle"><?php setlocale(LC_TIME, 'spanish');
                                                                                             echo strftime('%d de %B del %Y, a las %H:%M:%S', strtotime($fila['fecha_fichatecnica'])); ?>
                                                     </td>
@@ -232,6 +168,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
             
         <!-- Datatables -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
         <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>

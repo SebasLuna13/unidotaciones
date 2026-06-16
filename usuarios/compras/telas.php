@@ -58,19 +58,19 @@
     
         $consulta = "UPDATE tela 
                     SET tela = '$tela', ancho = '$ancho', peso = '$peso', caracteristicas = '$caracteristicas', rendimiento = '$rendimiento', encogimiento = '$encogimiento',
-                    precio = '$precio', fecha_actualizacion = NOW(), id_proveedor = '$id_proveedor'
+                    precio = '$precio', fecha_actualizacion = NOW(), id_proveedor = '$id_proveedor', id_tipo_tela = '$id_tipo_tela'
                     WHERE id_tela = '$id_tela'";
         $resultado = mysqli_query($enlace, $consulta);
     
         $consulta2 = "UPDATE tela_combinada 
                     SET tela_combi = '$tela', ancho = '$ancho', peso = '$peso', caracteristicas = '$caracteristicas', rendimiento = '$rendimiento', encogimiento = '$encogimiento',
-                    precio = '$precio', fecha_actualizacion = NOW(), id_proveedor = '$id_proveedor'
+                    precio = '$precio', fecha_actualizacion = NOW(), id_proveedor = '$id_proveedor', id_tipo_tela = '$id_tipo_tela'
                     WHERE id_telacombi = '$id_tela'";
         $resultado2 = mysqli_query($enlace, $consulta2);
     
         $consulta3 = "UPDATE tela_forro 
                     SET tela_forro = '$tela', ancho = '$ancho', peso = '$peso', caracteristicas = '$caracteristicas', rendimiento = '$rendimiento', encogimiento = '$encogimiento',
-                    precio = '$precio', fecha_actualizacion = NOW(), id_proveedor = '$id_proveedor'
+                    precio = '$precio', fecha_actualizacion = NOW(), id_proveedor = '$id_proveedor', id_tipo_tela = '$id_tipo_tela'
                     WHERE id_telaforro = '$id_tela'";
         $resultado3 = mysqli_query($enlace, $consulta3);
 
@@ -453,9 +453,18 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="mb-3">
-                                                            <label for="caracteristicas" class="form-label" style="color: #000000;">Ingrese las características de la tela:</label>
-                                                            <input type="text" id="caracteristicas" class="form-control" name="caracteristicas" value="<?php echo $fila['caracteristicas']?>" maxlength="100">
+                                                        <div class="mb-3 row">
+                                                            <div class="col-sm-6">
+                                                                <label for="caracteristicas" class="form-label" style="color: #000000;">Ingrese las características:</label>
+                                                                <input type="text" id="caracteristicas" class="form-control" name="caracteristicas" value="<?php echo $fila['caracteristicas']?>" maxlength="50">
+                                                            </div>
+                                                            <div class="col-sm-6">
+                                                                <label class="form-label" style="color: #000000;">Precio de la Tela:</label>
+                                                                <div class="input-group">
+                                                                    <?php $value = str_replace(['.', ','], ['', '.'], $fila['precio']);?>
+                                                                    <input  type="number" name="precio" class="form-control" value="<?php echo $value; ?>" step="any" pattern="[0-9]+" minlength="1" maxlength="11" style="width: 150px;" required>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         <div class="mb-3 row">
                                                             <div class="col-sm-6">
@@ -473,11 +482,18 @@
                                                                 </select>
                                                             </div>
                                                             <div class="col-sm-6">
-                                                                <label class="form-label" style="color: #000000;">Ingrese el precio del insumo:</label>
-                                                                <div class="input-group">
-                                                                    <?php $value = str_replace(['.', ','], ['', '.'], $fila['precio']);?>
-                                                                    <input  type="number" name="precio" class="form-control" value="<?php echo $value; ?>" step="any" pattern="[0-9]+" minlength="1" maxlength="11" style="width: 150px;" required>
-                                                                </div>
+                                                                <label class="form-label" style="color: #000000;">Elija el tipo de tela:</label>
+                                                                <select name="id_tipo_tela" class="form-select">
+                                                                    <option value="0">Seleccione una opción</option> 
+                                                                    <?php $consulta_mysql = 'select * from tipo_tela WHERE id_tipo_tela > 0'; $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                                                        $id = $lista["id_tipo_tela"];
+                                                                        $tipotela = $lista["tipo_tela"];
+                                                                        $selected = ($tipotela == $fila['tipo_tela']) ? 'selected' : ''; 
+                                                                        echo "<option value='$id' $selected>$tipotela</option>";
+                                                                    }
+                                                                    ?>
+                                                                </select>
                                                             </div>
                                                         </div>                                            
                                                         <div class="modal-footer">
@@ -523,13 +539,12 @@
         </div>
 
         <!-- Bootstrap JS -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
             
-            <!-- Datatables -->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
-            <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>
+        <!-- Datatables -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>
         
         <script>
             $(document).ready(function() {
