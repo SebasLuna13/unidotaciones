@@ -47,10 +47,10 @@
         $resultado_verificar_nit = mysqli_query($enlace, $consulta_verificar_nit);
 
         if ($id_tipo_visita == 0) {
-            header("Location: inicio_pedido.php?id_usuario=$id_usuario&recibido=4");
+            header("Location: inicio_comercial.php?id_usuario=$id_usuario&recibido=4");
             exit();
         } elseif (mysqli_num_rows($resultado_verificar_nit) > 0) {
-            header("Location: inicio_pedido.php?id_usuario=$id_usuario&recibido=1");
+            header("Location: inicio_comercial.php?id_usuario=$id_usuario&recibido=1");
             exit();
         } else {
             // Realizar la consulta SQL para insertar el nuevo cliente
@@ -71,10 +71,10 @@
             $resultado_visita = mysqli_query($enlace, $consulta_visita);
 
             if ($resultado_cliente && $resultado_visita) {
-                header("Location: inicio_pedido.php?id_usuario=$id_usuario");
+                header("Location: inicio_comercial.php?id_usuario=$id_usuario");
                 exit();
             } else {
-                header("Location: inicio_pedido.php?id_usuario=$id_usuario&recibido=2");
+                header("Location: inicio_comercial.php?id_usuario=$id_usuario&recibido=2");
                 exit();
             }
         }
@@ -91,17 +91,17 @@
         $descripcion_visita = isset($_POST['descripcion_visita']) ? $_POST['descripcion_visita'] : '';
 
         if ($nit == 0) {
-            header("Location: inicio_pedido.php?id_usuario=$id_usuario&recibido=3");
+            header("Location: inicio_comercial.php?id_usuario=$id_usuario&recibido=3");
             exit();
         } elseif ($id_tipo_visita == 0) {
-            header("Location: inicio_pedido.php?id_usuario=$id_usuario&recibido=4");
+            header("Location: inicio_comercial.php?id_usuario=$id_usuario&recibido=4");
             exit();
         } else {
             $consulta_visita = "INSERT INTO visita (nit, id_usuario, fecha_visita, id_tipo_visita, descripcion_visita)
                     VALUES ('$nit', '$id_usuario', '$fecha_visita', '$id_tipo_visita', '$descripcion_visita')";
             $resultado_visita = mysqli_query($enlace, $consulta_visita);
 
-            header("Location: inicio_pedido.php?id_usuario=$id_usuario");
+            header("Location: inicio_comercial.php?id_usuario=$id_usuario");
             exit();
         }
     }
@@ -109,7 +109,7 @@
     if (isset($_POST['submit_editar'])) {
         $consulta = "UPDATE visita SET id_tipo_visita = '$id_tipo_visita', descripcion_visita = '$descripcion_visita' WHERE id_visita = '$id_visita'";
         $resultado = mysqli_query($enlace, $consulta);
-        header("Location: inicio_pedido.php?id_usuario=$id_usuario");
+        header("Location: inicio_comercial.php?id_usuario=$id_usuario");
         exit();
     }
 

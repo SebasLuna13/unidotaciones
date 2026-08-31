@@ -1652,7 +1652,7 @@
                                     <select name="id_vinilo" class="form-select" id="id_vinilo" onchange="togglePrecioVinilo(this)">
                                         <?php $consulta_mysql = 'SELECT id_vinilo, insumo, precio, fecha_actualizacion FROM vinilo';
                                         $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
-                                        $id_guardado = $fila['id_resorte'] ?? 0;
+                                        $id_guardado = $fila['id_vinilo'] ?? 0;
                                         while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                             $id = $lista["id_vinilo"];
                                             $nombre = $lista["insumo"];
@@ -3706,7 +3706,7 @@
                                     <select name="id_vinilo" class="form-select" id="id_vinilo" onchange="togglePrecioVinilo(this)">
                                         <?php $consulta_mysql = 'SELECT id_vinilo, insumo, precio, fecha_actualizacion FROM vinilo';
                                         $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
-                                        $id_guardado = $fila['id_resorte'] ?? 0;
+                                        $id_guardado = $fila['id_vinilo'] ?? 0;
                                         while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                             $id = $lista["id_vinilo"];
                                             $nombre = $lista["insumo"];
@@ -5854,7 +5854,7 @@
                         <input type="hidden" name="cant_plumilla" value="0">
                         <input type="hidden" name="id_vinilo" value="0">
                         <input type="hidden" name="cant_vinilo" value="0">
-                        <input type="hidden" name="id_encarterada" value="0">id_encarterada
+                        <input type="hidden" name="id_encarterada" value="0">
                         <input type="hidden" name="precio_encarterada" value="0">
                         <input type="hidden" name="id_cuello" value="0">
                         <input type="hidden" name="consumo_cuello" value="0">
@@ -13256,7 +13256,6 @@
                             $lista = mysqli_fetch_assoc($resultado_consulta_mysql);
                         ?>
                         
-
                         <div class="mb-3 row">
                             <div class="col-sm-8">
                                 <label class="form-label" style="color: #000000;">Prenda Seleccionada:</label>

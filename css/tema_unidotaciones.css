@@ -1,0 +1,252 @@
+/* ============================================================
+   TEMA UNIDOTACIONES — Panel de Costeo
+   Paleta e identidad visual basada en el logo de la marca.
+   Este archivo solo agrega estilos (no toca lógica ni formularios).
+   ============================================================ */
+
+:root{
+    --navy-900:#141047;
+    --navy-800:#1B1657;
+    --blue-600:#1D6FB8;
+    --blue-500:#2C8AD6;
+    --green-500:#4CAF50;
+    --green-600:#3D9140;
+    --bg-light:#F5F7FB;
+    --ink:#1A1D2E;
+    --muted:#68708A;
+    --line:#E4E8F1;
+}
+
+/* ---------- Tipografía general ---------- */
+body{
+    font-family:'Inter', system-ui, sans-serif;
+    background:var(--bg-light);
+    color:var(--ink);
+}
+
+h1, h2, h3, h4, h5, h6,
+.navbar-brand, .modal-title, .card-title{
+    font-family:'Space Grotesk', sans-serif !important;
+}
+
+/* Títulos de página (reemplaza el antiguo "Times New Roman" inline) */
+.page-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    color:var(--navy-800);
+    display:inline-flex;
+    align-items:center;
+    gap:.6rem;
+}
+
+.page-title::before{
+    content:"";
+    display:inline-block;
+    width:14px;
+    height:14px;
+    background:var(--green-500);
+    transform:rotate(45deg);
+    border-radius:3px;
+}
+
+/* ---------- Barra lateral (sidebar) ---------- */
+.sidebar{
+    box-shadow: 4px 0 18px -8px rgba(19,16,71,.35);
+}
+
+.sidebar .navbar-brand img{
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+}
+
+.sidebar .nav-link.sidebar-link{
+    color: rgba(255,255,255,.82);
+    font-weight:500;
+    border-radius:8px;
+    margin: 0 .35rem .15rem;
+    padding: .6rem .75rem;
+    transition: background .15s ease, color .15s ease;
+}
+
+.sidebar .nav-link.sidebar-link:hover,
+.sidebar .nav-link.sidebar-link:focus{
+    background: rgba(255,255,255,.12);
+    color:#fff;
+}
+
+.sidebar .nav-link.sidebar-link.active,
+.sidebar .nav-link.sidebar-link[aria-current="page"]{
+    background: rgba(76,175,80,.22);
+    color:#fff;
+}
+
+.sidebar .sidebar-icon{
+    color: var(--green-500);
+    margin-right:.5rem;
+    width:18px;
+    text-align:center;
+}
+
+.sidebar .sidebar-divider{
+    opacity:.18 !important;
+}
+
+.sidebar .collapse-inner{
+    border-radius:10px !important;
+}
+
+.sidebar .collapse-item{
+    color: var(--ink);
+    border-radius:6px;
+    font-size:.85rem;
+}
+
+.sidebar .collapse-item:hover{
+    background: var(--bg-light);
+    color: var(--blue-600);
+}
+
+/* ---------- Barra superior (topbar) ---------- */
+.topbar{
+    border-bottom:1px solid var(--line);
+}
+
+.topbar .btn-danger{
+    border-radius:8px;
+    font-weight:600;
+}
+
+/* ---------- Botones ---------- */
+.btn{
+    border-radius:9px;
+    font-weight:600;
+    letter-spacing:.01em;
+}
+
+.btn-primary{
+    background: linear-gradient(120deg, var(--navy-800), var(--blue-600));
+    border:none;
+    box-shadow: 0 8px 18px -8px rgba(29,111,184,.5);
+}
+.btn-primary:hover, .btn-primary:focus{
+    background: linear-gradient(120deg, var(--navy-900), var(--blue-500));
+}
+
+.btn-info{
+    background: var(--blue-600);
+    border-color: var(--blue-600);
+    color:#fff;
+}
+.btn-info:hover{ background: var(--blue-500); border-color: var(--blue-500); color:#fff; }
+
+.btn-success{
+    background: var(--green-500);
+    border-color: var(--green-500);
+}
+.btn-success:hover{ background: var(--green-600); border-color: var(--green-600); }
+
+.btn-warning{
+    color:#5c4400;
+}
+
+.btn-outline-primary{
+    color: var(--blue-600);
+    border-color: var(--blue-600);
+}
+.btn-outline-primary:hover{
+    background: var(--blue-600);
+    border-color: var(--blue-600);
+}
+
+/* ---------- Tarjetas / Modales ---------- */
+.card{
+    border:1px solid var(--line);
+    border-radius:14px;
+}
+
+.modal-content{
+    border:none;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow: 0 20px 45px -20px rgba(19,16,71,.35);
+}
+
+.modal-content.rounded-4.modal-fullscreen,
+.modal-content.rounded-4{
+    box-shadow: 0 16px 32px -18px rgba(19,16,71,.28);
+}
+
+.modal-header{
+    border-bottom:0;
+}
+
+/* ---------- Bloques de datos dentro de cada producto (realizar_costeo) ---------- */
+.border.rounded.p-1,
+.border.rounded.p-2{
+    background:#fff;
+    border-color: var(--line) !important;
+    border-left: 3px solid var(--blue-500) !important;
+    box-shadow: 0 2px 8px -4px rgba(19,16,71,.12);
+    text-align:left !important;
+}
+
+h6.text-muted.font-weight-bold.bg-light.p-1.rounded{
+    background: rgba(29,111,184,.08) !important;
+    color: var(--navy-800) !important;
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    border-radius:6px !important;
+}
+
+.card-text{
+    color: var(--ink) !important;
+    font-size:.92rem;
+    line-height:1.5;
+}
+
+/* ---------- Formularios ---------- */
+.form-control, .form-select{
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    box-shadow:none;
+    background:#fff;
+    color: var(--ink);
+}
+
+.form-control:focus, .form-select:focus{
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(44,138,214,.15);
+}
+
+/* ---------- Tablas / DataTables ---------- */
+table.dataTable thead th{
+    background: rgba(27,22,87,.04);
+    color: var(--navy-800);
+    font-weight:700;
+    border-bottom: 2px solid var(--line) !important;
+}
+
+table.dataTable tbody tr:hover{
+    background: rgba(44,138,214,.05);
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input{
+    border-radius:8px;
+    border:1.5px solid var(--line);
+}
+
+/* ---------- Alertas ---------- */
+.alert{
+    border-radius:10px;
+    border:none;
+}
+
+/* ---------- Utilidades ---------- */
+.img-hover{
+    border-radius:10px;
+}
+
+::selection{
+    background: rgba(76,175,80,.25);
+}

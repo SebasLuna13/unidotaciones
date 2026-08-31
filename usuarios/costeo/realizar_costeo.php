@@ -403,11 +403,8 @@
                                 WHERE pedido.id_pedido = $id_pedido";
 
         $resultado = mysqli_query($enlace, $consulta);
-        ?>
-
-        <?php
-        // Almacenar la primera fila en una variable
-        $fila1 = mysqli_fetch_assoc($resultado);
+        $fila = mysqli_fetch_assoc($resultado);
+        mysqli_data_seek($resultado, 0);
         ?>
 
         <!-- Barra de navegación -->
@@ -428,12 +425,9 @@
         </div>
 
         <div class="text-center">
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cambiarEstado<?php echo $fila1['id_pedido']; ?>">Cotizacion Realizada <i class="bi bi-upload"></i>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cambiarEstado<?php echo $fila['id_pedido']; ?>">Cotizacion Realizada <i class="bi bi-upload"></i>
             </button>
         </div><br>
-
-        <!-- Reiniciar el puntero de resultados -->
-        <?php mysqli_data_seek($resultado, 0); ?>
 
         <!-- Productos -->
         <div class="container">

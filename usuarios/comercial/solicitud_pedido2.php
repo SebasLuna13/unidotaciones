@@ -141,9 +141,9 @@
         }
 
         // Realizar la consulta de inserción
-        $consulta = "INSERT INTO producto(id_pedido, id_tipo_producto, cant_prendas, cant_tallas, id_cargo, id_prenda, id_prendacomprada, id_tela, id_telacombi, id_telaforro, color_tela, color_telacombi, color_telaforro, 
+        $consulta = "INSERT INTO producto(id_pedido, id_tipo_producto, cant_prendas, cant_tallas, id_cargo, id_prenda, id_prendacomprada, id_tela, id_telacombi, id_telaforro, color_tela, color_tela2, color_tela3, color_tela4, color_tela5, color_tela6, color_telacombi, color_telacombi2, color_telacombi3, color_telacombi4, color_telacombi5, color_telacombi6, color_telaforro, color_telaforro2, color_telaforro3, color_telaforro4, color_telaforro5, color_telaforro6, 
                 mangas, cuello, puño, pretina, fajon, boton, cremallera, ubica_combi, ubica_reflectivos, logo, id_tipo_logo, id_bolsillo, cant_bolsillos, id_bolsillocombinado, cant_bolsilloscombinado, id_bolsillocombinado2, cant_bolsilloscombinado2, id_tablon, id_cartera, observaciones, imagen, imagen2, imagen3, imagen4, logo1, logo2, logo3, logo4, consumo_telas, margen_bruto, valor_agregado, valor_porcentajeestampilla, id_entrega)
-                VALUES ('$id_pedido', '$id_tipo_producto', '$cant_prendas', '$cant_tallas', '$id_cargo', '$id_prenda', '$id_prendacomprada', '$id_tela', '$id_telacombi', '$id_telaforro', '$color_tela', '$color_telacombi', '$color_telaforro', 
+                VALUES ('$id_pedido', '$id_tipo_producto', '$cant_prendas', '$cant_tallas', '$id_cargo', '$id_prenda', '$id_prendacomprada', '$id_tela', '$id_telacombi', '$id_telaforro', '$color_tela', '$color_tela2', '$color_tela3', '$color_tela4', '$color_tela5', '$color_tela6', '$color_telacombi', '$color_telacombi2', '$color_telacombi3', '$color_telacombi4', '$color_telacombi5', '$color_telacombi6', '$color_telaforro', '$color_telaforro2', '$color_telaforro3', '$color_telaforro4', '$color_telaforro5', '$color_telaforro6',
                 '$mangas', '$cuello', '$puño', '$pretina', '$fajon', '$boton', '$cremallera', '$ubica_combi', '$ubica_reflectivos', '$logo', '$id_tipo_logo','$id_bolsillo','$cant_bolsillos','$id_bolsillocombinado','$cant_bolsilloscombinado','$id_bolsillocombinado2','$cant_bolsilloscombinado2','$id_tablon','$id_cartera','$observaciones','$imagen_nombre','$imagen_nombre2','$imagen_nombre3','$imagen_nombre4',
                 '$logo_nombre1','$logo_nombre2','$logo_nombre3','$logo_nombre4','$consumo_telas','$margen_bruto','$valor_agregado','$valor_porcentajeestampilla','$id_entrega')";
 
@@ -277,9 +277,9 @@
         }
 
         // Realizar la consulta de inserción
-        $consulta = "INSERT INTO producto(id_pedido, id_tipo_producto, cant_prendas, cant_tallas, id_cargo, id_prenda, id_prendacomprada, id_tela, id_telacombi, id_telaforro, color_tela, color_telacombi, color_telaforro, 
+        $consulta = "INSERT INTO producto(id_pedido, id_tipo_producto, cant_prendas, cant_tallas, id_cargo, id_prenda, id_prendacomprada, id_tela, id_telacombi, id_telaforro, color_tela, color_tela2, color_tela3, color_tela4, color_tela5, color_tela6, color_telacombi, color_telacombi2, color_telacombi3, color_telacombi4, color_telacombi5, color_telacombi6, color_telaforro, color_telaforro2, color_telaforro3, color_telaforro4, color_telaforro5, color_telaforro6, 
                 mangas, cuello, puño, pretina, fajon, boton, cremallera, ubica_combi, ubica_reflectivos, logo, id_tipo_logo, id_bolsillo, cant_bolsillos, id_bolsillocombinado, cant_bolsilloscombinado, id_bolsillocombinado2, cant_bolsilloscombinado2, id_tablon, id_cartera, observaciones, imagen, imagen2, imagen3, imagen4, logo1, logo2, logo3, logo4, consumo_telas, margen_bruto, valor_agregado, valor_porcentajeestampilla, id_entrega)
-                VALUES ('$id_pedido', '$id_tipo_producto', '$cant_prendas', '$cant_tallas', '$id_cargo', '$id_prenda', '$id_prendacomprada', '$id_tela', '$id_telacombi', '$id_telaforro', '$color_tela', '$color_telacombi', '$color_telaforro', 
+                VALUES ('$id_pedido', '$id_tipo_producto', '$cant_prendas', '$cant_tallas', '$id_cargo', '$id_prenda', '$id_prendacomprada', '$id_tela', '$id_telacombi', '$id_telaforro', '$color_tela', '$color_tela2', '$color_tela3', '$color_tela4', '$color_tela5', '$color_tela6', '$color_telacombi', '$color_telacombi2', '$color_telacombi3', '$color_telacombi4', '$color_telacombi5', '$color_telacombi6', '$color_telaforro', '$color_telaforro2', '$color_telaforro3', '$color_telaforro4', '$color_telaforro5', '$color_telaforro6', 
                 '$mangas', '$cuello', '$puño', '$pretina', '$fajon', '$boton', '$cremallera', '$ubica_combi', '$ubica_reflectivos', '$logo', '$id_tipo_logo','$id_bolsillo','$cant_bolsillos','$id_bolsillocombinado','$cant_bolsilloscombinado','$id_bolsillocombinado2','$cant_bolsilloscombinado2','$id_tablon','$id_cartera','$observaciones','$imagen_nombre','$imagen_nombre2','$imagen_nombre3','$imagen_nombre4',
                 '$logo_nombre1','$logo_nombre2','$logo_nombre3','$logo_nombre4','$consumo_telas','$margen_bruto','$valor_agregado','$valor_porcentajeestampilla','$id_entrega')";
 
@@ -304,14 +304,14 @@
         $color_tela = isset($_POST['color_tela']) ? $_POST['color_tela'] : null;
         $color_telacombi = isset($_POST['color_telacombi']) ? $_POST['color_telacombi'] : null;
         $color_telaforro = isset($_POST['color_telaforro']) ? $_POST['color_telaforro'] : null;
-        $mangas = isset($_POST['mangas']) ? $_POST['mangas'] : null;
-        $cuello = isset($_POST['cuello']) ? $_POST['cuello'] : null;
-        $puño = isset($_POST['puño']) ? $_POST['puño'] : null;
-        $pretina = isset($_POST['pretina']) ? $_POST['pretina'] : null;
-        $fajon = isset($_POST['fajon']) ? $_POST['fajon'] : null;
-        $boton = isset($_POST['boton']) ? $_POST['boton'] : null;
-        $cremallera = isset($_POST['cremallera']) ? $_POST['cremallera'] : null;
-        $ubica_combi = isset($_POST['ubica_combi']) ? $_POST['ubica_combi'] : null;
+        $mangas = isset($_POST ['mangas']) ? $_POST ['mangas'] : null;
+        $cuello = isset($_POST ['cuello']) ? $_POST ['cuello'] : null;
+        $puño = isset($_POST ['puño']) ? $_POST ['puño'] : null;
+        $pretina = isset($_POST ['pretina']) ? $_POST ['pretina'] : null;
+        $fajon = isset($_POST ['fajon']) ? $_POST ['fajon'] : null;
+        $boton = isset($_POST ['boton']) ? $_POST ['boton'] : null;
+        $cremallera = isset($_POST ['cremallera']) ? $_POST ['cremallera'] : null;
+        $ubica_combi = isset($_POST ['ubica_combi']) ? $_POST ['ubica_combi'] : null;
         $ubica_reflectivos = isset($_POST['ubica_reflectivos']) ? $_POST['ubica_reflectivos'] : null;
         $logo = isset($_POST['logo']) ? $_POST['logo'] : null;
         $id_tipo_logo = isset($_POST['id_tipo_logo']) ? $_POST['id_tipo_logo'] : null;
@@ -414,10 +414,13 @@
 
         // Realizar la consulta pa aeditar
         $consulta = "UPDATE producto SET id_pedido='$id_pedido', id_tipo_producto='$id_tipo_producto', cant_prendas='$cant_prendas', cant_tallas='$cant_tallas', id_cargo='$id_cargo', id_prenda='$id_prenda', id_prendacomprada='$id_prendacomprada', 
-                    id_tela='$id_tela', id_telacombi='$id_telacombi', id_telaforro='$id_telaforro', color_tela='$color_tela', color_telacombi='$color_telacombi', color_telaforro='$color_telaforro', 
+                    id_tela='$id_tela', id_telacombi='$id_telacombi', id_telaforro='$id_telaforro', 
+                    color_tela='$color_tela', color_tela2='$color_tela2', color_tela3='$color_tela3', color_tela4='$color_tela4', color_tela5='$color_tela5', color_tela6='$color_tela6', 
+                    color_telacombi='$color_telacombi', color_telacombi2='$color_telacombi2', color_telacombi3='$color_telacombi3', color_telacombi4='$color_telacombi4', color_telacombi5='$color_telacombi5', color_telacombi6='$color_telacombi6',
+                    color_telaforro='$color_telaforro', color_telaforro2='$color_telaforro2', color_telaforro3='$color_telaforro3', color_telaforro4='$color_telaforro4', color_telaforro5='$color_telaforro5', color_telaforro6='$color_telaforro6',
                     mangas='$mangas', cuello='$cuello', puño='$puño', pretina='$pretina', fajon='$fajon', boton='$boton', cremallera='$cremallera', ubica_combi='$ubica_combi', ubica_reflectivos='$ubica_reflectivos', 
                     logo='$logo', id_tipo_logo='$id_tipo_logo', id_bolsillo='$id_bolsillo', cant_bolsillos='$cant_bolsillos', id_bolsillocombinado='$id_bolsillocombinado', cant_bolsilloscombinado='$cant_bolsilloscombinado', id_bolsillocombinado2='$id_bolsillocombinado2', cant_bolsilloscombinado2='$cant_bolsilloscombinado2', id_tablon='$id_tablon', id_cartera='$id_cartera', observaciones='$observaciones', valor_agregado='$valor_agregado',
-                    imagen='$imagen_nombre', imagen2='$imagen_nombre2', imagen3='$imagen_nombre3', imagen4='$imagen_nombre4', logo1='$logo_nombre1', logo2='$logo_nombre2', logo3='$logo_nombre3', logo4='$logo_nombre4', id_entrega='$id_entrega' WHERE id_producto='$id_producto'";
+                    imagen='$imagen_nombre', imagen2='$imagen_nombre2', imagen3='$imagen_nombre3', imagen4='$imagen_nombre4', logo1='$logo_nombre1', logo2='$logo_nombre2', logo3='$logo_nombre3', logo4='$logo_nombre4', id_entrega='$id_entrega' WHERE id_producto = '$id_producto'";
 
         $resultado = mysqli_query($enlace, $consulta);
         header("Location: solicitud_pedido2.php?id_pedido=$id_pedido&nit=$nit&id_entrega=$id_entrega");
@@ -633,9 +636,9 @@
         <?php
         $consulta = "SELECT pedido.id_pedido, producto.id_producto, producto.cant_tallas, producto.cant_prendas, cargo.id_cargo, cargo.cargo, prenda.id_prenda, prenda.nombre_prenda, prenda_comprada.id_prendacomprada, prenda_comprada.nombre_producto, 
                         bolsillo.id_bolsillo, bolsillo.tipo_bolsillo, producto.cant_bolsillos, bolsillo_combinado.id_bolsillocombinado, bolsillo_combinado.tipo_bolsillocombinado, producto.cant_bolsilloscombinado, bolsillo_combinado2.id_bolsillocombinado2, bolsillo_combinado2.tipo_bolsillocombinado2, producto.cant_bolsilloscombinado2,
-                        tela.id_tela, tela.tela, tela.ancho AS ancho_tela, tela.peso AS peso_tela, tela.caracteristicas, tela.rendimiento, tela.encogimiento, producto.color_tela, producto.valor_agregado,
-                        tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho AS ancho_telacombi, tela_combinada.peso AS peso_telacombi, tela_combinada.caracteristicas AS caract_telacombi, tela_combinada.rendimiento AS rend_telacombi, tela_combinada.encogimiento AS encog_telacombi, producto.color_telacombi,
-                        tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho AS ancho_forro, tela_forro.peso AS peso_forro, tela_forro.caracteristicas AS caract_forro, tela_forro.rendimiento AS rend_forro, tela_forro.encogimiento AS encog_forro, producto.color_telaforro,
+                        tela.id_tela, tela.tela, tela.ancho AS ancho_tela, tela.peso AS peso_tela, tela.caracteristicas, tela.rendimiento, tela.encogimiento, producto.color_tela, producto.color_tela2, producto.color_tela3, producto.color_tela4, producto.color_tela5, producto.color_tela6, producto.valor_agregado,
+                        tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho AS ancho_telacombi, tela_combinada.peso AS peso_telacombi, tela_combinada.caracteristicas AS caract_telacombi, tela_combinada.rendimiento AS rend_telacombi, tela_combinada.encogimiento AS encog_telacombi, producto.color_telacombi, producto.color_telacombi2, producto.color_telacombi3, producto.color_telacombi4, producto.color_telacombi5, producto.color_telacombi6,
+                        tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho AS ancho_forro, tela_forro.peso AS peso_forro, tela_forro.caracteristicas AS caract_forro, tela_forro.rendimiento AS rend_forro, tela_forro.encogimiento AS encog_forro, producto.color_telaforro, producto.color_telaforro2, producto.color_telaforro3, producto.color_telaforro4, producto.color_telaforro5, producto.color_telaforro6,
                         producto.mangas, producto.cuello, producto.puño, producto.pretina, producto.fajon, producto.boton, producto.cremallera, producto.ubica_combi, producto.ubica_reflectivos, producto.logo, tipo_logo.id_tipo_logo, tipo_logo.tipo_logo, tablon.id_tablon, tablon.tipo_tablon, cartera.id_cartera, cartera.tipo_cartera, producto.observaciones,
                         producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, producto.logo1, producto.logo2, producto.logo3, producto.logo4, tipo_producto.id_tipo_producto, tipo_producto.tipo_producto, entrega.id_entrega, entrega.tipo_entrega, tipo_prenda.id_tipo_prenda, tipo_prenda.tipo_prenda 
                         
@@ -659,7 +662,11 @@
                         WHERE pedido.id_pedido = $id_pedido";
 
         $resultado = mysqli_query($enlace, $consulta);
+        $fila = mysqli_fetch_assoc($resultado);
+
         include('modales_solicitar_pedido.php');
+
+        mysqli_data_seek($resultado, 0);
         ?>
 
         <!-- Productos -->
@@ -1158,8 +1165,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -1198,8 +1236,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -1238,8 +1306,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -1617,8 +1715,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -1657,8 +1786,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -1697,8 +1856,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2076,8 +2265,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2116,8 +2336,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2156,8 +2406,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2495,8 +2775,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2535,8 +2846,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2575,8 +2916,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2914,8 +3285,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2954,8 +3356,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -2994,8 +3426,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -3377,8 +3839,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -3417,8 +3910,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -3457,8 +3980,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -3840,8 +4393,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -3880,8 +4464,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -3920,8 +4534,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -4253,8 +4897,9 @@
                                             ?>
                                         </select>
                                     </div>
+                                    <!-- Prenda y color -->
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Elija el tipo de Prenda:</label>
+                                        <label class="form-label" style="color: #000000;">Elija el tipo de Prenda y Agrega sus Colores:</label>
                                         <select name="id_prendacomprada" class="form-select" required>
                                             <option value="" selected disabled>Seleccione una opción</option>
                                             <?php
@@ -4270,6 +4915,42 @@
                                             ?>
                                         </select>
                                     </div>
+                                    <div class="mb-3">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
+                                    </div>
+                                    <!---->
                                     <div class="mb-3">
                                             <label class="form-label" style="color: #000000;">Valor agregado a la Prenda:</label>
                                             <textarea class="form-control" name="valor_agregado" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="300" rows="1"><?php echo $fila['valor_agregado']; ?></textarea>
@@ -4555,8 +5236,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -4595,8 +5307,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -4635,8 +5377,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5014,8 +5786,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5054,8 +5857,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5094,8 +5927,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5476,8 +6339,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5516,8 +6410,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5556,8 +6480,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5898,8 +6852,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5938,8 +6923,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -5978,8 +6993,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -6317,8 +7362,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -6357,8 +7433,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -6397,8 +7503,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -6780,8 +7916,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -6820,8 +7987,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -6860,8 +8057,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -7243,8 +8470,39 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción" name="color_tela" value="<?php echo $fila['color_tela']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -7283,8 +8541,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Combinada:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telacombi" value="<?php echo $fila['color_telacombi']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresCombi">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i=1;$i<=6;$i++) {
+                                                $campo = ($i==1) ? "color_telacombi" : "color_telacombi".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela combinada" : "Ingrese color de la tela combinada $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -7323,8 +8611,38 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Color de la Tela Forro:</label>
-                                        <input type="text" class="form-control" placeholder="Ingresa una descripción"name="color_telaforro" value="<?php echo $fila['color_telaforro']; ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="100">
+                                        <div class="contenedorColoresForro">
+                                            <?php
+                                            $hayColores = false;
+                                            for($i=1;$i<=6;$i++){
+                                                $campo = ($i==1) ? "color_telaforro" : "color_telaforro".$i;
+                                                if(!empty($fila[$campo])){
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i==1 ? "Ingrese color de la tela forro" : "Ingrese color de la tela forro $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if($i>1){ ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+                                            if(!$hayColores){
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                                            + Agregar color
+                                        </button>
                                     </div>
                                     <!---->
 
@@ -7662,8 +8980,9 @@
                                             ?>
                                         </select>
                                     </div>
+                                    <!-- Prenda y color -->
                                     <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Elija el tipo de Prenda:</label>
+                                        <label class="form-label" style="color: #000000;">Elija el tipo de Prenda y Agrega sus Colores:</label>
                                         <select name="id_prendacomprada" class="form-select" required>
                                             <option value="" selected disabled>Seleccione una opción</option>
                                             <?php
@@ -7679,6 +8998,42 @@
                                             ?>
                                         </select>
                                     </div>
+                                    <div class="mb-3">
+                                        <div class="contenedorColores">
+                                            <?php
+                                            $hayColores = false;
+                                            for ($i = 1; $i <= 6; $i++) {
+                                                $campo = ($i == 1) ? "color_tela" : "color_tela".$i;
+                                                if (!empty($fila[$campo])) {
+                                                    $hayColores = true;
+                                                    ?>
+                                                        <div class="input-group mb-2 color-item">
+                                                            <span class="input-group-text">🎨</span>
+                                                            <input type="text" class="form-control" name="<?= $campo ?>" value="<?= htmlspecialchars($fila[$campo]) ?>" placeholder="<?= $i == 1 ? "Ingrese color de la tela" : "Ingrese color de la tela $i" ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                            <?php if ($i > 1): ?>
+                                                                <button type="button" class="btn btn-outline-danger btn-eliminar">
+                                                                    ×
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php
+                                                }
+                                            }
+
+                                            if (!$hayColores):
+                                            ?>
+                                                <div class="input-group mb-2 color-item">
+                                                    <span class="input-group-text">🎨</span>
+                                                    <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                                            + Agregar color
+                                        </button>
+                                    </div>
+                                    <!---->
                                     <div class="mb-3">
                                             <label class="form-label" style="color: #000000;">Valor agregado a la Prenda:</label>
                                             <textarea class="form-control" name="valor_agregado" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="300" rows="1"><?php echo $fila['valor_agregado']; ?></textarea>
@@ -7863,6 +9218,98 @@
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
         
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                document.querySelectorAll(".modal").forEach(function (modal) {
+                    iniciarColores(
+                        modal,
+                        ".contenedorColores",
+                        ".agregarColor",
+                        "color_tela",
+                        "color de la tela"
+                    );
+
+                    iniciarColores(
+                        modal,
+                        ".contenedorColoresCombi",
+                        ".agregarColorCombi",
+                        "color_telacombi",
+                        "color de la tela combinada"
+                    );
+
+                    iniciarColores(
+                        modal,
+                        ".contenedorColoresForro",
+                        ".agregarColorForro",
+                        "color_telaforro",
+                        "color de la tela forro"
+                    );
+                });
+            });
+
+            function iniciarColores(modal, contenedorClase, botonClase, nombreBase, texto) {
+                const contenedor = modal.querySelector(contenedorClase);
+                const boton = modal.querySelector(botonClase);
+                if (!contenedor || !boton) return;
+                const maximo = 6;
+
+                // Agregar evento a los botones eliminar existentes
+                contenedor.querySelectorAll(".btn-eliminar").forEach(function(btn){
+                    btn.addEventListener("click", function(){
+                        btn.closest(".color-item").remove();
+                        renumerar();
+                    });
+                });
+
+                boton.addEventListener("click", function () {
+                    let cantidad = contenedor.querySelectorAll(".color-item").length;
+                    if (cantidad >= maximo) return;
+                    let numero = cantidad + 1;
+                    let div = document.createElement("div");
+                    div.className = "input-group mb-2 color-item";
+                    div.innerHTML = `
+                        <span class="input-group-text">🎨</span>
+
+                        <input type="text" class="form-control" name="${nombreBase}${numero}" placeholder="Ingrese ${texto} ${numero}" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+
+                        <button type="button" class="btn btn-outline-danger btn-eliminar">
+                            ×
+                        </button>
+                    `;
+
+                    contenedor.appendChild(div);
+                    div.querySelector(".btn-eliminar").addEventListener("click", function () {
+                        div.remove();
+                        renumerar();
+                    });
+                    actualizarBoton();
+                });
+
+
+                function renumerar() {
+                    let items = contenedor.querySelectorAll(".color-item");
+                    items.forEach(function (item, index) {
+                        let input = item.querySelector("input");
+                        if (index === 0) {
+                            input.name = nombreBase;
+                            input.placeholder = "Ingrese " + texto;
+                        } else {
+                            input.name = nombreBase + (index + 1);
+                            input.placeholder = "Ingrese " + texto + " " + (index + 1);
+                        }
+                    });
+                    actualizarBoton();
+                }
+
+                function actualizarBoton() {
+                    let cantidad = contenedor.querySelectorAll(".color-item").length;
+                    boton.style.display = cantidad >= maximo
+                        ? "none"
+                        : "inline-block";
+                }
+                actualizarBoton();
+            }
+        </script>
         <script>
             setTimeout(function() {
                 document.getElementById('successAlert').style.display = 'none';

@@ -190,8 +190,16 @@
                                         <tbody>
                                             <?php
                                             $consulta = "SELECT 
-                                                        pedido.id_pedido, producto.id_producto, producto.num_ficha, producto.nombre_producto, prenda.id_prenda, prenda.nombre_prenda, cliente.nit, cliente.cliente, producto.estado, producto.id_tipo_producto, producto.fecha_fichatecnica, producto.fecha_entrega
-                                                        FROM pedido LEFT JOIN cliente ON pedido.nit = cliente.nit LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda WHERE producto.estado = 'Diseño' OR producto.estado = 'AceptadoD' ORDER BY producto.fecha_fichatecnica DESC";
+                                                        pedido.id_pedido, producto.id_producto, ficha_tecnica.num_ficha, ficha_tecnica.id_producto, prenda.id_prenda, 
+                                                        prenda.nombre_prenda, prenda_comprada.id_prendacomprada, prenda_comprada.nombre_producto, 
+                                                        cliente.nit, cliente.cliente, producto.estado, producto.id_tipo_producto, ficha_tecnica.fecha_pedido, ficha_tecnica.fecha_entrega
+                                                        FROM pedido 
+                                                        LEFT JOIN cliente ON pedido.nit = cliente.nit 
+                                                        LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido
+                                                        LEFT JOIN prenda_comprada ON producto.id_prendacomprada = prenda_comprada.id_prendacomprada
+                                                        LEFT JOIN ficha_tecnica ON ficha_tecnica.id_producto = producto.id_producto
+                                                        LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda 
+                                                        WHERE producto.estado = 'Diseño' OR producto.estado = 'AceptadoD' ORDER BY producto.fecha_fichatecnica DESC";
 
                                             $resultado = mysqli_query($enlace, $consulta);
 
@@ -205,11 +213,19 @@
                                                         <td class="text-center align-middle"><?php echo htmlspecialchars($fila['nombre_prenda']); ?></td>
                                                     <?php endif; ?>
                                                     <td class="text-center align-middle"><?php echo $fila['cliente']; ?></td>
-                                                    <td class="text-center align-middle"><?php setlocale(LC_TIME, 'spanish');
-                                                                                            echo strftime('%d de %B del %Y, a las %H:%M:%S', strtotime($fila['fecha_fichatecnica'])); ?>
+                                                    <?php
+                                                    $meses = [1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'];
+
+                                                    $fecha1 = new DateTime($fila['fecha_pedido']);
+                                                    $fecha2 = new DateTime($fila['fecha_entrega']);
+                                                    ?>
+
+                                                    <td class="text-center align-middle">
+                                                        <?= $fecha1->format('d') . ' de ' . $meses[$fecha1->format('n')] . ' del ' . $fecha1->format('Y') . ', a las ' . $fecha1->format('H:i:s'); ?>
                                                     </td>
-                                                    <td class="text-center align-middle"><?php setlocale(LC_TIME, 'spanish');
-                                                                                            echo strftime('%d de %B del %Y', strtotime($fila['fecha_entrega'])); ?>
+
+                                                    <td class="text-center align-middle">
+                                                        <?= $fecha2->format('d') . ' de ' . $meses[$fecha2->format('n')] . ' del ' . $fecha2->format('Y'); ?>
                                                     </td>
                                                     <td>
                                                         <a class="btn btn-info btn-block mb-2" href="orden_compra_cargar.php?id_producto=<?php echo $fila['id_producto']; ?>">

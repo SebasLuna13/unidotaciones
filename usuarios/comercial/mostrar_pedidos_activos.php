@@ -14,6 +14,95 @@
         exit;
     }
 
+    // ============================================================
+    // Guarda la curva de tallas + stock en la tabla `tallas` (upsert
+    // vía id_talla). Antes esto se guardaba mezclado con ficha_tecnica,
+    // pero esas columnas se movieron a la tabla `tallas` dedicada.
+    //
+    // Por cada talla: unidades_X = talla_X + stock_X
+    // Por color (g):  total_tallas{g} = suma de talla{g}_X
+    //                 total_stock{g}  = suma de stock{g}_X
+    //                 unidades_tela{g} = suma de unidades{g}_X (incluye especial)
+    // unidades_totales = suma de unidades_tela1..6
+    // ============================================================
+    function guardar_curva_tallas_y_stock($enlace, $id_talla_existente)
+    {
+        $hombre_cols = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', 'especial'];
+        $dama_cols   = ['4', '6', '8', '10', '12', '14', '16', '18', '20', '22', 'especial'];
+        $genero   = $_POST['genero'] ?? '';
+        $cols_map = ($genero === 'Hombre') ? $hombre_cols : $dama_cols;
+
+        $colores_post = $_POST['color'] ?? [];
+        $num_filas    = min(count($colores_post), 6);
+
+        $tallas_data       = []; // columna => valor, para la tabla `tallas`
+        $unidades_totales  = 0;
+
+        for ($j = 0; $j < $num_filas; $j++) {
+            $g = $j + 1;
+            $prefijo_talla     = ($g == 1) ? 'talla_'    : 'talla' . $g . '_';
+            $prefijo_stock     = ($g == 1) ? 'stock_'    : 'stock' . $g . '_';
+            $prefijo_unidades  = ($g == 1) ? 'unidades_' : 'unidades' . $g . '_';
+            $col_total_tallas  = ($g == 1) ? 'total_tallas'  : 'total_tallas' . $g;
+            $col_total_stock   = ($g == 1) ? 'total_stock'   : 'total_stock' . $g;
+            $col_unidades_tela = ($g == 1) ? 'unidades_tela' : 'unidades_tela' . $g;
+
+            $suma_talla = 0;
+            $suma_stock = 0;
+            $suma_unidades = 0;
+
+            for ($i = 0; $i < count($cols_map); $i++) {
+                $talla_val  = isset($_POST["cantidad_$i"][$j]) ? intval($_POST["cantidad_$i"][$j]) : 0;
+                $stock_val  = isset($_POST["stock_$i"][$j]) ? intval($_POST["stock_$i"][$j]) : 0;
+                $unidad_val = $talla_val + $stock_val;
+
+                $key = $cols_map[$i];
+                $tallas_data[$prefijo_talla . $key]    = $talla_val;
+                $tallas_data[$prefijo_stock . $key]    = $stock_val;
+                $tallas_data[$prefijo_unidades . $key] = $unidad_val;
+
+                $suma_talla    += $talla_val;
+                $suma_stock    += $stock_val;
+                $suma_unidades += $unidad_val;
+            }
+
+            $tallas_data[$col_total_tallas]  = $suma_talla;
+            $tallas_data[$col_total_stock]   = $suma_stock;
+            $tallas_data[$col_unidades_tela] = $suma_unidades;
+
+            $unidades_totales += $suma_unidades;
+        }
+
+        $tallas_data['unidades_totales'] = $unidades_totales;
+
+        // UPSERT en la tabla `tallas` (nombres de columna vienen de un mapa fijo, no de POST)
+        if (!empty($id_talla_existente)) {
+            $sets = [];
+            foreach ($tallas_data as $c => $v) {
+                $sets[] = "`$c` = " . intval($v);
+            }
+            $sql = "UPDATE tallas SET " . implode(', ', $sets) . " WHERE id_talla = " . intval($id_talla_existente);
+            mysqli_query($enlace, $sql);
+            $id_talla_final = intval($id_talla_existente);
+        } else {
+            $cols = [];
+            $vals = [];
+            foreach ($tallas_data as $c => $v) {
+                $cols[] = "`$c`";
+                $vals[] = intval($v);
+            }
+            $sql = "INSERT INTO tallas (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")";
+            mysqli_query($enlace, $sql);
+            $id_talla_final = mysqli_insert_id($enlace);
+        }
+
+        return [
+            'id_talla'          => $id_talla_final,
+            'unidades_totales'  => $unidades_totales,
+            'tallas_data'       => $tallas_data,
+        ];
+    }
+
     foreach ($_REQUEST as $var => $val) {
         $$var = $val;
     }
@@ -25,68 +114,105 @@
 
     $precio_total = 0;
 
-    if (isset($_POST['editar_datos'])) {
 
+    if (isset($_POST['cambiar_estado'])) {
+        $nit         = $_POST['nit'];
         $id_producto = $_POST['id_producto'];
-        $suma_prendas = $_POST['suma_prendas'];
-        $talla_XS = $_POST['talla_XS'];
-        $talla_S = $_POST['talla_S'];
-        $talla_M = $_POST['talla_M'];
-        $talla_L = $_POST['talla_L'];
-        $talla_XL = $_POST['talla_XL'];
-        $talla_2XL = $_POST['talla_2XL'];
-        $talla_3XL = $_POST['talla_3XL'];
-        $talla_4XL = $_POST['talla_4XL'];
-        $talla_5XL = $_POST['talla_5XL'];
-        $talla_6XL = $_POST['talla_6XL'];
-        $talla_2 = $_POST['talla_2'];
-        $talla_4 = $_POST['talla_4'];
-        $talla_6 = $_POST['talla_6'];
-        $talla_8 = $_POST['talla_8'];
-        $talla_10 = $_POST['talla_10'];
-        $talla_12 = $_POST['talla_12'];
-        $talla_14 = $_POST['talla_14'];
-        $talla_16 = $_POST['talla_16'];
-        $talla_18 = $_POST['talla_18'];
-        $talla_20 = $_POST['talla_20'];
-        $talla_22 = $_POST['talla_22'];
-        $talla_24 = $_POST['talla_24'];
-        $talla_26 = $_POST['talla_26'];
-        $talla_28 = $_POST['talla_28'];
-        $talla_30 = $_POST['talla_30'];
-        $talla_32 = $_POST['talla_32'];
-        $talla_34 = $_POST['talla_34'];
-        $talla_36 = $_POST['talla_36'];
-        $talla_38 = $_POST['talla_38'];
-        $talla_40 = $_POST['talla_40'];
-        $talla_42 = $_POST['talla_42'];
-        $talla_44 = $_POST['talla_44'];
-        $talla_46 = $_POST['talla_46'];
-        $talla_48 = $_POST['talla_48'];
-        $talla_especial = $_POST['talla_especial'];
-        $frentes = isset($_POST['frentes']) ? $_POST['frentes'] : '';
-        $espalda = isset($_POST['espalda']) ? $_POST['espalda'] : '';
-        $mangas = isset($_POST['mangas']) ? $_POST['mangas'] : '';
-        $cuello = isset($_POST['cuello']) ? $_POST['cuello'] : '';
-        $puño = isset($_POST['puño']) ? $_POST['puño'] : '';
-        $delanteros = isset($_POST['delanteros']) ? $_POST['delanteros'] : '';
-        $traseros = isset($_POST['traseros']) ? $_POST['traseros'] : '';
-        $pretina = isset($_POST['pretina']) ? $_POST['pretina'] : '';
-        $ensamble = isset($_POST['ensamble']) ? $_POST['ensamble'] : '';
-        $fajon = isset($_POST['fajon']) ? $_POST['fajon'] : '';
-        $forro = isset($_POST['forro']) ? $_POST['forro'] : '';
-        $otros = isset($_POST['otros']) ? $_POST['otros'] : '';
-        $observaciones = isset($_POST['observaciones']) ? $_POST['observaciones'] : '';
-        $valor_agregado = isset($_POST['valor_agregado']) ? $_POST['valor_agregado'] : '';
+        $id_usuario  = $_POST['id_usuario'];
+        $id_pedido   = $_POST['id_pedido'];
+
+        $consulta_estado = "UPDATE producto SET estado = 'Diseño' WHERE id_producto = $id_producto";
+        mysqli_query($enlace, $consulta_estado);
+
+        // ===============================
+        // ✅ VERIFICAR SI TODOS LOS PRODUCTOS SON DISEÑO
+        // ===============================
+        $verificar = mysqli_fetch_assoc(mysqli_query($enlace, "SELECT COUNT(*) total, SUM(estado='Diseño') fichas FROM producto WHERE id_pedido='$id_pedido'"));
+
+        // ===============================
+        // 🚦 CAMBIAR ESTADO DEL PEDIDO SI CORRESPONDE
+        // ===============================
+        if ($verificar['total'] > 0 && $verificar['total'] == $verificar['fichas']) {
+            mysqli_query($enlace, "UPDATE pedido SET estado='Pedido' WHERE id_pedido='$id_pedido'");
+
+            $datos = mysqli_fetch_assoc(mysqli_query($enlace, "SELECT p.id_usuario, c.nit  FROM pedido p LEFT JOIN cliente c ON p.nit=c.nit WHERE p.id_pedido='$id_pedido' LIMIT 1"));
+
+            header("Location: pedidos_activos.php?id_usuario={$datos['id_usuario']}");
+        } else {
+            header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&nit=$nit");
+        }
+        exit;
+    }
+
+    if (isset($_POST['cargar_empleados'])) {
+
+        $id_pedido = $_POST['id_pedido'];
+
+        if (!empty($_FILES['listado_empleados']['tmp_name'])) {
+            $listado_nombre = $_FILES['listado_empleados']['name'];
+            $listado_temporal = $_FILES['listado_empleados']['tmp_name'];
+            move_uploaded_file($listado_temporal, "listado_empleados/" . $listado_nombre);
+        } else {
+            $listado_nombre = $_POST['listado_actual'];
+        }
+
+        $consulta = "UPDATE pedido SET listado_empleados = '$listado_nombre' 
+                                        WHERE id_pedido = $id_pedido";
+        $resultado = mysqli_query($enlace, $consulta);
+
+        header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&recibido=0");
+        exit();
+    }
+
+    if (isset($_POST['crear_ficha_tecnica'])) {
+
+        $id_producto  = intval($_POST['id_producto']);
+        $nit  = intval($_POST['nit']);
+        $suma_prendas = intval($_POST['suma_prendas']);
+
+        // Seguridad: sin un id_producto valido no se puede crear la ficha
+        // (evita fallos de llave foranea contra la tabla producto).
+        if ($id_producto <= 0) {
+            header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario");
+            exit();
+        }
+
+        // ---- Campos de texto de la FICHA TECNICA ----
+        $num_ficha           = intval($_POST['num_ficha'] ?? 0);
+        $fecha_comercial     = !empty($_POST['fecha_comercial']) ? $_POST['fecha_comercial'] : null;
+        $fecha_entrega       = !empty($_POST['fecha_entrega'])   ? $_POST['fecha_entrega']   : null;
+        $forma_pago          = $_POST['forma_pago']          ?? null;
+        $manga               = $_POST['manga']               ?? null;
+        $genero              = $_POST['genero']              ?? null;
+        $bolsillo            = $_POST['bolsillo']            ?? null;
+        $lavado              = $_POST['lavado']              ?? null;
+        $bordado             = $_POST['bordado']             ?? null;
+        $muestra             = $_POST['muestra']             ?? null;
+        $cuello_option       = $_POST['cuello_option']       ?? null;
+        $empaque             = $_POST['empaque']             ?? null;
+        $ubicacion_combinado = $_POST['ubicacion_combinado'] ?? null;
+        $ubicacion_forro     = $_POST['ubicacion_forro']     ?? null;
+        $tipo_opcion         = $_POST['tipo_opcion']         ?? null;
+        $opcion_escrito      = $_POST['opcion_escrito']      ?? null;
+        $ref_sugerida        = $_POST['ref_sugerida']        ?? null;
+        $observacion_tallas  = $_POST['observacion_tallas']  ?? null;
+        $observacion_stock   = $_POST['observacion_stock']   ?? null;
+
+        // ---- Descripciones / colores que se guardan en PRODUCTO ----
+        $mangas         = $_POST['mangas']         ?? '';
+        $cuello         = $_POST['cuello']         ?? '';
+        $puño           = $_POST['puño']           ?? '';
+        $pretina        = $_POST['pretina']        ?? '';
+        $fajon          = $_POST['fajon']          ?? '';
+        $boton          = $_POST['boton']          ?? '';
+        $cremallera     = $_POST['cremallera']     ?? '';
+        $observacion    = $_POST['observacion']    ?? '';
 
         function obtenerValorPost($campo, $valorPredeterminado = 0)
         {
             return isset($_POST[$campo]) ? floatval($_POST[$campo]) : $valorPredeterminado;
         }
 
-        $precio_compra = obtenerValorPost('precio_compra');
-        $promedio_consumo = obtenerValorPost('promedio_consumo');
-        $valor_tela = obtenerValorPost('valor_tela');
         $promedio_telacombi = obtenerValorPost('promedio_telacombi');
         $valor_telacombi = obtenerValorPost('valor_telacombi');
         $promedio_forro = obtenerValorPost('promedio_forro');
@@ -146,88 +272,176 @@
         $cant_vivo = obtenerValorPost('cant_vivo');
         $valor_vivo = obtenerValorPost('valor_vivo');
 
-        $prendas_comprar = $suma_prendas;
-        $precio_prendacompra = $suma_prendas * $precio_compra;
-        $consumo_tela = $suma_prendas * $promedio_consumo;
-        $precio_telacompra = $suma_prendas * $valor_tela;
-        $consumo_telacombi = $suma_prendas * $promedio_telacombi;
-        $precio_telacombicompra = $suma_prendas * $valor_telacombi;
-        $consumo_telaforro = $suma_prendas * $promedio_forro;
-        $precio_telaforrocompra = $suma_prendas * $valor_forro;
-        $consumo_totalboton = $suma_prendas * $cant_boton;
-        $precio_botoncompra = $suma_prendas * $valor_boton;
-        $consumo_totalboton2 = $suma_prendas * $cant_boton2;
-        $precio_boton2compra = $suma_prendas * $valor_boton2;
-        $consumo_totalbroche = $suma_prendas * $cant_broche;
-        $precio_brochecompra = $suma_prendas * $valor_broche;
-        $consumo_totalfaya = $suma_prendas * $cant_faya;
-        $precio_fayacompra = $suma_prendas * $valor_faya;
-        $consumo_totalcinta = $suma_prendas * $cant_cinta;
-        $precio_cintacompra = $suma_prendas * $valor_cinta;
-        $consumo_totalcordon = $suma_prendas * $cant_cordon;
-        $precio_cordoncompra = $suma_prendas * $valor_cordon;
-        $consumo_totalcremallera = $suma_prendas * $cant_cremallera;
-        $precio_cremalleracompra = $suma_prendas * $valor_cremallera;
-        $consumo_totalcremallera2 = $suma_prendas * $cant_cremallera2;
-        $precio_cremallera2compra = $suma_prendas * $valor_cremallera2;
-        $consumo_totalcuello = $suma_prendas * $consumo_cuello;
-        $precio_cuellocompra = $suma_prendas * $valor_cuello;
-        $consumo_totaldeslizador = $suma_prendas * $cant_deslizador;
-        $precio_deslizadorcompra = $suma_prendas * $valor_deslizador;
-        $consumo_totalentretela = $suma_prendas * $cant_entretela;
-        $precio_entretelacompra = $suma_prendas * $valor_entretela;
-        $consumo_totalentretela2 = $suma_prendas * $cant_entretela2;
-        $precio_entretela2compra = $suma_prendas * $valor_entretela2;
-        $consumo_totalfajon_cintura = $suma_prendas * $cant_fajon_cintura;
-        $precio_fajon_cinturacompra = $suma_prendas * $valor_fajon_cintura;
-        $consumo_totalguata = $suma_prendas * $cant_guata;
-        $precio_guatacompra = $suma_prendas * $valor_guata;
-        $consumo_totalhiladilla = $suma_prendas * $cant_hiladilla;
-        $precio_hiladillacompra = $suma_prendas * $valor_hiladilla;
-        $consumo_totalhombrera = $suma_prendas * $cant_hombrera;
-        $precio_hombreracompra = $suma_prendas * $valor_hombrera;
-        $consumo_totalplumilla = $suma_prendas * $cant_plumilla;
-        $precio_plumillacompra = $suma_prendas * $valor_plumilla;
-        $consumo_totalpretina = $suma_prendas * $cant_pretina;
-        $precio_pretinacompra = $suma_prendas * $valor_pretina;
-        $consumo_totalpuntera = $suma_prendas * $cant_puntera;
-        $precio_punteracompra = $suma_prendas * $valor_puntera;
-        $consumo_totalpuño = $suma_prendas * $consumo_puño;
-        $precio_puñocompra = $suma_prendas * $valor_puño;
-        $consumo_totalresorte = $suma_prendas * $cant_resorte;
-        $precio_resortecompra = $suma_prendas * $valor_resorte;
-        $consumo_totalresorte2 = $suma_prendas * $cant_resorte2;
-        $precio_resorte2compra = $suma_prendas * $valor_resorte2;
-        $consumo_totalsesgo = $suma_prendas * $cant_sesgo;
-        $precio_sesgocompra = $suma_prendas * $valor_sesgo;
-        $consumo_totaltrabilla = $suma_prendas * $cant_trabilla;
-        $precio_trabillacompra = $suma_prendas * $valor_trabilla;
-        $consumo_totalvelcro = $suma_prendas * $cant_velcro;
-        $precio_velcrocompra = $suma_prendas * $valor_velcro;
-        $consumo_totalvinilo = $suma_prendas * $cant_vinilo;
-        $precio_vinilocompra = $suma_prendas * $valor_vinilo;
-        $consumo_totalvivo = $suma_prendas * $cant_vivo;
-        $precio_vivocompra = $suma_prendas * $valor_vivo;
+        // ============================================================
+        // CURVA DE TALLAS + STOCK -> se guarda en la tabla `tallas`
+        // (6 grupos, uno por color de tela), vinculada a ficha_tecnica
+        // mediante id_talla. Ver funcion guardar_curva_tallas_y_stock().
+        // ============================================================
+        $ficha_previa = mysqli_fetch_assoc(mysqli_query($enlace, "SELECT num_ficha, id_talla FROM ficha_tecnica WHERE id_producto = $id_producto LIMIT 1"));
+        $ya_existe_ficha    = !empty($ficha_previa);
+        $id_talla_existente = $ficha_previa['id_talla'] ?? null;
 
-        // Sumar todas las tallas
-        $suma_tallas = $talla_XS + $talla_S + $talla_M + $talla_L + $talla_XL + $talla_2XL + $talla_3XL + $talla_4XL + $talla_5XL + $talla_6XL +
-            $talla_2 + $talla_4 + $talla_6 + $talla_8 + $talla_10 + $talla_12 + $talla_14 + $talla_16 + $talla_18 + $talla_20 + $talla_22 + $talla_24 +
-            $talla_26 + $talla_28 + $talla_30 + $talla_32 + $talla_34 + $talla_36 + $talla_38 + $talla_40 + $talla_42 + $talla_44 + $talla_46 + $talla_48 + $talla_especial;
+        $resultado_curva  = guardar_curva_tallas_y_stock($enlace, $id_talla_existente);
+        $id_talla          = $resultado_curva['id_talla'];
+        $unidades_totales  = $resultado_curva['unidades_totales'];
 
-        // Comparar suma de tallas con suma_prendas
-        if ($suma_tallas > $suma_prendas) {
-            header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&recibido=3");
-            exit();
+        // Base de calculo para los consumos de insumos: se usa unidades_totales
+        // (tallas + stock de los 6 colores) si ya hay curva cargada; si todavia
+        // no hay nada capturado, se sigue usando suma_prendas como antes.
+        $base_calculo = ($unidades_totales > 0) ? $unidades_totales : $suma_prendas;
+
+        // NOTA: consumo_telacombi / precio_telacombicompra / consumo_telaforro /
+        // precio_telaforrocompra YA NO se calculan ni se guardan desde aqui
+        // (se manejaran en otro punto del flujo mas adelante).
+        $consumo_totalboton = $base_calculo * $cant_boton;
+        $precio_botoncompra = $base_calculo * $valor_boton;
+        $consumo_totalboton2 = $base_calculo * $cant_boton2;
+        $precio_boton2compra = $base_calculo * $valor_boton2;
+        $consumo_totalbroche = $base_calculo * $cant_broche;
+        $precio_brochecompra = $base_calculo * $valor_broche;
+        $consumo_totalfaya = $base_calculo * $cant_faya;
+        $precio_fayacompra = $base_calculo * $valor_faya;
+        $consumo_totalcinta = $base_calculo * $cant_cinta;
+        $precio_cintacompra = $base_calculo * $valor_cinta;
+        $consumo_totalcordon = $base_calculo * $cant_cordon;
+        $precio_cordoncompra = $base_calculo * $valor_cordon;
+        $consumo_totalcremallera = $base_calculo * $cant_cremallera;
+        $precio_cremalleracompra = $base_calculo * $valor_cremallera;
+        $consumo_totalcremallera2 = $base_calculo * $cant_cremallera2;
+        $precio_cremallera2compra = $base_calculo * $valor_cremallera2;
+        $consumo_totalcuello = $base_calculo * $consumo_cuello;
+        $precio_cuellocompra = $base_calculo * $valor_cuello;
+        $consumo_totaldeslizador = $base_calculo * $cant_deslizador;
+        $precio_deslizadorcompra = $base_calculo * $valor_deslizador;
+        $consumo_totalentretela = $base_calculo * $cant_entretela;
+        $precio_entretelacompra = $base_calculo * $valor_entretela;
+        $consumo_totalentretela2 = $base_calculo * $cant_entretela2;
+        $precio_entretela2compra = $base_calculo * $valor_entretela2;
+        $consumo_totalfajon_cintura = $base_calculo * $cant_fajon_cintura;
+        $precio_fajon_cinturacompra = $base_calculo * $valor_fajon_cintura;
+        $consumo_totalguata = $base_calculo * $cant_guata;
+        $precio_guatacompra = $base_calculo * $valor_guata;
+        $consumo_totalhiladilla = $base_calculo * $cant_hiladilla;
+        $precio_hiladillacompra = $base_calculo * $valor_hiladilla;
+        $consumo_totalhombrera = $base_calculo * $cant_hombrera;
+        $precio_hombreracompra = $base_calculo * $valor_hombrera;
+        $consumo_totalplumilla = $base_calculo * $cant_plumilla;
+        $precio_plumillacompra = $base_calculo * $valor_plumilla;
+        $consumo_totalpretina = $base_calculo * $cant_pretina;
+        $precio_pretinacompra = $base_calculo * $valor_pretina;
+        $consumo_totalpuntera = $base_calculo * $cant_puntera;
+        $precio_punteracompra = $base_calculo * $valor_puntera;
+        $consumo_totalpuño = $base_calculo * $consumo_puño;
+        $precio_puñocompra = $base_calculo * $valor_puño;
+        $consumo_totalresorte = $base_calculo * $cant_resorte;
+        $precio_resortecompra = $base_calculo * $valor_resorte;
+        $consumo_totalresorte2 = $base_calculo * $cant_resorte2;
+        $precio_resorte2compra = $base_calculo * $valor_resorte2;
+        $consumo_totalsesgo = $base_calculo * $cant_sesgo;
+        $precio_sesgocompra = $base_calculo * $valor_sesgo;
+        $consumo_totaltrabilla = $base_calculo * $cant_trabilla;
+        $precio_trabillacompra = $base_calculo * $valor_trabilla;
+        $consumo_totalvelcro = $base_calculo * $cant_velcro;
+        $precio_velcrocompra = $base_calculo * $valor_velcro;
+        $consumo_totalvinilo = $base_calculo * $cant_vinilo;
+        $precio_vinilocompra = $base_calculo * $valor_vinilo;
+        $consumo_totalvivo = $base_calculo * $cant_vivo;
+        $precio_vivocompra = $base_calculo * $valor_vivo;
+
+        // ------------------------------------------------------------
+        // 1) Guardar colores, descripciones y observacion en PRODUCTO
+        //    (solo los campos que realmente llegaron por POST, para no
+        //     sobrescribir con vacio los que no se muestran) + estado
+        // ------------------------------------------------------------
+        $prod_sets = [];
+        foreach (['color_tela', 'color_telacombi', 'color_telaforro'] as $base) {
+            for ($i = 1; $i <= 6; $i++) {
+                $campo = ($i == 1) ? $base : $base . $i;
+                if (array_key_exists($campo, $_POST)) {
+                    $prod_sets[] = "`$campo` = '" . mysqli_real_escape_string($enlace, $_POST[$campo]) . "'";
+                }
+            }
+        }
+        foreach (['mangas', 'cuello', 'puño', 'pretina', 'fajon', 'boton', 'cremallera', 'observaciones'] as $campo) {
+            if (array_key_exists($campo, $_POST)) {
+                $prod_sets[] = "`$campo` = '" . mysqli_real_escape_string($enlace, $_POST[$campo]) . "'";
+            }
+        }
+        $prod_sets[] = "estado = 'Ficha'";
+
+        $consulta = "UPDATE producto SET " . implode(', ', $prod_sets) . " WHERE id_producto = $id_producto";
+        $resultado = mysqli_query($enlace, $consulta);
+
+        // ------------------------------------------------------------
+        // 2) Guardar / actualizar la FICHA TECNICA
+        // ------------------------------------------------------------
+        $ft = [];
+        $ft['id_producto']         = $id_producto;
+        $ft['nit']                 = $nit;
+        $ft['fecha_comercial']     = $fecha_comercial;
+        $ft['fecha_entrega']       = $fecha_entrega;
+        $ft['forma_pago']          = $forma_pago;
+        $ft['manga']               = $manga;
+        $ft['genero']              = $genero;
+        $ft['bolsillo']            = $bolsillo;
+        $ft['lavado']              = $lavado;
+        $ft['bordado']             = $bordado;
+        $ft['muestra']             = $muestra;
+        $ft['cuello_option']       = $cuello_option;
+        $ft['empaque']             = $empaque;
+        $ft['ubicacion_combinado'] = $ubicacion_combinado;
+        $ft['ubicacion_forro']     = $ubicacion_forro;
+        $ft['tipo_opcion']         = $tipo_opcion;
+        $ft['opcion_escrito']      = $opcion_escrito;
+        $ft['ref_sugerida']        = $ref_sugerida;
+        $ft['observacion_tallas']  = $observacion_tallas;
+        $ft['observacion_stock']   = $observacion_stock;
+
+        // codigo_tela / area_tela / codigo_telacombi / codigo_telaforro (1..6)
+        for ($i = 1; $i <= 6; $i++) {
+            $s = ($i == 1) ? '' : $i;
+            foreach (['codigo_tela', 'area_tela', 'codigo_telacombi', 'codigo_telaforro'] as $base) {
+                $campo = $base . $s;
+                if (array_key_exists($campo, $_POST)) {
+                    $ft[$campo] = $_POST[$campo];
+                }
+            }
         }
 
-        // Realizar la consulta de actualización
-        $consulta = "UPDATE producto SET talla_XS = '$talla_XS', talla_S = '$talla_S', talla_M = '$talla_M', talla_L = '$talla_L', talla_XL = '$talla_XL', talla_2XL = '$talla_2XL', talla_3XL = '$talla_3XL', talla_4XL = '$talla_4XL', talla_5XL = '$talla_5XL', talla_6XL = '$talla_6XL', 
-                    talla_2 = '$talla_2', talla_4 = '$talla_4', talla_6 = '$talla_6', talla_8 = '$talla_8', talla_10 = '$talla_10', talla_12 = '$talla_12', talla_14 = '$talla_14', talla_16 = '$talla_16', talla_18 = '$talla_18', talla_20 = '$talla_20', talla_22 = '$talla_22', talla_24 = '$talla_24',
-                    talla_26 = '$talla_26', talla_28 = '$talla_28', talla_30 = '$talla_30', talla_32 = '$talla_32', talla_34 = '$talla_34', talla_36 = '$talla_36', talla_38 = '$talla_38', talla_40 = '$talla_40', talla_42 = '$talla_42', talla_44 = '$talla_44', talla_46 = '$talla_46', talla_48 = '$talla_48',
-                    talla_especial = '$talla_especial', frentes = '$frentes', espalda = '$espalda', mangas = '$mangas', cuello = '$cuello', puño = '$puño', delanteros = '$delanteros', traseros = '$traseros', pretina = '$pretina', ensamble = '$ensamble', fajon = '$fajon', forro = '$forro',
-                    otros = '$otros', observaciones = '$observaciones', valor_agregado = '$valor_agregado' WHERE id_producto = $id_producto";
+        // Vínculo a la curva de tallas + stock, ya guardada en la tabla `tallas`
+        $ft['id_talla'] = $id_talla;
 
-        $resultado = mysqli_query($enlace, $consulta);
+        // Helper para escapar valores (NULL cuando corresponde)
+        $ft_val = function ($v) use ($enlace) {
+            return ($v === null) ? "NULL" : "'" . mysqli_real_escape_string($enlace, $v) . "'";
+        };
+
+        // ¿El producto ya tiene ficha? (ya se determino arriba, junto con id_talla_existente)
+
+        if ($ya_existe_ficha) {
+            // UPDATE (no se tocan las llaves num_ficha ni id_producto)
+            $sets = [];
+            foreach ($ft as $c => $v) {
+                if ($c === 'id_producto') continue;
+                $sets[] = "`$c` = " . $ft_val($v);
+            }
+            $sql_ft = "UPDATE ficha_tecnica SET " . implode(', ', $sets) . " WHERE id_producto = $id_producto";
+        } else {
+            // INSERT: num_ficha se calcula en el momento (MAX+1) para evitar duplicados,
+            // y fecha_pedido queda con la fecha/hora del primer guardado.
+            $rmax = mysqli_query($enlace, "SELECT COALESCE(MAX(num_ficha),0)+1 AS sig FROM ficha_tecnica");
+            $ft['num_ficha']    = intval(mysqli_fetch_assoc($rmax)['sig']);
+            $ft['fecha_pedido'] = date('Y-m-d H:i:s');
+
+            $cols = [];
+            $vals = [];
+            foreach ($ft as $c => $v) {
+                $cols[] = "`$c`";
+                $vals[] = $ft_val($v);
+            }
+            $sql_ft = "INSERT INTO ficha_tecnica (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")";
+        }
+        mysqli_query($enlace, $sql_ft);
 
         // Verificar si ya existe una orden_compra para ese producto
         $verificar = "SELECT id_ordencompra FROM orden_compra WHERE id_producto = '$id_producto' LIMIT 1";
@@ -235,148 +449,237 @@
 
         if (mysqli_num_rows($resultado_verificar) > 0) {
             // YA EXISTE → hacer UPDATE
-            $consulta2 = "UPDATE orden_compra SET prendas_comprar = '$prendas_comprar', precio_prendacompra = '$precio_prendacompra', consumo_tela = '$consumo_tela', precio_telacompra = '$precio_telacompra', consumo_telacombi = '$consumo_telacombi', precio_telacombicompra = '$precio_telacombicompra', consumo_telaforro = '$consumo_telaforro', precio_telaforrocompra = '$precio_telaforrocompra', consumo_totalboton = '$consumo_totalboton', precio_botoncompra = '$precio_botoncompra', consumo_totalboton2 = '$consumo_totalboton2', precio_boton2compra = '$precio_boton2compra', consumo_totalbroche = '$consumo_totalbroche', precio_brochecompra = '$precio_brochecompra', consumo_totalfaya = '$consumo_totalfaya',
-                                precio_fayacompra = '$precio_fayacompra', consumo_totalcinta = '$consumo_totalcinta', precio_cintacompra = '$precio_cintacompra', consumo_totalcordon = '$consumo_totalcordon', precio_cordoncompra = '$precio_cordoncompra', consumo_totalcremallera = '$consumo_totalcremallera', precio_cremalleracompra = '$precio_cremalleracompra', consumo_totalcremallera2 = '$consumo_totalcremallera2', precio_cremallera2compra = '$precio_cremallera2compra', consumo_totalcuello = '$consumo_totalcuello', precio_cuellocompra = '$precio_cuellocompra', consumo_totaldeslizador = '$consumo_totaldeslizador', precio_deslizadorcompra = '$precio_deslizadorcompra', consumo_totalentretela = '$consumo_totalentretela', precio_entretelacompra = '$precio_entretelacompra', consumo_totalentretela2 = '$consumo_totalentretela2',
-                                precio_entretela2compra = '$precio_entretela2compra', consumo_totalfajon_cintura = '$consumo_totalfajon_cintura', precio_fajon_cinturacompra = '$precio_fajon_cinturacompra', consumo_totalguata = '$consumo_totalguata', precio_guatacompra = '$precio_guatacompra', consumo_totalhiladilla = '$consumo_totalhiladilla', precio_hiladillacompra = '$precio_hiladillacompra', consumo_totalhombrera = '$consumo_totalhombrera', precio_hombreracompra = '$precio_hombreracompra', consumo_totalplumilla = '$consumo_totalplumilla', precio_plumillacompra = '$precio_plumillacompra', consumo_totalpretina = '$consumo_totalpretina', precio_pretinacompra = '$precio_pretinacompra', consumo_totalpuntera = '$consumo_totalpuntera', precio_punteracompra = '$precio_punteracompra', consumo_totalpuño = '$consumo_totalpuño',
-                                precio_puñocompra = '$precio_puñocompra', consumo_totalresorte = '$consumo_totalresorte', precio_resortecompra = '$precio_resortecompra', consumo_totalresorte2 = '$consumo_totalresorte2', precio_resorte2compra = '$precio_resorte2compra', consumo_totalsesgo = '$consumo_totalsesgo', precio_sesgocompra = '$precio_sesgocompra', consumo_totaltrabilla = '$consumo_totaltrabilla', precio_trabillacompra = '$precio_trabillacompra', consumo_totalvelcro = '$consumo_totalvelcro', precio_velcrocompra = '$precio_velcrocompra', consumo_totalvinilo = '$consumo_totalvinilo', precio_vinilocompra = '$precio_vinilocompra', consumo_totalvivo = '$consumo_totalvivo', precio_vivocompra = '$precio_vivocompra'
-                            WHERE id_producto = '$id_producto'";
+            $consulta2 = "UPDATE orden_compra SET consumo_totalboton = '$consumo_totalboton', total_botoncotizado = '$precio_botoncompra', consumo_totalboton2 = '$consumo_totalboton2', total_boton2cotizado = '$precio_boton2compra', consumo_totalbroche = '$consumo_totalbroche', total_brochecotizado = '$precio_brochecompra', consumo_totalfaya = '$consumo_totalfaya',
+                                                total_fayacotizado = '$precio_fayacompra', consumo_totalcinta = '$consumo_totalcinta', total_cintacotizado = '$precio_cintacompra', consumo_totalcordon = '$consumo_totalcordon', total_cordoncotizado = '$precio_cordoncompra', consumo_totalcremallera = '$consumo_totalcremallera', total_cremalleracotizado = '$precio_cremalleracompra', consumo_totalcremallera2 = '$consumo_totalcremallera2', total_cremallera2cotizado = '$precio_cremallera2compra', consumo_totalcuello = '$consumo_totalcuello', total_cuellocotizado = '$precio_cuellocompra', consumo_totaldeslizador = '$consumo_totaldeslizador', total_deslizadorcotizado = '$precio_deslizadorcompra', consumo_totalentretela = '$consumo_totalentretela', total_entretelacotizado = '$precio_entretelacompra', consumo_totalentretela2 = '$consumo_totalentretela2',
+                                                total_entretela2cotizado = '$precio_entretela2compra', consumo_totalfajon_cintura = '$consumo_totalfajon_cintura', total_fajon_cinturacotizado = '$precio_fajon_cinturacompra', consumo_totalguata = '$consumo_totalguata', total_guatacotizado = '$precio_guatacompra', consumo_totalhiladilla = '$consumo_totalhiladilla', total_hiladillacotizado = '$precio_hiladillacompra', consumo_totalhombrera = '$consumo_totalhombrera', total_hombreracotizado = '$precio_hombreracompra', consumo_totalplumilla = '$consumo_totalplumilla', total_plumillacotizado = '$precio_plumillacompra', consumo_totalpretina = '$consumo_totalpretina', total_pretinacotizado = '$precio_pretinacompra', consumo_totalpuntera = '$consumo_totalpuntera', total_punteracotizado = '$precio_punteracompra', consumo_totalpuño = '$consumo_totalpuño',
+                                                total_puñocotizado = '$precio_puñocompra', consumo_totalresorte = '$consumo_totalresorte', total_resortecotizado = '$precio_resortecompra', consumo_totalresorte2 = '$consumo_totalresorte2', total_resorte2cotizado = '$precio_resorte2compra', consumo_totalsesgo = '$consumo_totalsesgo', total_sesgocotizado = '$precio_sesgocompra', consumo_totaltrabilla = '$consumo_totaltrabilla', total_trabillacotizado = '$precio_trabillacompra', consumo_totalvelcro = '$consumo_totalvelcro', total_velcrocotizado = '$precio_velcrocompra', consumo_totalvinilo = '$consumo_totalvinilo', total_vinilocotizado = '$precio_vinilocompra', consumo_totalvivo = '$consumo_totalvivo', total_vivocotizado = '$precio_vivocompra'
+                                                WHERE id_producto = '$id_producto'";
         } else {
             // NO EXISTE → hacer INSERT
             $consulta2 = "INSERT INTO orden_compra (
-                id_producto, prendas_comprar, precio_prendacompra, consumo_tela, precio_telacompra, consumo_telacombi, precio_telacombicompra, consumo_telaforro, precio_telaforrocompra, consumo_totalboton, precio_botoncompra, consumo_totalboton2, precio_boton2compra, consumo_totalbroche, precio_brochecompra, consumo_totalfaya, precio_fayacompra, consumo_totalcinta, precio_cintacompra, 
-                consumo_totalcordon, precio_cordoncompra, consumo_totalcremallera, precio_cremalleracompra, consumo_totalcremallera2, precio_cremallera2compra, consumo_totalcuello, precio_cuellocompra, consumo_totaldeslizador, precio_deslizadorcompra, consumo_totalentretela, precio_entretelacompra, consumo_totalentretela2, precio_entretela2compra, consumo_totalfajon_cintura, precio_fajon_cinturacompra, 
-                consumo_totalguata, precio_guatacompra, consumo_totalhiladilla, precio_hiladillacompra, consumo_totalhombrera, precio_hombreracompra, consumo_totalplumilla, precio_plumillacompra, consumo_totalpretina, precio_pretinacompra, consumo_totalpuntera, precio_punteracompra, consumo_totalpuño, precio_puñocompra, consumo_totalresorte, precio_resortecompra, consumo_totalresorte2, precio_resorte2compra, 
-                consumo_totalsesgo, precio_sesgocompra, consumo_totaltrabilla, precio_trabillacompra, consumo_totalvelcro, precio_velcrocompra, consumo_totalvinilo, precio_vinilocompra, consumo_totalvivo, precio_vivocompra
-                ) VALUES (
-                    '$id_producto', '$prendas_comprar', '$precio_prendacompra', '$consumo_tela', '$precio_telacompra', '$consumo_telacombi', '$precio_telacombicompra', '$consumo_telaforro', '$precio_telaforrocompra', '$consumo_totalboton', '$precio_botoncompra', '$consumo_totalboton2', '$precio_boton2compra', '$consumo_totalbroche', '$precio_brochecompra', '$consumo_totalfaya', '$precio_fayacompra', '$consumo_totalcinta', '$precio_cintacompra', 
-                    '$consumo_totalcordon', '$precio_cordoncompra', '$consumo_totalcremallera', '$precio_cremalleracompra', '$consumo_totalcremallera2', '$precio_cremallera2compra', '$consumo_totalcuello', '$precio_cuellocompra', '$consumo_totaldeslizador', '$precio_deslizadorcompra', '$consumo_totalentretela', '$precio_entretelacompra', '$consumo_totalentretela2', '$precio_entretela2compra', '$consumo_totalfajon_cintura', '$precio_fajon_cinturacompra', 
-                    '$consumo_totalguata', '$precio_guatacompra', '$consumo_totalhiladilla', '$precio_hiladillacompra', '$consumo_totalhombrera', '$precio_hombreracompra', '$consumo_totalplumilla', '$precio_plumillacompra', '$consumo_totalpretina', '$precio_pretinacompra', '$consumo_totalpuntera', '$precio_punteracompra', '$consumo_totalpuño', '$precio_puñocompra', '$consumo_totalresorte', '$precio_resortecompra', '$consumo_totalresorte2', '$precio_resorte2compra', 
-                    '$consumo_totalsesgo', '$precio_sesgocompra', '$consumo_totaltrabilla', '$precio_trabillacompra', '$consumo_totalvelcro', '$precio_velcrocompra', '$consumo_totalvinilo', '$precio_vinilocompra', '$consumo_totalvivo', '$precio_vivocompra'
-                )";
+                                            id_producto, consumo_totalboton, total_botoncotizado, consumo_totalboton2, total_boton2cotizado, consumo_totalbroche, total_brochecotizado, consumo_totalfaya, total_fayacotizado, consumo_totalcinta, total_cintacotizado, 
+                                            consumo_totalcordon, total_cordoncotizado, consumo_totalcremallera, total_cremalleracotizado, consumo_totalcremallera2, total_cremallera2cotizado, consumo_totalcuello, total_cuellocotizado, consumo_totaldeslizador, total_deslizadorcotizado, consumo_totalentretela, total_entretelacotizado, consumo_totalentretela2, total_entretela2cotizado, consumo_totalfajon_cintura, total_fajon_cinturacotizado, 
+                                            consumo_totalguata, total_guatacotizado, consumo_totalhiladilla, total_hiladillacotizado, consumo_totalhombrera, total_hombreracotizado, consumo_totalplumilla, total_plumillacotizado, consumo_totalpretina, total_pretinacotizado, consumo_totalpuntera, total_punteracotizado, consumo_totalpuño, total_puñocotizado, consumo_totalresorte, total_resortecotizado, consumo_totalresorte2, total_resorte2cotizado, 
+                                            consumo_totalsesgo, total_sesgocotizado, consumo_totaltrabilla, total_trabillacotizado, consumo_totalvelcro, total_velcrocotizado, consumo_totalvinilo, total_vinilocotizado, consumo_totalvivo, total_vivocotizado
+                                            ) VALUES (
+                                                '$id_producto', '$consumo_totalboton', '$precio_botoncompra', '$consumo_totalboton2', '$precio_boton2compra', '$consumo_totalbroche', '$precio_brochecompra', '$consumo_totalfaya', '$precio_fayacompra', '$consumo_totalcinta', '$precio_cintacompra', 
+                                                '$consumo_totalcordon', '$precio_cordoncompra', '$consumo_totalcremallera', '$precio_cremalleracompra', '$consumo_totalcremallera2', '$precio_cremallera2compra', '$consumo_totalcuello', '$precio_cuellocompra', '$consumo_totaldeslizador', '$precio_deslizadorcompra', '$consumo_totalentretela', '$precio_entretelacompra', '$consumo_totalentretela2', '$precio_entretela2compra', '$consumo_totalfajon_cintura', '$precio_fajon_cinturacompra', 
+                                                '$consumo_totalguata', '$precio_guatacompra', '$consumo_totalhiladilla', '$precio_hiladillacompra', '$consumo_totalhombrera', '$precio_hombreracompra', '$consumo_totalplumilla', '$precio_plumillacompra', '$consumo_totalpretina', '$precio_pretinacompra', '$consumo_totalpuntera', '$precio_punteracompra', '$consumo_totalpuño', '$precio_puñocompra', '$consumo_totalresorte', '$precio_resortecompra', '$consumo_totalresorte2', '$precio_resorte2compra', 
+                                                '$consumo_totalsesgo', '$precio_sesgocompra', '$consumo_totaltrabilla', '$precio_trabillacompra', '$consumo_totalvelcro', '$precio_velcrocompra', '$consumo_totalvinilo', '$precio_vinilocompra', '$consumo_totalvivo', '$precio_vivocompra'
+                                            )";
         }
 
         $resultado2 = mysqli_query($enlace, $consulta2);
 
-        header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&recibido=2");
+        header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&recibido=1");
         exit();
     }
 
-    if (isset($_POST['cambiar_estadoProducto'])) {
+    if (isset($_POST['crear_ficha_tecnicaEx'])) {
 
-        date_default_timezone_set('America/Bogota');
-        $nit         = $_POST['nit'];
-        $id_producto = $_POST['id_producto'];
-        $num_ficha   = $_POST['num_ficha'];
-        $num_orden_compra = $_POST['num_orden_compra'];
-        $id_usuario  = $_POST['id_usuario'];
-        $id_pedido   = $_POST['id_pedido'];
-        $fecha_fichatecnica = date('Y-m-d H:i:s');
-        $fecha_base  = date('Y-m-d');
+        $id_producto  = intval($_POST['id_producto']);
+        $nit  = intval($_POST['nit']);
 
-        // ===============================
-        // 📅 FUNCIONES DE FECHAS
-        // ===============================
-        function calcularPascua($anio)
-        {
-            $a = $anio % 19;
-            $b = intval($anio / 100);
-            $c = $anio % 100;
-            $d = intval($b / 4);
-            $e = $b % 4;
-            $f = intval(($b + 8) / 25);
-            $g = intval(($b - $f + 1) / 3);
-            $h = (19 * $a + $b - $d - $g + 15) % 30;
-            $i = intval($c / 4);
-            $k = $c % 4;
-            $l = (32 + 2 * $e + 2 * $i - $h - $k) % 7;
-            $m = intval(($a + 11 * $h + 22 * $l) / 451);
-            $mes = intval(($h + $l - 7 * $m + 114) / 31);
-            $dia = (($h + $l - 7 * $m + 114) % 31) + 1;
-            return sprintf("%04d-%02d-%02d", $anio, $mes, $dia);
+        // Seguridad: sin un id_producto valido no se puede crear la ficha
+        // (evita fallos de llave foranea contra la tabla producto).
+        if ($id_producto <= 0) {
+            header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario");
+            exit();
         }
 
-        function obtenerFestivosColombia($anio)
+        // ---- Campos de texto de la FICHA TECNICA ----
+        $num_ficha           = intval($_POST['num_ficha'] ?? 0);
+        $fecha_comercial     = !empty($_POST['fecha_comercial']) ? $_POST['fecha_comercial'] : null;
+        $fecha_entrega       = !empty($_POST['fecha_entrega'])   ? $_POST['fecha_entrega']   : null;
+        $forma_pago          = $_POST['forma_pago']          ?? null;
+        $manga               = $_POST['manga']               ?? null;
+        $genero              = $_POST['genero']              ?? null;
+        $bolsillo            = $_POST['bolsillo']            ?? null;
+        $lavado              = $_POST['lavado']              ?? null;
+        $bordado             = $_POST['bordado']             ?? null;
+        $muestra             = $_POST['muestra']             ?? null;
+        $cuello_option       = $_POST['cuello_option']       ?? null;
+        $empaque             = $_POST['empaque']             ?? null;
+        $ubicacion_combinado = $_POST['ubicacion_combinado'] ?? null;
+        $ubicacion_forro     = $_POST['ubicacion_forro']     ?? null;
+        $tipo_opcion         = $_POST['tipo_opcion']         ?? null;
+        $opcion_escrito      = $_POST['opcion_escrito']      ?? null;
+        $ref_sugerida        = $_POST['ref_sugerida']        ?? null;
+        $observacion_tallas  = $_POST['observacion_tallas']  ?? null;
+        $observacion_stock   = $_POST['observacion_stock']   ?? null;
+
+        // ---- Descripciones / colores que se guardan en PRODUCTO ----
+        $valor_agregado = $_POST['valor_agregado'] ?? '';
+        $observacion    = $_POST['observacion']    ?? '';
+
+        function obtenerValorPost($campo, $valorPredeterminado = 0)
         {
-            $pascua = calcularPascua($anio);
-            return [
-                "$anio-01-01",
-                "$anio-05-01",
-                "$anio-07-20",
-                "$anio-08-07",
-                "$anio-12-08",
-                "$anio-12-25",
-                date("Y-m-d", strtotime("$pascua -3 days")),
-                date("Y-m-d", strtotime("$pascua -2 days")),
-                date("Y-m-d", strtotime("$pascua +39 days")),
-                date("Y-m-d", strtotime("$pascua +60 days")),
-                date("Y-m-d", strtotime("$pascua +68 days")),
-            ];
+            return isset($_POST[$campo]) ? floatval($_POST[$campo]) : $valorPredeterminado;
         }
 
-        function sumarDiasHabiles($fecha, $dias, $nit)
-        {
-            $anio = date('Y', strtotime($fecha));
-            $festivos = obtenerFestivosColombia($anio);
-            while ($dias > 0) {
-                $fecha = date('Y-m-d', strtotime($fecha . ' +1 day'));
-                $esHabil = (date('N', strtotime($fecha)) < 6 && !in_array($fecha, $festivos));
-                if ($nit == 22 || $esHabil) $dias--;
+        $precio_compra = obtenerValorPost('precio_compra');
+
+        // ============================================================
+        // CURVA DE TALLAS + STOCK -> se guarda en la tabla `tallas`
+        // (mismo mecanismo que crear_ficha_tecnica, ver
+        // guardar_curva_tallas_y_stock()).
+        // ============================================================
+        $ficha_previa = mysqli_fetch_assoc(mysqli_query($enlace, "SELECT num_ficha, id_talla FROM ficha_tecnica WHERE id_producto = $id_producto LIMIT 1"));
+        $ya_existe_ficha    = !empty($ficha_previa);
+        $id_talla_existente = $ficha_previa['id_talla'] ?? null;
+
+        $resultado_curva  = guardar_curva_tallas_y_stock($enlace, $id_talla_existente);
+        $id_talla          = $resultado_curva['id_talla'];
+        $unidades_totales  = $resultado_curva['unidades_totales'];
+        $tallas_guardadas  = $resultado_curva['tallas_data'];
+
+        // Totales por grupo, con 0 por defecto si ese grupo/color no vino
+        $total_tallas  = $tallas_guardadas['total_tallas']  ?? 0;
+        $total_tallas2 = $tallas_guardadas['total_tallas2'] ?? 0;
+        $total_tallas3 = $tallas_guardadas['total_tallas3'] ?? 0;
+        $total_tallas4 = $tallas_guardadas['total_tallas4'] ?? 0;
+        $total_tallas5 = $tallas_guardadas['total_tallas5'] ?? 0;
+        $total_tallas6 = $tallas_guardadas['total_tallas6'] ?? 0;
+
+        // ---- consumo_tela ahora depende del total de tallas por grupo/color ----
+        $prendas_comprar  = $total_tallas;
+        $prendas_comprar2 = $total_tallas2;
+        $prendas_comprar3 = $total_tallas3;
+        $prendas_comprar4 = $total_tallas4;
+        $prendas_comprar5 = $total_tallas5;
+        $prendas_comprar6 = $total_tallas6;
+
+        $precio_prendacompra = $total_tallas * $precio_compra;
+        $precio_prendacompra2 = $total_tallas2 * $precio_compra;
+        $precio_prendacompra3 = $total_tallas3 * $precio_compra;
+        $precio_prendacompra4 = $total_tallas4 * $precio_compra;
+        $precio_prendacompra5 = $total_tallas5 * $precio_compra;
+        $precio_prendacompra6 = $total_tallas6 * $precio_compra;
+
+        // ------------------------------------------------------------
+        // 1) Guardar colores, descripciones y observacion en PRODUCTO
+        //    (solo los campos que realmente llegaron por POST, para no
+        //     sobrescribir con vacio los que no se muestran) + estado
+        // ------------------------------------------------------------
+        $prod_sets = [];
+        foreach (['color_tela'] as $base) {
+            for ($i = 1; $i <= 6; $i++) {
+                $campo = ($i == 1) ? $base : $base . $i;
+                if (array_key_exists($campo, $_POST)) {
+                    $prod_sets[] = "`$campo` = '" . mysqli_real_escape_string($enlace, $_POST[$campo]) . "'";
+                }
             }
-            return $fecha;
         }
-
-        $fecha_entrega = sumarDiasHabiles($fecha_base, 30, $nit);
-
-        // ===============================
-        // 🧩 ACTUALIZAR PRODUCTO
-        // ===============================
-        $sql = "UPDATE producto SET estado='Diseño', num_ficha='$num_ficha', num_orden_compra='$num_orden_compra', fecha_fichatecnica='$fecha_fichatecnica', fecha_entrega='$fecha_entrega' 
-                    WHERE id_producto='$id_producto'";
-
-        mysqli_query($enlace, $sql);
-
-        // ===============================
-        // ✅ VERIFICAR SI TODOS LOS PRODUCTOS SON DISEÑO
-        // ===============================
-        $verificar = mysqli_fetch_assoc(mysqli_query($enlace, "SELECT COUNT(*) total, SUM(estado='Diseño') fichas FROM producto WHERE id_pedido='$id_pedido'"));
-
-        // ===============================
-        // 🚦 CAMBIAR ESTADO DEL PEDIDO SI CORRESPONDE
-        // ===============================
-        if ($verificar['total'] > 0 && $verificar['total'] == $verificar['fichas']) {
-            mysqli_query($enlace, "UPDATE pedido SET estado='Pedido' WHERE id_pedido='$id_pedido'");
-
-            $datos = mysqli_fetch_assoc(mysqli_query($enlace, "SELECT p.id_usuario, c.nit  FROM pedido p LEFT JOIN cliente c ON p.nit=c.nit 
-                                                                    WHERE p.id_pedido='$id_pedido' LIMIT 1"));
-
-            header("Location: pedidos_activos.php?id_usuario={$datos['id_usuario']}");
-        } else {
-            header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&nit=$nit&recibido=0");
+        foreach (['valor_agregado', 'observaciones'] as $campo) {
+            if (array_key_exists($campo, $_POST)) {
+                $prod_sets[] = "`$campo` = '" . mysqli_real_escape_string($enlace, $_POST[$campo]) . "'";
+            }
         }
-        exit;
-    }
+        $prod_sets[] = "estado = 'Ficha'";
 
-    if (isset($_POST['cargar_empleados'])) {
-
-        $id_pedido = $_POST['id_pedido'];
-
-        if (!empty($_FILES['listado_empleados']['tmp_name'])) {
-            $listado_nombre = $_FILES['listado_empleados']['name'];
-            $listado_temporal = $_FILES['listado_empleados']['tmp_name'];
-            move_uploaded_file($listado_temporal, "listado_empleados/" . $listado_nombre);
-        } else {
-            $listado_nombre = $_POST['listado_actual'];
-        }
-
-        $consulta = "UPDATE pedido SET listado_empleados = '$listado_nombre' 
-                    WHERE id_pedido = $id_pedido";
+        $consulta = "UPDATE producto SET " . implode(', ', $prod_sets) . " WHERE id_producto = $id_producto";
         $resultado = mysqli_query($enlace, $consulta);
 
-        header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&recibido=0");
+        // ------------------------------------------------------------
+        // 2) Guardar / actualizar la FICHA TECNICA
+        // ------------------------------------------------------------
+        $ft = [];
+        $ft['id_producto']         = $id_producto;
+        $ft['nit']                 = $nit;
+        $ft['fecha_comercial']     = $fecha_comercial;
+        $ft['fecha_entrega']       = $fecha_entrega;
+        $ft['forma_pago']          = $forma_pago;
+        $ft['manga']               = $manga;
+        $ft['genero']              = $genero;
+        $ft['bolsillo']            = $bolsillo;
+        $ft['lavado']              = $lavado;
+        $ft['bordado']             = $bordado;
+        $ft['muestra']             = $muestra;
+        $ft['cuello_option']       = $cuello_option;
+        $ft['empaque']             = $empaque;
+        $ft['ubicacion_combinado'] = $ubicacion_combinado;
+        $ft['ubicacion_forro']     = $ubicacion_forro;
+        $ft['tipo_opcion']         = $tipo_opcion;
+        $ft['opcion_escrito']      = $opcion_escrito;
+        $ft['ref_sugerida']        = $ref_sugerida;
+        $ft['observacion_tallas']  = $observacion_tallas;
+        $ft['observacion_stock']   = $observacion_stock;
+
+        // codigo_tela / composicion (1..6)
+        for ($i = 1; $i <= 6; $i++) {
+            $s = ($i == 1) ? '' : $i;
+            foreach (['codigo_tela', 'composicion'] as $base) {
+                $campo = $base . $s;
+                if (array_key_exists($campo, $_POST)) {
+                    $ft[$campo] = $_POST[$campo];
+                }
+            }
+        }
+
+        // Vínculo a la curva de tallas + stock, ya guardada en la tabla `tallas`
+        $ft['id_talla'] = $id_talla;
+
+        // Helper para escapar valores (NULL cuando corresponde)
+        $ft_val = function ($v) use ($enlace) {
+            return ($v === null) ? "NULL" : "'" . mysqli_real_escape_string($enlace, $v) . "'";
+        };
+
+        // ¿El producto ya tiene ficha? (ya se determino arriba, junto con id_talla_existente)
+
+        if ($ya_existe_ficha) {
+            // UPDATE (no se tocan las llaves num_ficha ni id_producto)
+            $sets = [];
+            foreach ($ft as $c => $v) {
+                if ($c === 'id_producto') continue;
+                $sets[] = "`$c` = " . $ft_val($v);
+            }
+            $sql_ft = "UPDATE ficha_tecnica SET " . implode(', ', $sets) . " WHERE id_producto = $id_producto";
+        } else {
+            // INSERT: num_ficha se calcula en el momento (MAX+1) para evitar duplicados,
+            // y fecha_pedido queda con la fecha/hora del primer guardado.
+            $rmax = mysqli_query($enlace, "SELECT COALESCE(MAX(num_ficha),0)+1 AS sig FROM ficha_tecnica");
+            $ft['num_ficha']    = intval(mysqli_fetch_assoc($rmax)['sig']);
+            $ft['fecha_pedido'] = date('Y-m-d H:i:s');
+
+            $cols = [];
+            $vals = [];
+            foreach ($ft as $c => $v) {
+                $cols[] = "`$c`";
+                $vals[] = $ft_val($v);
+            }
+            $sql_ft = "INSERT INTO ficha_tecnica (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")";
+        }
+        mysqli_query($enlace, $sql_ft);
+
+        // Verificar si ya existe una orden_compra para ese producto
+        $verificar = "SELECT id_ordencompra FROM orden_compra WHERE id_producto = '$id_producto' LIMIT 1";
+        $resultado_verificar = mysqli_query($enlace, $verificar);
+
+        if (mysqli_num_rows($resultado_verificar) > 0) {
+            // YA EXISTE → hacer UPDATE
+            $consulta2 = "UPDATE orden_compra SET prendas_comprar = '$prendas_comprar', prendas_comprar2 = '$prendas_comprar2', prendas_comprar3 = '$prendas_comprar3', prendas_comprar4 = '$prendas_comprar4', prendas_comprar5 = '$prendas_comprar5', prendas_comprar6 = '$prendas_comprar6', 
+                                                precio_prendacompra = '$precio_prendacompra', precio_prendacompra2 = '$precio_prendacompra2', precio_prendacompra3 = '$precio_prendacompra3', precio_prendacompra4 = '$precio_prendacompra4', precio_prendacompra5 = '$precio_prendacompra5', precio_prendacompra6 = '$precio_prendacompra6'
+                                                        WHERE id_producto = '$id_producto'";
+        } else {
+            // NO EXISTE → hacer INSERT
+            $consulta2 = "INSERT INTO orden_compra (
+                                            id_producto, 
+                                            prendas_comprar, prendas_comprar2, prendas_comprar3, prendas_comprar4, prendas_comprar5, prendas_comprar6, 
+                                            precio_prendacompra, precio_prendacompra2, precio_prendacompra3, precio_prendacompra4, precio_prendacompra5, precio_prendacompra6
+                                            ) VALUES (
+                                                '$id_producto', 
+                                                '$prendas_comprar', '$prendas_comprar2', '$prendas_comprar3', '$prendas_comprar4', '$prendas_comprar5', '$prendas_comprar6',
+                                                '$precio_prendacompra', '$precio_prendacompra2', '$precio_prendacompra3', '$precio_prendacompra4', '$precio_prendacompra5', '$precio_prendacompra6' 
+                                            )";
+        }
+
+        $resultado2 = mysqli_query($enlace, $consulta2);
+
+        header("Location: mostrar_pedidos_activos.php?id_pedido=$id_pedido&id_usuario=$id_usuario&recibido=1");
         exit();
     }
 
-    $recibido = $_GET['recibido'];
+    $recibido = $_GET['recibido'] ?? null;
 ?>
 
 <!DOCTYPE html>
@@ -384,10 +687,10 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-        
+
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        
+
         <!-- Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
@@ -416,52 +719,109 @@
                 justify-content: space-between;
             }
         </style>
-        
         <title>Comercial | Mostrar Pedidos Activos</title>
     <head>
-
     <body>
         <?php
-        $consulta = "SELECT usuario.id_usuario, pedido.id_usuario, producto.id_producto, producto.num_ficha, producto.estado, producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, producto.logo1, producto.logo2, producto.logo3, producto.logo4,producto.precio_venta, producto.precio_iva, producto.cant_tallas, producto.cant_prendas, producto.suma_prendas, producto.precio_total, producto.talla_XS, producto.talla_S, producto.talla_M, producto.talla_L, producto.talla_XL, producto.talla_2XL, producto.talla_3XL, producto.talla_4XL, producto.talla_5XL, producto.talla_6XL, producto.talla_2, producto.talla_4, producto.talla_6, producto.talla_8, producto.talla_10, producto.talla_12, producto.talla_14, 
-                                    producto.talla_16, producto.talla_18, producto.talla_20, producto.talla_22, producto.talla_24, producto.talla_26, producto.talla_28, producto.talla_30, producto.talla_32, producto.talla_34, producto.talla_36, producto.talla_38, producto.talla_40, producto.talla_42, producto.talla_44, producto.talla_46, producto.talla_48, producto.talla_especial, producto.frentes, producto.espalda, producto.mangas, producto.cuello, producto.puño, producto.delanteros, producto.traseros, producto.pretina, producto.ensamble, producto.fajon, producto.forro, producto.otros, producto.observaciones, producto.color_tela, producto.color_telacombi, producto.color_telaforro, producto.valor_porcentajeestampilla, pedido.total_factura, 
-                                    pedido.prendas_realizar, pedido.orden_compra, tipo_logo.tipo_logo, prenda.nombre_prenda, tipo_prenda.tipo_prenda, tela.tela, pedido.estado, pedido.consecutivo, producto.color_tela, producto.color_tela, producto.color_telacombi, producto.color_telaforro, producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, 
-                                    producto.id_producto, producto.precio_venta, producto.precio_iva, producto.cant_tallas, producto.cant_prendas, producto.mas_prendas, producto.suma_prendas, producto.nombre_proveedor, producto.precio_compra, producto.observaciones, producto.precio_cuello, producto.consumo_cuello, producto.precio_puño, producto.consumo_puño, producto.precio_boton, producto.cant_boton, 
-                                    producto.promedio_consumo, producto.precio_tela, producto.promedio_telacombi, producto.precio_telacombinada, producto.promedio_forro, producto.precio_forro, producto.cant_cinta, producto.consumo_fusionado, producto.cant_entretela, producto.cant_cremallera, producto.cant_velcro, producto.cant_resorte, producto.cant_hombrera, producto.cant_sesgo, producto.cant_trabilla, producto.cant_vivo, 
-                                    producto.cant_faya, producto.cant_guata, producto.cant_pretina, producto.cant_broche, producto.cant_cordon, producto.cant_puntera, producto.valor_flete, producto.valor_tela, producto.valor_telacombi, producto.valor_cuello, producto.valor_puño, producto.valor_boton, producto.id_deslizador, producto.precio_deslizador, producto.cant_deslizador, producto.valor_deslizador,
-                                    producto.valor_cinta, producto.valor_cremallera, producto.valor_entretela, producto.valor_fusionado, producto.valor_velcro, producto.valor_resorte, producto.valor_hombrera, producto.valor_sesgo, producto.valor_trabilla, producto.valor_vivo, producto.valor_faya, producto.valor_guata, producto.valor_forro, 
-                                    producto.valor_pretina, producto.valor_broche, producto.valor_cordon, producto.valor_puntera, producto.valor_flete, producto.precio_obra, producto.costo_total, producto.telaa, producto.telacombinada, producto.telaforro, producto.cant_entretela2, producto.precio_entretela2, producto.valor_entretela2, producto.cant_hiladilla, producto.precio_hiladilla, producto.valor_hiladilla, producto.cant_fajon_cintura, producto.precio_fajon_cintura, producto.valor_fajon_cintura,
-                                    producto.mangas, producto.cuello, producto.puño, producto.pretina, producto.fajon, producto.boton, producto.cremallera, producto.ubica_combi, producto.ubica_reflectivos, producto.valor_agregado, producto.logo, tipo_logo.id_tipo_logo, tipo_logo.tipo_logo, cartera.id_cartera, cartera.tipo_cartera, tablon.id_tablon, tablon.tipo_tablon,
-                                    pedido.id_pedido, pedido.total_factura, prenda.id_prenda, prenda.nombre_prenda, tipo_prenda.id_tipo_prenda, tipo_prenda.tipo_prenda, cargo.id_cargo, producto.precio_fusionado, producto.precio_entretela, producto.precio_cremallera, producto.precio_velcro, producto.precio_resorte, producto.precio_hombrera, producto.precio_sesgo, producto.precio_trabilla, producto.precio_vivo, 
-                                    producto.precio_cinta, producto.precio_faya, producto.precio_guata, producto.precio_pretina, producto.precio_broche, producto.precio_cordon, producto.precio_puntera, producto.precio_bordado, producto.precio_estampado, producto.precio_total, cliente.cliente, 
-                                    producto.id_logistica, logistica.id_logistica, logistica.precio, producto.precio_logistica, producto.logo1, producto.logo2, producto.logo3, producto.logo4, producto.valor_diseño, producto.valor_corte, corte.precio_corte, producto.observaciones_cotizacion, producto.observaciones_produccion, producto.observaciones_comercial, deslizador.id_deslizador, deslizador.insumo AS insumo_deslizador, producto.precio_deslizador,
-                                    tipo_producto.id_tipo_producto, tipo_producto.tipo_producto, cargo.cargo, tela.id_tela, tela.tela AS insumo_tela, tela_combinada.id_telacombi, tela_combinada.tela_combi AS insumo_telacombi, tela_forro.id_telaforro, tela_forro.tela_forro AS insumo_telaforro, cuello.id_cuello, cuello.insumo AS insumo_cuello, puño.id_puño, puño.insumo AS insumo_puño, boton.id_boton, boton.insumo AS insumo_boton, 
-                                    boton2.id_boton2, boton2.insumo AS insumo_boton2, producto.precio_boton2, producto.cant_boton2, producto.valor_boton2, plumilla.id_plumilla, plumilla.insumo AS insumo_plumilla, producto.precio_plumilla, producto.cant_plumilla, producto.valor_plumilla, vinilo.id_vinilo, vinilo.insumo AS insumo_vinilo, producto.precio_vinilo, producto.cant_vinilo, producto.valor_vinilo,
-                                    cinta_reflectiva.id_cinta, cinta_reflectiva.insumo AS insumo_reflectiva, bolsa.id_bolsa, bolsa.insumo AS insumo_bolsa, bolsa.precio AS precio_bolsa, marquilla.id_marquilla, marquilla.precio AS precio_marquilla, marquilla.insumo AS insumo_marquilla, acabado.id_acabado, acabado.insumo AS insumo_acabado, acabado.precio AS precio_acabado, fusionado.id_fusionado, fusionado.insumo AS insumo_fusionado, 
-                                    entretela.id_entretela, entretela.insumo AS insumo_entretela, entretela2.id_entretela2, entretela2.insumo AS insumo_entretela2, cremallera.id_cremallera, cremallera.insumo AS insumo_cremallera, velcro.id_velcro, velcro.insumo AS insumo_velcro, resorte.id_resorte, resorte.insumo AS insumo_resorte, hombrera.id_hombrera, hombrera.insumo AS insumo_hombrera, 
-                                    sesgo.id_sesgo, sesgo.insumo AS insumo_sesgo, trabilla.id_trabilla, trabilla.insumo AS insumo_trabilla, vivo.id_vivo, vivo.insumo AS insumo_vivo, cinta_faya.id_faya, cinta_faya.insumo AS insumo_faya, guata.id_guata, guata.insumo AS insumo_guata, pretina.id_pretina, pretina.insumo AS insumo_pretina, hiladilla.id_hiladilla, hiladilla.insumo AS insumo_hiladilla, fajon_cintura.id_fajon_cintura, fajon_cintura.insumo AS insumo_fajon_cintura,
-                                    broche.id_broche, broche.insumo AS insumo_broche, cordon.id_cordon, cordon.insumo AS insumo_cordon, puntera.id_puntera, puntera.insumo AS insumo_puntera, bolsillo.id_bolsillo, bolsillo.tipo_bolsillo, producto.cant_bolsillos, producto.precio_bolsillo, bolsillo_combinado.id_bolsillocombinado, bolsillo_combinado.tipo_bolsillocombinado, producto.cant_bolsilloscombinado, producto.precio_bolsillocombinado, bolsillo_combinado2.id_bolsillocombinado2, bolsillo_combinado2.tipo_bolsillocombinado2, producto.cant_bolsilloscombinado2, producto.precio_bolsillocombinado2,
-                                    cremallera2.id_cremallera2, cremallera2.insumo AS insumo_cremallera2, producto.precio_cremallera2, producto.cant_cremallera2, producto.valor_cremallera2, resorte2.id_resorte2, resorte2.insumo AS insumo_resorte2, producto.precio_resorte2, producto.cant_resorte2, producto.valor_resorte2,
-                                    mano_obra.id_mano_obra, mano_obra.producto, diseño.id_diseño, diseño.opcion_diseño, corte.id_corte, corte.cant_corte, entrega.id_entrega, entrega.tipo_entrega, entrega.precio_entrega AS entrega_precio_entrega, producto.precio_entrega AS producto_precio_entrega, producto.id_tipo_producto, entidad.id_entidad, entidad.tipo_entidad, cliente.nit, cliente.id_entidad, pedido.nit, producto.margen_bruto, producto.valor_porcentajeestampilla, encarterada.id_encarterada, encarterada.tipo_encarterada, producto.precio_encarterada, puesta_cinta.id_puesta, puesta_cinta.tipo_puesta, producto.precio_puesta,
-                                    tela.ancho AS ancho_tela, tela.peso AS peso_tela, tela.caracteristicas, tela.rendimiento, tela.encogimiento, entrega.precio_entrega, producto.id_prendacomprada, prenda_comprada.id_prendacomprada, prenda_comprada.nombre_producto, 
-                                    tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho AS ancho_telacombi, tela_combinada.peso AS peso_telacombi, tela_combinada.caracteristicas AS caract_telacombi, tela_combinada.rendimiento AS rend_telacombi, tela_combinada.encogimiento AS encog_telacombi,
-                                    tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho AS ancho_forro, tela_forro.peso AS peso_forro, tela_forro.caracteristicas AS caract_forro, tela_forro.rendimiento AS rend_forro, tela_forro.encogimiento AS encog_forro
-                                    FROM producto
-                                    LEFT JOIN pedido ON producto.id_pedido = pedido.id_pedido LEFT JOIN cliente ON pedido.nit = cliente.nit LEFT JOIN entidad ON cliente.id_entidad = entidad.id_entidad LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda LEFT JOIN tipo_prenda ON prenda.id_tipo_prenda = tipo_prenda.id_tipo_prenda LEFT JOIN tela ON producto.id_tela = tela.id_tela LEFT JOIN deslizador ON producto.id_deslizador = deslizador.id_deslizador LEFT JOIN usuario ON pedido.id_usuario = usuario.id_usuario
-                                    LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro LEFT JOIN cargo ON producto.id_cargo = cargo.id_cargo LEFT JOIN cuello ON producto.id_cuello = cuello.id_cuello LEFT JOIN puño ON producto.id_puño = puño.id_puño LEFT JOIN boton ON producto.id_boton = boton.id_boton LEFT JOIN boton2 ON producto.id_boton2 = boton2.id_boton2 LEFT JOIN plumilla ON producto.id_plumilla = plumilla.id_plumilla LEFT JOIN vinilo ON producto.id_vinilo = vinilo.id_vinilo
-                                    LEFT JOIN cinta_reflectiva ON producto.id_cinta = cinta_reflectiva.id_cinta LEFT JOIN bolsa ON producto.id_bolsa = bolsa.id_bolsa LEFT JOIN acabado ON producto.id_acabado = acabado.id_acabado LEFT JOIN fusionado ON producto.id_fusionado = fusionado.id_fusionado LEFT JOIN encarterada ON producto.id_encarterada = encarterada.id_encarterada LEFT JOIN puesta_cinta ON producto.id_puesta = puesta_cinta.id_puesta
-                                    LEFT JOIN entretela ON producto.id_entretela = entretela.id_entretela  LEFT JOIN entretela2 ON producto.id_entretela2 = entretela2.id_entretela2 LEFT JOIN cremallera ON producto.id_cremallera = cremallera.id_cremallera LEFT JOIN velcro ON producto.id_velcro = velcro.id_velcro  LEFT JOIN resorte ON producto.id_resorte = resorte.id_resorte  LEFT JOIN hombrera ON producto.id_hombrera = hombrera.id_hombrera  LEFT JOIN sesgo ON producto.id_sesgo = sesgo.id_sesgo  
-                                    LEFT JOIN trabilla ON producto.id_trabilla = trabilla.id_trabilla  LEFT JOIN vivo ON producto.id_vivo = vivo.id_vivo  LEFT JOIN cinta_faya ON producto.id_faya = cinta_faya.id_faya  LEFT JOIN guata ON producto.id_guata = guata.id_guata  LEFT JOIN pretina ON producto.id_pretina = pretina.id_pretina  LEFT JOIN broche ON producto.id_broche = broche.id_broche  LEFT JOIN cordon ON producto.id_cordon = cordon.id_cordon  
-                                    LEFT JOIN puntera ON producto.id_puntera = puntera.id_puntera LEFT JOIN bolsillo ON producto.id_bolsillo  = bolsillo.id_bolsillo LEFT JOIN bolsillo_combinado ON producto.id_bolsillocombinado  = bolsillo_combinado.id_bolsillocombinado LEFT JOIN bolsillo_combinado2 ON producto.id_bolsillocombinado2  = bolsillo_combinado2.id_bolsillocombinado2 LEFT JOIN mano_obra ON producto.id_mano_obra = mano_obra.id_mano_obra  LEFT JOIN diseño ON producto.id_diseño = diseño.id_diseño  LEFT JOIN corte ON producto.id_corte = corte.id_corte LEFT JOIN hiladilla ON producto.id_hiladilla = hiladilla.id_hiladilla 
-                                    LEFT JOIN fajon_cintura ON producto.id_fajon_cintura = fajon_cintura.id_fajon_cintura LEFT JOIN entrega ON producto.id_entrega = entrega.id_entrega LEFT JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto LEFT JOIN logistica ON producto.id_logistica = logistica.id_logistica LEFT JOIN cremallera2 ON producto.id_cremallera2 = cremallera2.id_cremallera2 LEFT JOIN resorte2 ON producto.id_resorte2 = resorte2.id_resorte2
-                                    LEFT JOIN cartera ON producto.id_cartera = cartera.id_cartera LEFT JOIN tipo_logo ON producto.id_tipo_logo = tipo_logo.id_tipo_logo LEFT JOIN tablon ON producto.id_tablon = tablon.id_tablon LEFT JOIN marquilla ON producto.id_marquilla = marquilla.id_marquilla LEFT JOIN prenda_comprada ON producto.id_prendacomprada = prenda_comprada.id_prendacomprada
-                                    WHERE producto.estado IS NULL AND pedido.id_pedido = $id_pedido";
+        $consulta = "SELECT usuario.id_usuario, pedido.id_pedido, pedido.id_usuario, producto.id_producto, ficha_tecnica.num_ficha, producto.estado, pedido.total_factura, tipo_producto.id_tipo_producto, tipo_producto.tipo_producto, cargo.cargo,
+                    producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, 
+                    producto.cant_tallas, producto.suma_prendas, tallas.unidades_totales, producto.precio_iva, producto.precio_total, 
+                    ficha_tecnica.fecha_comercial, ficha_tecnica.fecha_entrega, ficha_tecnica.forma_pago,
+                    ficha_tecnica.manga, ficha_tecnica.genero, ficha_tecnica.bolsillo, ficha_tecnica.lavado, ficha_tecnica.bordado, ficha_tecnica.muestra, ficha_tecnica.cuello_option, ficha_tecnica.empaque,
+                    ficha_tecnica.codigo_tela, ficha_tecnica.codigo_tela2, ficha_tecnica.codigo_tela3, ficha_tecnica.codigo_tela4, ficha_tecnica.codigo_tela5, ficha_tecnica.codigo_tela6,
+                    ficha_tecnica.area_tela, ficha_tecnica.area_tela2, ficha_tecnica.area_tela3, ficha_tecnica.area_tela4, ficha_tecnica.area_tela5, ficha_tecnica.area_tela6,
+                    ficha_tecnica.composicion, ficha_tecnica.composicion2, ficha_tecnica.composicion3, ficha_tecnica.composicion4, ficha_tecnica.composicion5, ficha_tecnica.composicion6,
+                    ficha_tecnica.ubicacion_combinado, ficha_tecnica.codigo_telacombi, ficha_tecnica.codigo_telacombi2, ficha_tecnica.codigo_telacombi3, ficha_tecnica.codigo_telacombi4, ficha_tecnica.codigo_telacombi5, ficha_tecnica.codigo_telacombi6,
+                    ficha_tecnica.ubicacion_forro, ficha_tecnica.codigo_telaforro, ficha_tecnica.codigo_telaforro2, ficha_tecnica.codigo_telaforro3, ficha_tecnica.codigo_telaforro4, ficha_tecnica.codigo_telaforro5, ficha_tecnica.codigo_telaforro6,
+                    ficha_tecnica.tipo_opcion, ficha_tecnica.opcion_escrito, ficha_tecnica.ref_sugerida, ficha_tecnica.observacion_tallas, ficha_tecnica.observacion_stock,
+                    producto.mangas, producto.cuello, producto.puño, producto.pretina, producto.fajon, producto.observaciones, producto.valor_agregado, 
+                    producto.boton, producto.cremallera, 
 
-        $resultado = mysqli_query($enlace, $consulta);
-        ?>
+                    prenda.nombre_prenda, prenda_comprada.nombre_producto, tipo_prenda.id_tipo_prenda, pedido.prendas_realizar,
+                    pedido.nit, cliente.nit, cliente.cod_cliente, cliente.cliente, cliente.direccion1, tallas.id_talla,
+                    producto.precio_compra, mano_obra.producto, 
 
-        <!-- Productos -->
-        <?php
-        $fila = mysqli_fetch_assoc($resultado)
+                    tela.id_tela, tela.tela, tela.ancho AS ancho_tela, tela.caracteristicas AS caracteristicas_tela, producto.promedio_consumo, producto.valor_tela, 
+                    tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho AS ancho_telacombi, tela_combinada.caracteristicas AS caracteristicas_combi, producto.promedio_telacombi, producto.valor_telacombi,
+                    tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho AS ancho_forro, tela_forro.caracteristicas AS caracteristicas_forro, producto.promedio_forro, producto.valor_forro,
+                    producto.color_tela, producto.color_tela2, producto.color_tela3, producto.color_tela4, producto.color_tela5, producto.color_tela6,
+                    producto.color_telacombi, producto.color_telacombi2, producto.color_telacombi3, producto.color_telacombi4, producto.color_telacombi5, producto.color_telacombi6,
+                    producto.color_telaforro, producto.color_telaforro2, producto.color_telaforro3, producto.color_telaforro4, producto.color_telaforro5, producto.color_telaforro6,
+
+                    tallas.talla_XS, tallas.stock_XS, tallas.unidades_XS, tallas.talla_M, tallas.stock_M, tallas.unidades_M, tallas.talla_S, tallas.stock_S, tallas.unidades_S, tallas.talla_L, tallas.stock_L, tallas.unidades_L, tallas.talla_XL, tallas.stock_XL, tallas.unidades_XL, tallas.talla_2XL, tallas.stock_2XL, tallas.unidades_2XL, tallas.talla_3XL, tallas.stock_3XL, tallas.unidades_3XL, tallas.talla_4XL, tallas.stock_4XL, tallas.unidades_4XL, tallas.talla_5XL, tallas.stock_5XL, tallas.unidades_5XL, tallas.talla_6XL, tallas.stock_6XL, tallas.unidades_6XL,
+                    tallas.talla_4, tallas.stock_4, tallas.unidades_4, tallas.talla_6, tallas.stock_6, tallas.unidades_6, tallas.talla_8, tallas.stock_8, tallas.unidades_8, tallas.talla_10, tallas.stock_10, tallas.unidades_10, tallas.talla_12, tallas.stock_12, tallas.unidades_12, tallas.talla_14, tallas.stock_14, tallas.unidades_14, tallas.talla_16, tallas.stock_16, tallas.unidades_16, tallas.talla_18, tallas.stock_18, tallas.unidades_18, tallas.talla_20, tallas.stock_20, tallas.unidades_20, tallas.talla_22, tallas.stock_22, tallas.unidades_22,
+                    tallas.talla_especial, tallas.stock_especial, tallas.unidades_especial, tallas.total_tallas, tallas.total_stock, tallas.unidades_tela,
+                    tallas.talla2_XS, tallas.stock2_XS, tallas.unidades2_XS, tallas.talla2_S, tallas.stock2_S, tallas.unidades2_S, tallas.talla2_M, tallas.stock2_M, tallas.unidades2_M, tallas.talla2_L, tallas.stock2_L, tallas.unidades2_L, tallas.talla2_XL, tallas.stock2_XL, tallas.unidades2_XL, tallas.talla2_2XL, tallas.stock2_2XL, tallas.unidades2_2XL, tallas.talla2_3XL, tallas.stock2_3XL, tallas.unidades2_3XL, tallas.talla2_4XL, tallas.stock2_4XL, tallas.unidades2_4XL, tallas.talla2_5XL, tallas.stock2_5XL, tallas.unidades2_5XL, tallas.talla2_6XL, tallas.stock2_6XL, tallas.unidades2_6XL,
+                    tallas.talla2_4, tallas.stock2_4, tallas.unidades2_4, tallas.talla2_6, tallas.stock2_6, tallas.unidades2_6, tallas.talla2_8, tallas.stock2_8, tallas.unidades2_8, tallas.talla2_10, tallas.stock2_10, tallas.unidades2_10, tallas.talla2_12, tallas.stock2_12, tallas.unidades2_12, tallas.talla2_14, tallas.stock2_14, tallas.unidades2_14, tallas.talla2_16, tallas.stock2_16, tallas.unidades2_16, tallas.talla2_18, tallas.stock2_18, tallas.unidades2_18, tallas.talla2_20, tallas.stock2_20, tallas.unidades2_20, tallas.talla2_22, tallas.stock2_22, tallas.unidades2_22,
+                    tallas.talla2_especial, tallas.stock2_especial, tallas.unidades2_especial, tallas.total_tallas2, tallas.total_stock2, tallas.unidades_tela2,
+                    tallas.talla3_XS, tallas.stock3_XS, tallas.unidades3_XS, tallas.talla3_S, tallas.stock3_S, tallas.unidades3_S, tallas.talla3_M, tallas.stock3_M, tallas.unidades3_M, tallas.talla3_L, tallas.stock3_L, tallas.unidades3_L, tallas.talla3_XL, tallas.stock3_XL, tallas.unidades3_XL, tallas.talla3_2XL, tallas.stock3_2XL, tallas.unidades3_2XL, tallas.talla3_3XL, tallas.stock3_3XL, tallas.unidades3_3XL, tallas.talla3_4XL, tallas.stock3_4XL, tallas.unidades3_4XL, tallas.talla3_5XL, tallas.stock3_5XL, tallas.unidades3_5XL, tallas.talla3_6XL, tallas.stock3_6XL, tallas.unidades3_6XL,
+                    tallas.talla3_4, tallas.stock3_4, tallas.unidades3_4, tallas.talla3_6, tallas.stock3_6, tallas.unidades3_6, tallas.talla3_8, tallas.stock3_8, tallas.unidades3_8, tallas.talla3_10, tallas.stock3_10, tallas.unidades3_10, tallas.talla3_12, tallas.stock3_12, tallas.unidades3_12, tallas.talla3_14, tallas.stock3_14, tallas.unidades3_14, tallas.talla3_16, tallas.stock3_16, tallas.unidades3_16, tallas.talla3_18, tallas.stock3_18, tallas.unidades3_18, tallas.talla3_20, tallas.stock3_20, tallas.unidades3_20, tallas.talla3_22, tallas.stock3_22, tallas.unidades3_22,
+                    tallas.talla3_especial, tallas.stock3_especial, tallas.unidades3_especial, tallas.total_tallas3, tallas.total_stock3, tallas.unidades_tela3,
+                    tallas.talla4_XS, tallas.stock4_XS, tallas.unidades4_XS, tallas.talla4_S, tallas.stock4_S, tallas.unidades4_S, tallas.talla4_M, tallas.stock4_M, tallas.unidades4_M, tallas.talla4_L, tallas.stock4_L, tallas.unidades4_L, tallas.talla4_XL, tallas.stock4_XL, tallas.unidades4_XL, tallas.talla4_2XL, tallas.stock4_2XL, tallas.unidades4_2XL, tallas.talla4_3XL, tallas.stock4_3XL, tallas.unidades4_3XL, tallas.talla4_4XL, tallas.stock4_4XL, tallas.unidades4_4XL, tallas.talla4_5XL, tallas.stock4_5XL, tallas.unidades4_5XL, tallas.talla4_6XL, tallas.stock4_6XL, tallas.unidades4_6XL,
+                    tallas.talla4_4, tallas.stock4_4, tallas.unidades4_4, tallas.talla4_6, tallas.stock4_6, tallas.unidades4_6, tallas.talla4_8, tallas.stock4_8, tallas.unidades4_8, tallas.talla4_10, tallas.stock4_10, tallas.unidades4_10, tallas.talla4_12, tallas.stock4_12, tallas.unidades4_12, tallas.talla4_14, tallas.stock4_14, tallas.unidades4_14, tallas.talla4_16, tallas.stock4_16, tallas.unidades4_16, tallas.talla4_18, tallas.stock4_18, tallas.unidades4_18, tallas.talla4_20, tallas.stock4_20, tallas.unidades4_20, tallas.talla4_22, tallas.stock4_22, tallas.unidades4_22,
+                    tallas.talla4_especial, tallas.stock4_especial, tallas.unidades4_especial, tallas.total_tallas4, tallas.total_stock4, tallas.unidades_tela4,
+                    tallas.talla5_XS, tallas.stock5_XS, tallas.unidades5_XS, tallas.talla5_S, tallas.stock5_S, tallas.unidades5_S, tallas.talla5_M, tallas.stock5_M, tallas.unidades5_M, tallas.talla5_L, tallas.stock5_L, tallas.unidades5_L, tallas.talla5_XL, tallas.stock5_XL, tallas.unidades5_XL, tallas.talla5_2XL, tallas.stock5_2XL, tallas.unidades5_2XL, tallas.talla5_3XL, tallas.stock5_3XL, tallas.unidades5_3XL, tallas.talla5_4XL, tallas.stock5_4XL, tallas.unidades5_4XL, tallas.talla5_5XL, tallas.stock5_5XL, tallas.unidades5_5XL, tallas.talla5_6XL, tallas.stock5_6XL, tallas.unidades5_6XL,
+                    tallas.talla5_4, tallas.stock5_4, tallas.unidades5_4, tallas.talla5_6, tallas.stock5_6, tallas.unidades5_6, tallas.talla5_8, tallas.stock5_8, tallas.unidades5_8, tallas.talla5_10, tallas.stock5_10, tallas.unidades5_10, tallas.talla5_12, tallas.stock5_12, tallas.unidades5_12, tallas.talla5_14, tallas.stock5_14, tallas.unidades5_14, tallas.talla5_16, tallas.stock5_16, tallas.unidades5_16, tallas.talla5_18, tallas.stock5_18, tallas.unidades5_18, tallas.talla5_20, tallas.stock5_20, tallas.unidades5_20, tallas.talla5_22, tallas.stock5_22, tallas.unidades5_22,
+                    tallas.talla5_especial, tallas.stock5_especial, tallas.unidades5_especial, tallas.total_tallas5, tallas.total_stock5, tallas.unidades_tela5,
+                    tallas.talla6_XS, tallas.stock6_XS, tallas.unidades6_XS, tallas.talla6_S, tallas.stock6_S, tallas.unidades6_S, tallas.talla6_M, tallas.stock6_M, tallas.unidades6_M, tallas.talla6_L, tallas.stock6_L, tallas.unidades6_L, tallas.talla6_XL, tallas.stock6_XL, tallas.unidades6_XL, tallas.talla6_2XL, tallas.stock6_2XL, tallas.unidades6_2XL, tallas.talla6_3XL, tallas.stock6_3XL, tallas.unidades6_3XL, tallas.talla6_4XL, tallas.stock6_4XL, tallas.unidades6_4XL, tallas.talla6_5XL, tallas.stock6_5XL, tallas.unidades6_5XL, tallas.talla6_6XL, tallas.stock6_6XL, tallas.unidades6_6XL,
+                    tallas.talla6_4, tallas.stock6_4, tallas.unidades6_4, tallas.talla6_6, tallas.stock6_6, tallas.unidades6_6, tallas.talla6_8, tallas.stock6_8, tallas.unidades6_8, tallas.talla6_10, tallas.stock6_10, tallas.unidades6_10, tallas.talla6_12, tallas.stock6_12, tallas.unidades6_12, tallas.talla6_14, tallas.stock6_14, tallas.unidades6_14, tallas.talla6_16, tallas.stock6_16, tallas.unidades6_16, tallas.talla6_18, tallas.stock6_18, tallas.unidades6_18, tallas.talla6_20, tallas.stock6_20, tallas.unidades6_20, tallas.talla6_22, tallas.stock6_22, tallas.unidades6_22,
+                    tallas.talla6_especial, tallas.stock6_especial, tallas.unidades6_especial, tallas.total_tallas6, tallas.total_stock6, tallas.unidades_tela6,
+
+                    producto.precio_entrega, entrega.id_entrega,
+                    producto.cant_boton, producto.valor_boton,
+                    producto.cant_boton2, producto.valor_boton2,
+                    producto.cant_broche, producto.valor_broche,
+                    producto.cant_faya, producto.valor_faya, 
+                    producto.cant_cinta, producto.valor_cinta,
+                    producto.cant_cordon, producto.valor_cordon,
+                    producto.cant_cremallera, producto.valor_cremallera,
+                    producto.cant_cremallera2, producto.valor_cremallera2,
+                    producto.consumo_cuello, producto.valor_cuello,
+                    producto.cant_deslizador, producto.valor_deslizador,
+                    producto.cant_entretela, producto.valor_entretela,
+                    producto.cant_entretela2, producto.valor_entretela2,
+                    producto.cant_fajon_cintura, producto.valor_fajon_cintura,
+                    producto.consumo_fusionado, producto.valor_fusionado,
+                    producto.cant_guata, producto.valor_guata,
+                    producto.cant_hiladilla, producto.valor_hiladilla,
+                    producto.cant_hombrera, producto.valor_hombrera,
+                    producto.cant_plumilla, producto.valor_plumilla,
+                    producto.cant_pretina, producto.valor_pretina,
+                    producto.cant_puntera, producto.valor_puntera,
+                    producto.consumo_puño, producto.valor_puño,
+                    producto.cant_resorte, producto.valor_resorte,
+                    producto.cant_resorte2, producto.valor_resorte2,
+                    producto.cant_sesgo, producto.valor_sesgo,
+                    producto.cant_trabilla, producto.valor_trabilla,
+                    producto.cant_velcro, producto.valor_velcro,
+                    producto.cant_vinilo, producto.valor_vinilo,
+                    producto.cant_vivo, producto.valor_vivo
+
+                    FROM producto
+                    LEFT JOIN pedido ON producto.id_pedido = pedido.id_pedido 
+                    LEFT JOIN cliente ON pedido.nit = cliente.nit 
+                    LEFT JOIN entidad ON cliente.id_entidad = entidad.id_entidad 
+                    LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda 
+                    LEFT JOIN tipo_prenda ON prenda.id_tipo_prenda = tipo_prenda.id_tipo_prenda 
+                    LEFT JOIN usuario ON pedido.id_usuario = usuario.id_usuario
+                    LEFT JOIN tela ON producto.id_tela = tela.id_tela 
+                    LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi 
+                    LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro 
+                    LEFT JOIN cargo ON producto.id_cargo = cargo.id_cargo 
+                    LEFT JOIN mano_obra ON producto.id_mano_obra = mano_obra.id_mano_obra  
+                    LEFT JOIN entrega ON producto.id_entrega = entrega.id_entrega 
+                    LEFT JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto 
+                    LEFT JOIN marquilla ON producto.id_marquilla = marquilla.id_marquilla 
+                    LEFT JOIN prenda_comprada ON producto.id_prendacomprada = prenda_comprada.id_prendacomprada 
+                    LEFT JOIN ficha_tecnica ON producto.id_producto = ficha_tecnica.id_producto
+                    LEFT JOIN tallas ON ficha_tecnica.id_talla = tallas.id_talla
+                    WHERE pedido.id_pedido = $id_pedido AND (producto.estado IS NULL OR producto.estado = 'Ficha')";
+
+        $resultado  = mysqli_query($enlace, $consulta);
+        $productos  = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
+
+        // "Fila cabecera" para los totales de arriba (antes era un fetch aparte)
+        $fila = $productos[0] ?? [];
         ?>
 
         <!-- Barra de navegación -->
@@ -507,482 +867,394 @@
         <br>
 
         <?php
-        // Reiniciar el puntero al principio del conjunto de resultados
-        mysqli_data_seek($resultado, 0);
-
-        // Mostrar la siguiente información
-        $fila = mysqli_fetch_assoc($resultado);
-        ?>
-
-        <?php foreach ($_REQUEST as $var => $val) {
+        foreach ($_REQUEST as $var => $val) {
             $$var = $val;
         }
-        if ($recibido == 2) { ?>
+
+        if ($recibido == 1) { ?>
             <div class="container">
                 <div id="successAlert" class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i><strong> Éxito!</strong> La informacion se ha agregado al productos satisfatoriamente.<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                </div>
-            </div>
-        <?php } else if ($recibido == 3) { ?>
-            <div class="container">
-                <div id="successAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i><strong> Error!</strong> No se ha podido ingresar nueva informacion al producto, ya que se intento ingresar mas prendas de las establecidas en la cotizacion del producto.<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <i class="bi bi-check-circle-fill"></i><strong> Éxito!</strong> La informacion se ha agregado a la Ficha Tecica Satisfatoriamente.<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
             </div>
         <?php }
         ?>
 
+        <?php
+            /**
+             * Calcula el Domingo de Pascua (algoritmo Meeus/Jones/Butcher)
+             */
+            function calcular_pascua($year) {
+                $a = $year % 19;
+                $b = intdiv($year, 100);
+                $c = $year % 100;
+                $d = intdiv($b, 4);
+                $e = $b % 4;
+                $f = intdiv($b + 8, 25);
+                $g = intdiv($b - $f + 1, 3);
+                $h = (19 * $a + $b - $d - $g + 15) % 30;
+                $i = intdiv($c, 4);
+                $k = $c % 4;
+                $l = (32 + 2 * $e + 2 * $i - $h - $k) % 7;
+                $m = intdiv($a + 11 * $h + 22 * $l, 451);
+                $mes = intdiv($h + $l - 7 * $m + 114, 31);
+                $dia = (($h + $l - 7 * $m + 114) % 31) + 1;
+
+                return new DateTime("$year-$mes-$dia");
+            }
+
+            /**
+             * Ley Emiliani: si el festivo no cae en lunes, se traslada al lunes siguiente
+             */
+            function aplicar_ley_emiliani(DateTime $fecha) {
+                $diaSemana = (int)$fecha->format('N'); // 1=lunes ... 7=domingo
+                if ($diaSemana !== 1) {
+                    $fecha->modify('+' . (8 - $diaSemana) . ' days');
+                }
+                return $fecha;
+            }
+
+            /**
+             * Devuelve un set (Y-m-d => true) con todos los festivos de Colombia para un año
+             */
+            function festivos_colombia($year) {
+                $festivos = [];
+
+                // Fijos (no se mueven)
+                $festivos[] = "$year-01-01"; // Año Nuevo
+                $festivos[] = "$year-05-01"; // Día del Trabajo
+                $festivos[] = "$year-07-20"; // Independencia
+                $festivos[] = "$year-08-07"; // Batalla de Boyacá
+                $festivos[] = "$year-12-08"; // Inmaculada Concepción
+                $festivos[] = "$year-12-25"; // Navidad
+
+                // Ley Emiliani (se mueven al lunes siguiente)
+                $emiliani = [
+                    "$year-01-06", // Reyes Magos
+                    "$year-03-19", // San José
+                    "$year-06-29", // San Pedro y San Pablo
+                    "$year-08-15", // Asunción de la Virgen
+                    "$year-10-12", // Día de la Raza
+                    "$year-11-01", // Todos los Santos
+                    "$year-11-11", // Independencia de Cartagena
+                ];
+                foreach ($emiliani as $fechaStr) {
+                    $fecha = aplicar_ley_emiliani(new DateTime($fechaStr));
+                    $festivos[] = $fecha->format('Y-m-d');
+                }
+
+                // Basados en Semana Santa
+                $pascua = calcular_pascua($year);
+                $festivos[] = (clone $pascua)->modify('-3 days')->format('Y-m-d'); // Jueves Santo
+                $festivos[] = (clone $pascua)->modify('-2 days')->format('Y-m-d'); // Viernes Santo
+                $festivos[] = aplicar_ley_emiliani((clone $pascua)->modify('+39 days'))->format('Y-m-d'); // Ascensión
+                $festivos[] = aplicar_ley_emiliani((clone $pascua)->modify('+60 days'))->format('Y-m-d'); // Corpus Christi
+                $festivos[] = aplicar_ley_emiliani((clone $pascua)->modify('+68 days'))->format('Y-m-d'); // Sagrado Corazón
+
+                return array_flip($festivos);
+            }
+
+            /**
+             * Suma N días hábiles a una fecha, saltando fines de semana y festivos colombianos
+             */
+            function sumar_dias_habiles(DateTime $fechaInicio, $diasHabiles) {
+                $fecha = clone $fechaInicio;
+                $cache = [];
+                $sumados = 0;
+
+                while ($sumados < $diasHabiles) {
+                    $fecha->modify('+1 day');
+                    $year = (int)$fecha->format('Y');
+                    if (!isset($cache[$year])) {
+                        $cache[$year] = festivos_colombia($year);
+                    }
+                    $diaSemana = (int)$fecha->format('N');
+                    $esFestivo = isset($cache[$year][$fecha->format('Y-m-d')]);
+
+                    if ($diaSemana < 6 && !$esFestivo) {
+                        $sumados++;
+                    }
+                }
+                return $fecha;
+            }
+        ?>
+
+        <!-- Productos -->
         <div class="container">
             <div class="row">
                 <?php
-                $contador_producto = 1; // Inicializar contador de productos
-                mysqli_data_seek($resultado, 0);
-                while ($fila = mysqli_fetch_assoc($resultado)) {
-                    $consulta_ficha = "SELECT MAX(CAST(num_ficha AS UNSIGNED)) AS ultima_ficha FROM producto WHERE num_ficha REGEXP '^[0-9]+$'";
-                    $resultado_ficha = mysqli_query($enlace, $consulta_ficha);
-                    $fila_ficha = mysqli_fetch_assoc($resultado_ficha);
-                    $ultima_ficha = $fila_ficha['ultima_ficha'] ?? 0;
+                // Se calcula UNA sola vez, fuera del loop (antes no dependía de $fila)
+                $consulta_ficha = "SELECT MAX(CAST(num_ficha AS UNSIGNED)) AS ultima_ficha FROM ficha_tecnica WHERE num_ficha REGEXP '^[0-9]+$'";
+                $resultado_ficha = mysqli_query($enlace, $consulta_ficha);
+                $siguiente_ficha = (mysqli_fetch_assoc($resultado_ficha)['ultima_ficha'] ?? 0) + 1;
 
-                    // Calcular el siguiente número
-                    $siguiente_ficha = $ultima_ficha + 1;
+                // Campos que van como data-* en el botón "Agregar Informacion"
+                $campos_data = [ 'nit',
+                    'precio_compra', 'suma_prendas',
+                    'promedio_consumo', 'valor_tela',
+                    'promedio_telacombi', 'valor_telacombi',
+                    'promedio_forro', 'valor_forro',
+                    'cant_boton', 'valor_boton',
+                    'cant_boton2', 'valor_boton2',
+                    'cant_broche', 'valor_broche',
+                    'cant_faya', 'valor_faya',
+                    'cant_cinta', 'valor_cinta',
+                    'cant_cordon', 'valor_cordon',
+                    'cant_cremallera', 'valor_cremallera',
+                    'cant_cremallera2', 'valor_cremallera2',
+                    'consumo_cuello', 'valor_cuello',
+                    'cant_deslizador', 'valor_deslizador',
+                    'cant_entretela', 'valor_entretela',
+                    'cant_entretela2', 'valor_entretela2',
+                    'cant_fajon_cintura', 'valor_fajon_cintura',
+                    'cant_guata', 'valor_guata',
+                    'cant_hiladilla', 'valor_hiladilla',
+                    'cant_hombrera', 'valor_hombrera',
+                    'cant_plumilla', 'valor_plumilla',
+                    'cant_pretina', 'valor_pretina',
+                    'cant_puntera', 'valor_puntera',
+                    'consumo_puño', 'valor_puño',
+                    'cant_resorte', 'valor_resorte',
+                    'cant_resorte2', 'valor_resorte2',
+                    'cant_sesgo', 'valor_sesgo',
+                    'cant_trabilla', 'valor_trabilla',
+                    'cant_velcro', 'valor_velcro',
+                    'cant_vinilo', 'valor_vinilo',
+                    'cant_vivo', 'valor_vivo',
+                ];
 
-                    if (($fila['estado'] == "Diseño") || ($fila['estado'] == "Compras")) {
-                        continue;
-                    }
+                $colores = [
+                    1 => 'color_tela',
+                    2 => 'color_tela2',
+                    3 => 'color_tela3',
+                    4 => 'color_tela4',
+                    5 => 'color_tela5',
+                    6 => 'color_tela6'
+                ];
+
+                $tallas = ['4', '6', '8', '10', '12', '14', '16', '18', '20', '22', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', 'especial'];
+
+                $contador_producto = 1;
+
+                foreach ($productos as $fila):
+                    if (in_array($fila['estado'], ['Diseño', 'Compras'])) continue;
+
+                    $imagenesValidas = array_filter([
+                        $fila['imagen'],
+                        $fila['imagen2'],
+                        $fila['imagen3'],
+                        $fila['imagen4']
+                    ]);
+
+                    $tallasConCantidad = array_filter($tallas, fn($t) => ($fila['talla_' . $t] ?? 0) > 0);
                 ?>
-                    <?php if ($fila['id_tipo_producto'] != 8): ?>
-                        <div class="col-12 col-md-6 mb-3">
-                            <div class="modal-content rounded-4 modal-fullscreen">
-                                <div class="modal-header" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); border-bottom: 0; border-radius: 10px 10px 0 0; padding: 0.5rem 1rem;">
-                                    <h5 class="modal-title text-white text-center w-100 font-weight-bold" style="font-family: 'Times New Roman', serif;" id="exampleModalLabel">Producto <?= $contador_producto ?>: <br><?= $fila['nombre_prenda'] ?></h5>
-                                </div>
-                                <div class="card-body">
-                                    <?php
-                                    // Array de imágenes
-                                    $imagenes = [
-                                        $fila['imagen'],
-                                        $fila['imagen2'],
-                                        $fila['imagen3'],
-                                        $fila['imagen4'],
-                                    ];
 
-                                    // Filtrar imágenes no vacías
-                                    $imagenesValidas = array_filter($imagenes, fn($imagen) => !empty($imagen));
-                                    ?>
+                    <div class="col-12 col-md-6 mb-3 d-flex">
+                        <div class="card rounded-4 w-100">
+                            <div class="card-header" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); border-bottom: 0; border-radius: 10px 10px 0 0; padding: 0.5rem 1rem;">
+                                <h5 class="card-title text-white text-center w-100 font-weight-bold mb-0" style="font-family: 'Times New Roman', serif;">
+                                    Producto <?= $contador_producto ?>:
+                                    <br><?= $fila['id_tipo_producto'] == 8 ? $fila['nombre_producto'] : $fila['nombre_prenda'] ?>
+                                </h5>
+                            </div>
+                            <div class="card-body">
 
-                                    <?php if (!empty($imagenesValidas)): ?>
-                                        <div class="d-flex flex-wrap justify-content-center">
-                                            <div class="mb-2 mt-1 text-center border rounded p-2">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Imágenes Guía</h6>
-                                                <div class="d-flex justify-content-center mb-2">
-                                                    <?php foreach ($imagenesValidas as $imagen): ?>
-                                                        <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                            <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
-                                                        </div>
-                                                    <?php endforeach; ?>
-                                                </div>
+                                <?php if ($imagenesValidas): ?>
+                                    <div class="d-flex flex-wrap justify-content-center">
+                                        <div class="mb-2 mt-1 text-center border rounded p-2">
+                                            <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Imágenes Guía</h6>
+                                            <div class="d-flex justify-content-center mb-2">
+                                                <?php foreach ($imagenesValidas as $imagen): ?>
+                                                    <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
+                                                        <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
+                                                    </div>
+                                                <?php endforeach; ?>
                                             </div>
                                         </div>
-                                    <?php endif; ?>
-
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Datos sobre la cotizacion</h6>
-                                        <div class="row mb-1">
-                                            <div class="col">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; "><span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?></p>
-                                            </div>
-                                            <div class="col">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?></p>
-                                            </div>
-                                        </div>
-                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Producto:</span> <?= $fila['tipo_producto'] ?></p>
-                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Cargo:</span> <?= $fila['cargo'] ?></p>
-                                        <?php if (!empty($fila['id_tela'])): ?>
-                                            <div>
-                                                <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Tela:</span> <?= $fila['insumo_tela'] ?></p>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($fila['id_telacombi'])): ?>
-                                            <div>
-                                                <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Tela Combinado:</span> <?= $fila['insumo_telacombi'] ?></p>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($fila['id_telaforro'])): ?>
-                                            <div>
-                                                <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Tela Forro:</span> <?= $fila['insumo_telaforro'] ?></p>
-                                            </div>
-                                        <?php endif; ?>
-                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                            <span class="font-weight-bold">Precio Unitario:</span>
-                                            <span class="card-title font-weight-bold" style="color: #FF0000; font-family: 'Agency FB', sans-serif; font-size: 20px;">
-                                                <?php $precio_formateado = number_format($fila['precio_iva'], 2, ',', '.'); ?>
-                                                $ <?= $precio_formateado ?>
-                                            </span>
-                                        </p>
                                     </div>
+                                <?php endif; ?>
 
+                                <div class="mb-2 mt-1 text-center border rounded p-1">
+                                    <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Datos sobre la cotizacion</h6>
+                                    <div class="row mb-1">
+                                        <div class="col">
+                                            <p class="card-text" style="font-family:'Agency FB',sans-serif;color:black;font-size:18px;"><b>Cantidad Prendas:</b> <?= !empty($fila['unidades_totales']) ? $fila['unidades_totales'] : $fila['suma_prendas'] ?></p>
+                                        </div>
+                                        <div class="col">
+                                            <p class="card-text" style="font-family:'Agency FB',sans-serif;color:black;font-size:18px;"><b>Cantidad de Tallas:</b> <?= $fila['cant_tallas'] ?></p>
+                                        </div>
+                                    </div>
+                                    <p class="card-text mb-1" style="font-family:'Agency FB',sans-serif;color:black;font-size:18px;"><b>Tipo de Producto:</b> <?= $fila['tipo_producto'] ?></p>
+                                    <p class="card-text mb-1" style="font-family:'Agency FB',sans-serif;color:black;font-size:18px;"><b>Tipo de Cargo:</b> <?= $fila['cargo'] ?></p>
+
+                                    <?php foreach (
+                                        [
+                                            'id_tela'      => ['Tipo de Tela', 'tela'],
+                                            'id_telacombi' => ['Tipo de Tela Combinado', 'tela_combi'],
+                                            'id_telaforro' => ['Tipo de Tela Forro', 'tela_forro'],
+                                        ] as $condicion => [$label, $campo]
+                                    ): ?>
+                                        <?php if (!empty($fila[$condicion])): ?>
+                                            <p class="card-text mb-1" style="font-family:'Agency FB',sans-serif;color:black;font-size:18px;"><b><?= $label ?>:</b> <?= $fila[$campo] ?></p>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+
+                                    <p class="card-text mb-1" style="font-family:'Agency FB',sans-serif;color:black;font-size:18px;">
+                                        <b>Precio Unitario:</b>
+                                        <span class="card-title font-weight-bold" style="color:#FF0000;font-family:'Agency FB',sans-serif;font-size:20px;">
+                                            $ <?= number_format($fila['precio_iva'], 2, ',', '.') ?>
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <?php foreach ($colores as $numColor => $campoColor): ?>
                                     <?php
-                                    $tallas = array('2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24', '26', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '28', '30', '32', '34', '36', '38', '40', '42', '44', '46', '48', 'especial');
-                                    $mostrarTallas = false;
+                                    // Prefijo de las tallas y del stock según el color
+                                    $prefijo = ($numColor == 1) ? 'talla_' : 'talla' . $numColor . '_';
+                                    $prefijoStock = ($numColor == 1) ? 'stock_' : 'stock' . $numColor . '_';
 
+                                    // Verificar si existe al menos una talla o stock con información
+                                    $tieneTallas = false;
                                     foreach ($tallas as $talla) {
-                                        $cantidad = $fila['talla_' . $talla];
-                                        if ($cantidad > 0) {
-                                            $mostrarTallas = true;
+                                        $campo = $prefijo . $talla;
+                                        $campoStockCheck = $prefijoStock . $talla;
+                                        if (!empty($fila[$campo]) || !empty($fila[$campoStockCheck])) {
+                                            $tieneTallas = true;
                                             break;
                                         }
                                     }
-
-                                    if ($mostrarTallas) :
                                     ?>
-                                        <div class="mb-1 mt-1 text-center border rounded p-1">
-                                            <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Cantidad de Tallas a Realizar</h6>
-                                            <div class="mb-2 row justify-content-center">
+
+                                    <?php if (!empty($fila[$campoColor]) && $tieneTallas): ?>
+                                        <div class="mb-2 mt-1 text-center border rounded p-2">
+                                            <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
+                                                Tela Color: <?= $fila[$campoColor] ?>
+                                            </h6>
+                                            <div class="row justify-content-center">
                                                 <?php
-                                                $count = 0;
-                                                foreach ($tallas as $talla) :
-                                                    $cantidad = $fila['talla_' . $talla];
-                                                    if ($cantidad > 0) :
-                                                        if ($count > 0 && $count % 4 == 0) {
-                                                            echo '</div><div class="mb-2 row justify-content-center">';
-                                                        }
+                                                $contador = 0;
+                                                foreach ($tallas as $talla):
+                                                    $campo = $prefijo . $talla;
+                                                    $campoStock = $prefijoStock . $talla;
+                                                    if (!empty($fila[$campo]) || !empty($fila[$campoStock])):
+                                                        if ($contador > 0 && $contador % 4 == 0):
                                                 ?>
-                                                        <div class="col-auto">
-                                                            <p class="card-text" style="color: black;"><span class="font-weight-bold">Talla <?= $talla ?>:</span> <?= $cantidad ?></p>
-                                                        </div>
+                                            </div>
+                                            <div class="row justify-content-center">
                                                 <?php
-                                                        $count++;
+                                                        endif;
+                                                ?>
+                                                <div class="col-auto">
+                                                    <p class="card-text mb-1">
+                                                        <b>Talla <?= $talla ?>:</b> <?= !empty($fila[$campo]) ? (int) $fila[$campo] : '' ?>
+                                                        <?php if (!empty($fila[$campoStock])): ?>
+                                                            <span class="badge rounded-pill bg-warning text-dark ms-1" title="Stock de esta talla">
+                                                                <i class="bi bi-box-seam-fill"></i> +<?= $fila[$campoStock] ?>
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </p>
+                                                </div>
+                                                <?php
+                                                        $contador++;
                                                     endif;
                                                 endforeach;
                                                 ?>
                                             </div>
                                         </div>
-                                    <?php endif;
-                                    ?>
-
-                                    <div class="mb-2 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Precio Total de Venta</h6>
-                                        <span class="card-title font-weight-bold" style="color: #FF0000; font-family: 'Agency FB', sans-serif; font-size: 20px;">
-                                            <?php $precio_formateado = number_format($fila['precio_total'], 2, ',', '.'); ?>
-                                            $ <?= $precio_formateado ?>
-                                        </span>
-                                    </div>
-
-                                    <div class="text-center align-middle">
-                                        <div class="d-grid gap-2">
-                                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#Editar<?php echo $fila['id_producto']; ?>"
-                                                data-id-producto="<?php echo $fila['id_producto']; ?>"
-                                                data-precio-compra="<?php echo $fila['precio_compra']; ?>"
-                                                data-suma-prendas="<?php echo $fila['suma_prendas']; ?>"
-                                                data-precio-iva="<?php echo $fila['precio_iva']; ?>"
-                                                data-promedio-consumo="<?php echo $fila['promedio_consumo']; ?>"
-                                                data-valor-tela="<?php echo $fila['valor_tela']; ?>"
-                                                data-promedio-telacombi="<?php echo $fila['promedio_telacombi']; ?>"
-                                                data-valor-telacombi="<?php echo $fila['valor_telacombi']; ?>"
-                                                data-promedio-forro="<?php echo $fila['promedio_forro']; ?>"
-                                                data-valor-forro="<?php echo $fila['valor_forro']; ?>"
-                                                data-cant-boton="<?php echo $fila['cant_boton']; ?>"
-                                                data-valor-boton="<?php echo $fila['valor_boton']; ?>"
-                                                data-cant-boton2="<?php echo $fila['cant_boton2']; ?>"
-                                                data-valor-boton2="<?php echo $fila['valor_boton2']; ?>"
-                                                data-cant-broche="<?php echo $fila['cant_broche']; ?>"
-                                                data-valor-broche="<?php echo $fila['valor_broche']; ?>"
-                                                data-cant-faya="<?php echo $fila['cant_faya']; ?>"
-                                                data-valor-faya="<?php echo $fila['valor_faya']; ?>"
-                                                data-cant-cinta="<?php echo $fila['cant_cinta']; ?>"
-                                                data-valor-cinta="<?php echo $fila['valor_cinta']; ?>"
-                                                data-cant-cordon="<?php echo $fila['cant_cordon']; ?>"
-                                                data-valor-cordon="<?php echo $fila['valor_cordon']; ?>"
-                                                data-cant-cremallera="<?php echo $fila['cant_cremallera']; ?>"
-                                                data-valor-cremallera="<?php echo $fila['valor_cremallera']; ?>"
-                                                data-cant-cremallera2="<?php echo $fila['cant_cremallera2']; ?>"
-                                                data-valor-cremallera2="<?php echo $fila['valor_cremallera2']; ?>"
-                                                data-consumo-cuello="<?php echo $fila['consumo_cuello']; ?>"
-                                                data-valor-cuello="<?php echo $fila['valor_cuello']; ?>"
-                                                data-cant-deslizador="<?php echo $fila['cant_deslizador']; ?>"
-                                                data-valor-deslizador="<?php echo $fila['valor_deslizador']; ?>"
-                                                data-cant-entretela="<?php echo $fila['cant_entretela']; ?>"
-                                                data-valor-entretela="<?php echo $fila['valor_entretela']; ?>"
-                                                data-cant-entretela2="<?php echo $fila['cant_entretela2']; ?>"
-                                                data-valor-entretela2="<?php echo $fila['valor_entretela2']; ?>"
-                                                data-cant_fajon_cintura="<?php echo $fila['cant_fajon_cintura']; ?>"
-                                                data-valor_fajon_cintura="<?php echo $fila['valor_fajon_cintura']; ?>"
-                                                data-cant-guata="<?php echo $fila['cant_guata']; ?>"
-                                                data-valor-guata="<?php echo $fila['valor_guata']; ?>"
-                                                data-cant-hiladilla="<?php echo $fila['cant_hiladilla']; ?>"
-                                                data-valor-hiladilla="<?php echo $fila['valor_hiladilla']; ?>"
-                                                data-cant-hombrera="<?php echo $fila['cant_hombrera']; ?>"
-                                                data-valor-hombrera="<?php echo $fila['valor_hombrera']; ?>"
-                                                data-cant-plumilla="<?php echo $fila['cant_plumilla']; ?>"
-                                                data-valor-plumilla="<?php echo $fila['valor_plumilla']; ?>"
-                                                data-cant-pretina="<?php echo $fila['cant_pretina']; ?>"
-                                                data-valor-pretina="<?php echo $fila['valor_pretina']; ?>"
-                                                data-cant-puntera="<?php echo $fila['cant_puntera']; ?>"
-                                                data-valor-puntera="<?php echo $fila['valor_puntera']; ?>"
-                                                data-consumo-puño="<?php echo $fila['consumo_puño']; ?>"
-                                                data-valor-puño="<?php echo $fila['valor_puño']; ?>"
-                                                data-cant-resorte="<?php echo $fila['cant_resorte']; ?>"
-                                                data-valor-resorte="<?php echo $fila['valor_resorte']; ?>"
-                                                data-cant-resorte2="<?php echo $fila['cant_resorte2']; ?>"
-                                                data-valor-resorte2="<?php echo $fila['valor_resorte2']; ?>"
-                                                data-cant-sesgo="<?php echo $fila['cant_sesgo']; ?>"
-                                                data-valor-sesgo="<?php echo $fila['valor_sesgo']; ?>"
-                                                data-cant-trabilla="<?php echo $fila['cant_trabilla']; ?>"
-                                                data-valor-trabilla="<?php echo $fila['valor_trabilla']; ?>"
-                                                data-cant-velcro="<?php echo $fila['cant_velcro']; ?>"
-                                                data-valor-velcro="<?php echo $fila['valor_velcro']; ?>"
-                                                data-cant-vinilo="<?php echo $fila['cant_vinilo']; ?>"
-                                                data-valor-vinilo="<?php echo $fila['valor_vinilo']; ?>"
-                                                data-cant-vivo="<?php echo $fila['cant_vivo']; ?>"
-                                                data-valor-vivo="<?php echo $fila['valor_vivo']; ?>">
-                                                <i class="bi bi-pencil-square"></i> Agregar Informacion
-                                            </button>
-                                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#Info<?php echo $fila['id_producto']; ?>">
-                                                <i class="bi bi-info-circle-fill"></i> Mostrar Datos
-                                            </button>
-                                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#fichatecnica<?= $fila['id_producto']; ?>">
-                                                <i class="bi bi-clipboard-check-fill"></i> Pasar a realizar Ficha Tecnica
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                    <?php if ($fila['id_tipo_producto'] == 8): ?>
-                        <div class="col-12 col-md-6 mb-3">
-                            <div class="modal-content rounded-4 modal-fullscreen">
-                                <div class="modal-header" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); border-bottom: 0; border-radius: 10px 10px 0 0; padding: 0.5rem 1rem;">
-                                    <h5 class="modal-title text-white text-center w-100 font-weight-bold" style="font-family: 'Times New Roman', serif;" id="exampleModalLabel">Producto <?= $contador_producto ?>: <br><?= $fila['nombre_producto'] ?></h5>
-                                </div>
-
-                                <div class="card-body">
-                                    <?php
-                                    // Array de imágenes
-                                    $imagenes = [
-                                        $fila['imagen'],
-                                        $fila['imagen2'],
-                                        $fila['imagen3'],
-                                        $fila['imagen4'],
-                                    ];
-
-                                    // Filtrar imágenes no vacías
-                                    $imagenesValidas = array_filter($imagenes, fn($imagen) => !empty($imagen));
-                                    ?>
-
-                                    <?php if (!empty($imagenesValidas)): ?>
-                                        <div class="d-flex flex-wrap justify-content-center">
-                                            <div class="mb-2 mt-1 text-center border rounded p-2">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Imágenes Guía</h6>
-                                                <div class="d-flex justify-content-center mb-2">
-                                                    <?php foreach ($imagenesValidas as $imagen): ?>
-                                                        <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                            <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
-                                                        </div>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                            </div>
-                                        </div>
                                     <?php endif; ?>
+                                <?php endforeach; ?>
 
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Datos sobre la cotizacion</h6>
-                                        <div class="row mb-1">
-                                            <div class="col">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; "><span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?></p>
-                                            </div>
-                                            <div class="col">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?></p>
-                                            </div>
-                                        </div>
-                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Producto:</span> <?= $fila['tipo_producto'] ?></p>
-                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Cargo:</span> <?= $fila['cargo'] ?></p>
-                                        <?php if (!empty($fila['id_tela'])): ?>
-                                            <div>
-                                                <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Tela:</span> <?= $fila['insumo_tela'] ?></p>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($fila['id_telacombi'])): ?>
-                                            <div>
-                                                <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Tela Combinado:</span> <?= $fila['insumo_telacombi'] ?></p>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($fila['id_telaforro'])): ?>
-                                            <div>
-                                                <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;"><span class="font-weight-bold">Tipo de Tela Forro:</span> <?= $fila['insumo_telaforro'] ?></p>
-                                            </div>
-                                        <?php endif; ?>
-                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                            <span class="font-weight-bold">Precio Unitario:</span>
-                                            <span class="card-title font-weight-bold" style="color: #FF0000; font-family: 'Agency FB', sans-serif; font-size: 20px;">
-                                                <?php $precio_formateado = number_format($fila['precio_iva'], 2, ',', '.'); ?>
-                                                $ <?= $precio_formateado ?>
-                                            </span>
-                                        </p>
-                                    </div>
-
-                                    <?php
-                                    $tallas = array('2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24', '26', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '28', '30', '32', '34', '36', '38', '40', '42', '44', '46', '48', 'especial');
-                                    $mostrarTallas = false;
-
-                                    foreach ($tallas as $talla) {
-                                        $cantidad = $fila['talla_' . $talla];
-                                        if ($cantidad > 0) {
-                                            $mostrarTallas = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if ($mostrarTallas) :
-                                    ?>
-                                        <div class="mb-1 mt-1 text-center border rounded p-1">
-                                            <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Cantidad de Tallas a Realizar</h6>
-                                            <div class="mb-2 row justify-content-center">
-                                                <?php
-                                                $count = 0;
-                                                foreach ($tallas as $talla) :
-                                                    $cantidad = $fila['talla_' . $talla];
-                                                    if ($cantidad > 0) :
-                                                        if ($count > 0 && $count % 3 == 0) {
-                                                            echo '</div><div class="mb-2 row justify-content-center">';
-                                                        }
-                                                ?>
-                                                        <div class="col-md-3">
-                                                            <p class="card-text" style="color: black;"><span class="font-weight-bold">Talla <?= $talla ?>:</span> <?= $cantidad ?></p>
-                                                        </div>
-                                                <?php
-                                                        $count++;
-                                                    endif;
-                                                endforeach;
-                                                ?>
-                                            </div>
-                                        </div>
-                                    <?php endif;
-                                    ?>
-                                    <div class="mb-2 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Precio Total de Venta</h6>
-                                        <span class="card-title font-weight-bold" style="color: #FF0000; font-family: 'Agency FB', sans-serif; font-size: 20px;">
-                                            <?php $precio_formateado = number_format($fila['precio_total'], 2, ',', '.'); ?>
-                                            $ <?= $precio_formateado ?>
-                                        </span>
-                                    </div>
-                                    <div class="text-center align-middle">
-                                        <div class="d-grid gap-2">
-                                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#Editar<?php echo $fila['id_producto']; ?>"
-                                                data-id-producto="<?php echo $fila['id_producto']; ?>"
-                                                data-precio-compra="<?php echo $fila['precio_compra']; ?>"
-                                                data-suma-prendas="<?php echo $fila['suma_prendas']; ?>"
-                                                data-precio-iva="<?php echo $fila['precio_iva']; ?>"
-                                                data-promedio-consumo="<?php echo $fila['promedio_consumo']; ?>"
-                                                data-valor-tela="<?php echo $fila['valor_tela']; ?>"
-                                                data-promedio-telacombi="<?php echo $fila['promedio_telacombi']; ?>"
-                                                data-valor-telacombi="<?php echo $fila['valor_telacombi']; ?>"
-                                                data-promedio-forro="<?php echo $fila['promedio_forro']; ?>"
-                                                data-valor-forro="<?php echo $fila['valor_forro']; ?>"
-                                                data-cant-boton="<?php echo $fila['cant_boton']; ?>"
-                                                data-valor-boton="<?php echo $fila['valor_boton']; ?>"
-                                                data-cant-boton2="<?php echo $fila['cant_boton2']; ?>"
-                                                data-valor-boton2="<?php echo $fila['valor_boton2']; ?>"
-                                                data-cant-broche="<?php echo $fila['cant_broche']; ?>"
-                                                data-valor-broche="<?php echo $fila['valor_broche']; ?>"
-                                                data-cant-faya="<?php echo $fila['cant_faya']; ?>"
-                                                data-valor-faya="<?php echo $fila['valor_faya']; ?>"
-                                                data-cant-cinta="<?php echo $fila['cant_cinta']; ?>"
-                                                data-valor-cinta="<?php echo $fila['valor_cinta']; ?>"
-                                                data-cant-cordon="<?php echo $fila['cant_cordon']; ?>"
-                                                data-valor-cordon="<?php echo $fila['valor_cordon']; ?>"
-                                                data-cant-cremallera="<?php echo $fila['cant_cremallera']; ?>"
-                                                data-valor-cremallera="<?php echo $fila['valor_cremallera']; ?>"
-                                                data-cant-cremallera2="<?php echo $fila['cant_cremallera2']; ?>"
-                                                data-valor-cremallera2="<?php echo $fila['valor_cremallera2']; ?>"
-                                                data-consumo-cuello="<?php echo $fila['consumo_cuello']; ?>"
-                                                data-valor-cuello="<?php echo $fila['valor_cuello']; ?>"
-                                                data-cant-deslizador="<?php echo $fila['cant_deslizador']; ?>"
-                                                data-valor-deslizador="<?php echo $fila['valor_deslizador']; ?>"
-                                                data-cant-entretela="<?php echo $fila['cant_entretela']; ?>"
-                                                data-valor-entretela="<?php echo $fila['valor_entretela']; ?>"
-                                                data-cant-entretela2="<?php echo $fila['cant_entretela2']; ?>"
-                                                data-valor-entretela2="<?php echo $fila['valor_entretela2']; ?>"
-                                                data-cant_fajon_cintura="<?php echo $fila['cant_fajon_cintura']; ?>"
-                                                data-valor_fajon_cintura="<?php echo $fila['valor_fajon_cintura']; ?>"
-                                                data-cant-guata="<?php echo $fila['cant_guata']; ?>"
-                                                data-valor-guata="<?php echo $fila['valor_guata']; ?>"
-                                                data-cant-hiladilla="<?php echo $fila['cant_hiladilla']; ?>"
-                                                data-valor-hiladilla="<?php echo $fila['valor_hiladilla']; ?>"
-                                                data-cant-hombrera="<?php echo $fila['cant_hombrera']; ?>"
-                                                data-valor-hombrera="<?php echo $fila['valor_hombrera']; ?>"
-                                                data-cant-plumilla="<?php echo $fila['cant_plumilla']; ?>"
-                                                data-valor-plumilla="<?php echo $fila['valor_plumilla']; ?>"
-                                                data-cant-pretina="<?php echo $fila['cant_pretina']; ?>"
-                                                data-valor-pretina="<?php echo $fila['valor_pretina']; ?>"
-                                                data-cant-puntera="<?php echo $fila['cant_puntera']; ?>"
-                                                data-valor-puntera="<?php echo $fila['valor_puntera']; ?>"
-                                                data-consumo-puño="<?php echo $fila['consumo_puño']; ?>"
-                                                data-valor-puño="<?php echo $fila['valor_puño']; ?>"
-                                                data-cant-resorte="<?php echo $fila['cant_resorte']; ?>"
-                                                data-valor-resorte="<?php echo $fila['valor_resorte']; ?>"
-                                                data-cant-resorte2="<?php echo $fila['cant_resorte2']; ?>"
-                                                data-valor-resorte2="<?php echo $fila['valor_resorte2']; ?>"
-                                                data-cant-sesgo="<?php echo $fila['cant_sesgo']; ?>"
-                                                data-valor-sesgo="<?php echo $fila['valor_sesgo']; ?>"
-                                                data-cant-trabilla="<?php echo $fila['cant_trabilla']; ?>"
-                                                data-valor-trabilla="<?php echo $fila['valor_trabilla']; ?>"
-                                                data-cant-velcro="<?php echo $fila['cant_velcro']; ?>"
-                                                data-valor-velcro="<?php echo $fila['valor_velcro']; ?>"
-                                                data-cant-vinilo="<?php echo $fila['cant_vinilo']; ?>"
-                                                data-valor-vinilo="<?php echo $fila['valor_vinilo']; ?>"
-                                                data-cant-vivo="<?php echo $fila['cant_vivo']; ?>"
-                                                data-valor-vivo="<?php echo $fila['valor_vivo']; ?>">
-                                                <i class="bi bi-pencil-square"></i> Agregar Informacion
-                                            </button>
-                                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#Info<?php echo $fila['id_producto']; ?>">
-                                                <i class="bi bi-info-circle-fill"></i> Mostrar Datos
-                                            </button>
-                                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#fichatecnica<?= $fila['id_producto']; ?>">
-                                                <i class="bi bi-clipboard-check-fill"></i> Pasar a realizar Ficha Tecnica
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div class="mb-2 text-center border rounded p-1">
+                                    <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Precio Total de Venta</h6>
+                                    <span class="card-title font-weight-bold" style="color:#FF0000;font-family:'Agency FB',sans-serif;font-size:20px;">
+                                        $ <?= number_format($fila['precio_total'], 2, ',', '.') ?>
+                                    </span>
                                 </div>
+
+                                <?php if ($fila['id_tipo_producto'] != 8): ?>
+                                    <div class="d-flex flex-column align-items-center gap-2">
+                                        <button type="button"
+                                            class="btn btn-warning btn-sm rounded-pill shadow-sm px-4"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#FichaTecnica<?= $fila['id_producto'] ?>"
+                                            data-id-producto="<?= $fila['id_producto'] ?>"
+                                            <?php foreach ($campos_data as $campo): ?>
+                                                data-<?= str_replace('_', '-', $campo) ?>="<?= htmlspecialchars($fila[$campo] ?? '') ?>"
+                                            <?php endforeach; ?>>
+                                            <i class="bi bi-pencil-square me-2"></i>
+                                            Agregar Información
+                                        </button>
+                                        <?php if (isset($fila['estado']) && $fila['estado'] === 'Ficha'): ?>
+                                            <button type="button"
+                                                class="btn btn-success btn-sm rounded-pill shadow-sm px-4"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#CambiarEstado<?= $fila['id_producto']; ?>">
+                                                <i class="bi bi-send-check-fill me-2"></i>
+                                                Enviar Ficha a Diseño
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                <?php endif; ?>
+                                <?php if ($fila['id_tipo_producto'] == 8): ?>
+                                    <div class="d-flex flex-column align-items-center gap-2">
+                                        <button type="button"
+                                            class="btn btn-warning btn-sm rounded-pill shadow-sm px-4"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#FichaTecnicaEx<?= $fila['id_producto'] ?>"
+                                            data-id-producto="<?= $fila['id_producto'] ?>"
+                                            <?php foreach ($campos_data as $campo): ?>
+                                                data-<?= str_replace('_', '-', $campo) ?>="<?= htmlspecialchars($fila[$campo] ?? '') ?>"
+                                            <?php endforeach; ?>>
+                                            <i class="bi bi-pencil-square me-2"></i>
+                                            Agregar Información
+                                        </button>
+                                        <?php if (isset($fila['estado']) && $fila['estado'] === 'Ficha'): ?>
+                                            <button type="button"
+                                                class="btn btn-success btn-sm rounded-pill shadow-sm px-4"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#CambiarEstado<?= $fila['id_producto']; ?>">
+                                                <i class="bi bi-send-check-fill me-2"></i>
+                                                Enviar Ficha a Diseño
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
-                    <?php endif; ?>
+                    </div>
+
                 <?php
-                    $contador_producto++; // Incrementar contador de productos
-                } ?>
+                    $contador_producto++;
+                endforeach;
+                ?>
             </div>
         </div>
 
         <!-- Modales -->
         <?php
-        $resultado = mysqli_query($enlace, $consulta);
-        while ($fila = mysqli_fetch_array($resultado)) {
+        foreach ($productos as $fila) {
+            $ficha_existe = !empty($fila['num_ficha']); // true solo si YA tiene ficha guardada
+
+            // Helper: valor guardado de la ficha (o '' si no hay)
+            $fv = function ($campo) use ($fila) {
+                return isset($fila[$campo]) && $fila[$campo] !== null ? $fila[$campo] : '';
+            };
+            // Helper: 'selected' si el valor guardado coincide
+            $fsel = function ($campo, $opcion) use ($fila) {
+                return (isset($fila[$campo]) && (string)$fila[$campo] === (string)$opcion) ? 'selected' : '';
+            };
         ?>
 
-            <!-- Modales Editar -->
-            <div class="modal fade" id="Editar<?php echo $fila['id_producto']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content rounded-4">
-                        <?php if ($fila['id_tipo_producto'] != 8): ?>
-                            <div class="modal-header justify-content-center" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); position: relative;">
-                                <h5 class="modal-title text-white fw-bold text-center w-100" id="exampleModalLabel">Ingresa los Datos y Tallas de la Prenda:<br><?= $fila['nombre_prenda'] ?></h5>
-                                <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                        <?php endif; ?>
-                        <?php if ($fila['id_tipo_producto'] == 8): ?>
-                            <div class="modal-header justify-content-center" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); position: relative;">
-                                <h5 class="modal-title text-white fw-bold text-center w-100" id="exampleModalLabel">Ingresa los Datos y Tallas de la Prenda:<br><?= $fila['nombre_producto'] ?></h5>
-                                <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                        <?php endif; ?>
+            <!-- Modal Ficha Tecnica -->
+            <div class="modal fade" id="FichaTecnica<?php echo $fila['id_producto']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-100 w-100 px-5">
+                    <div class="modal-content shadow-lg border-0 rounded-4">
                         <div class="modal-body">
                             <form action="" method="post" id="formulario" enctype="multipart/form-data">
                                 <input type="hidden" name="id_producto" value="<?php echo $fila['id_producto']; ?>">
-                                <input type="hidden" name="precio_compra" value="<?php echo $fila['precio_compra']; ?>">
+                                <input type="hidden" name="nit" value="<?php echo $fila['nit']; ?>">
                                 <input type="hidden" name="suma_prendas" value="<?php echo $fila['suma_prendas']; ?>">
-                                <input type="hidden" name="precio_iva" value="<?php echo $fila['precio_iva']; ?>">
-                                <input type="hidden" name="promedio_consumo" value="<?php echo $fila['promedio_consumo']; ?>">
-                                <input type="hidden" name="valor_tela" value="<?php echo $fila['valor_tela']; ?>">
                                 <input type="hidden" name="promedio_telacombi" value="<?php echo $fila['promedio_telacombi']; ?>">
                                 <input type="hidden" name="valor_telacombi" value="<?php echo $fila['valor_telacombi']; ?>">
                                 <input type="hidden" name="promedio_forro" value="<?php echo $fila['promedio_forro']; ?>">
@@ -1042,4165 +1314,899 @@
                                 <input type="hidden" name="cant_vivo" value="<?php echo $fila['cant_vivo']; ?>">
                                 <input type="hidden" name="valor_vivo" value="<?php echo $fila['valor_vivo']; ?>">
 
-                                <?php
-                                $imagenes = [
-                                    $fila['imagen'],
-                                    $fila['imagen2'],
-                                    $fila['imagen3'],
-                                    $fila['imagen4'],
-                                ];
+                                <div class="modal-header text-white justify-content-center position-relative" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
+                                    <div class="d-flex align-items-center text-center">
+                                        <img src="../../img/unidotaciones.png" alt="Logo" width="150" class="me-3 rounded">
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
 
-                                // Filtrar imágenes no vacías
-                                $imagenes_validas = array_filter($imagenes);
-                                ?>
+                                <div class="text-white text-center py-2 fw-bold" style="background-color:#18a000;">
+                                    FICHA TÉCNICA DE PRODUCCIÓN
+                                </div>
 
-                                <?php if (!empty($imagenes_validas)): // Verificar si hay al menos una imagen 
-                                ?>
-                                    <div class="d-flex flex-wrap justify-content-center">
-                                        <div class="mb-2 mt-1 text-center border rounded p-2">
-                                            <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Imágenes Guia</h6>
-                                            <div class="d-flex justify-content-center mb-2">
-                                                <?php foreach ($imagenes_validas as $imagen): ?>
-                                                    <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                        <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid">
-                                                    </div>
+                                <!-- FECHAS -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                            <thead>
+                                                <tr class="table-primary">
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Comercial</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Ficha Tecnica</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Trazo</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Corte</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 16%;">Fecha Numeracion</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 16%;">Personalizado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <?php echo $ficha_existe && $fv('fecha_comercial') ? date('d/m/Y', strtotime($fv('fecha_comercial'))) : date('d/m/Y'); ?>
+                                                        <input type="hidden" name="fecha_comercial" value="<?php echo $ficha_existe && $fv('fecha_comercial') ? date('Y-m-d', strtotime($fv('fecha_comercial'))) : date('Y-m-d'); ?>">
+                                                    </td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td>
+                                                        <?php echo ($fila['id_entrega'] == 2) ? 'Sí' : 'No'; ?>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- ENCABEZADO FICHA -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <!-- BLOQUE IZQUIERDO 40% -->
+                                                    <td class="fw-bold text-end" style="width:12%;" name="fecha_pedido">Fecha Pedido:</td>
+                                                    <td class="text-center" style="width:28%;">
+                                                        <?php
+                                                        $dias = ['Sunday' => 'Domingo', 'Monday' => 'Lunes', 'Tuesday' => 'Martes', 'Wednesday' => 'Miércoles', 'Thursday' => 'Jueves', 'Friday' => 'Viernes', 'Saturday' => 'Sábado'];
+
+                                                        $meses = [1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'];
+
+                                                        echo $dias[date('l')] . ', ' . date('d') . ' de ' . $meses[date('n')] . ' del ' . date('Y');
+                                                        ?>
+                                                    </td>
+
+                                                    <!-- BLOQUE DERECHO 60% -->
+                                                    <td class="fw-bold text-center" style="width:11%;">Fecha de Entrega:</td>
+                                                    <td class="text-center" style="width:20%;">
+                                                        <input type="date" class="form-control form-control-sm text-center" name="fecha_entrega"
+                                                        value="<?= $ficha_existe && $fv('fecha_entrega') ? date('Y-m-d', strtotime($fv('fecha_entrega'))) : sumar_dias_habiles(new DateTime(), 30)->format('Y-m-d') ?>">
+                                                    </td>
+
+                                                    <td class="fw-bold text-center" style="width:17%;">Número de Ficha</td>
+                                                    <td class="text-center fw-bold" style="width:12%; background:#ffff00;">
+                                                        <input type="text" class="form-control form-control-sm text-center" style="background:#ffff00;" name="num_ficha" value="<?= $ficha_existe ? $fv('num_ficha') : $siguiente_ficha ?>" <?= $ficha_existe ? 'readonly' : '' ?>>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="fw-bold text-end">Ciudad:</td>
+                                                    <td class="text-center">PEREIRA</td>
+
+                                                    <td class="fw-bold text-center">Cliente:</td>
+                                                    <td class="text-center fw-bold" colspan="3" style="color:red;">
+                                                        <?php echo $fila['cliente']; ?>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold text-end">Destino:</td>
+                                                    <td class="text-center">UNIDOTACIONES DEL EJE S.A.S</td>
+
+                                                    <td class="fw-bold text-center">NIT:</td>
+                                                    <td class="text-center">
+                                                        <?php echo $fila['cod_cliente']; ?>
+                                                    </td>
+
+                                                    <td class="fw-bold text-center">Forma de Pago:</td>
+                                                    <td>
+                                                        <input type="text" class="form-control form-control-sm text-center" name="forma_pago" style="color:red;" value="<?= htmlspecialchars($fv('forma_pago')) ?>">
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="fw-bold text-end">Cuenta:</td>
+                                                    <td class="text-center">9.011.918.976</td>
+
+                                                    <td class="fw-bold text-center">Dirección:</td>
+                                                    <td class="text-center" colspan="3">
+                                                        <?php echo $fila['direccion1']; ?>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- PRENDA -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                            <thead>
+                                                <tr class="table-primary">
+                                                    <th style="text-align: center; vertical-align: middle; width: 20%;">Prenda</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 9%;">Manga</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Genero</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Marca</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Bolsillo</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Lavado</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Bordado</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 9%;">Muestra F</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Cuello</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 12%;">Tipo de Empaque</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($fila['producto']); ?></td>
+                                                    <td>
+                                                        <?php if (in_array($fila['id_tipo_prenda'], [1, 2, 5, 6])) { ?>
+                                                            <select name="manga" class="form-select form-select-sm">
+                                                                <option value=""></option>
+                                                                <option value="Larga" <?= $fsel('manga', 'Larga') ?>>Larga</option>
+                                                                <option value="Corta" <?= $fsel('manga', 'Corta') ?>>Corta</option>
+                                                                <option value="Sisa" <?= $fsel('manga', 'Sisa') ?>>Sisa</option>
+                                                                <option value="Al Codo" <?= $fsel('manga', 'Al Codo') ?>>Al Codo</option>
+                                                                <option value="Japonesa" <?= $fsel('manga', 'Japonesa') ?>>Japonesa</option>
+                                                                <option value="Rodada" <?= $fsel('manga', 'Rodada') ?>>Rodada</option>
+                                                                <option value="Ranglan" <?= $fsel('manga', 'Ranglan') ?>>Ranglan</option>
+                                                                <option value="3/4" <?= $fsel('manga', '3/4') ?>>3/4</option>
+                                                                <option value="Clásico" <?= $fsel('manga', 'Clásico') ?>>Clásico</option>
+                                                                <option value="Informal" <?= $fsel('manga', 'Informal') ?>>Informal</option>
+                                                            </select>
+                                                        <?php } else { ?>
+                                                            <input type="text" class="form-control form-control-sm" value="" readonly>
+                                                        <?php } ?>
+                                                    </td>
+                                                    <td>
+                                                        <select name="genero" id="genero<?php echo $fila['id_producto']; ?>" class="form-select form-select-sm genero-select">
+                                                            <option value=""></option>
+                                                            <option value="Dama" <?= $fsel('genero', 'Dama') ?>>Dama</option>
+                                                            <option value="Hombre" <?= $fsel('genero', 'Hombre') ?>>Hombre</option>
+                                                            <option value="Junior" <?= $fsel('genero', 'Junior') ?>>Junior</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>UDE</td>
+                                                    <td>
+                                                        <select name="bolsillo" class="form-select form-select-sm">
+                                                            <option value="NO" <?= $fsel('bolsillo', 'NO') ?>>NO</option>
+                                                            <option value="SI" <?= $fsel('bolsillo', 'SI') ?>>SI</option>
+                                                            <option value="Imitación" <?= $fsel('bolsillo', 'Imitación') ?>>Imitación</option>
+                                                            <option value="1" <?= $fsel('bolsillo', '1') ?>>1</option>
+                                                            <option value="2" <?= $fsel('bolsillo', '2') ?>>2</option>
+                                                            <option value="3" <?= $fsel('bolsillo', '3') ?>>3</option>
+                                                            <option value="4" <?= $fsel('bolsillo', '4') ?>>4</option>
+                                                            <option value="5" <?= $fsel('bolsillo', '5') ?>>5</option>
+                                                            <option value="Relojero" <?= $fsel('bolsillo', 'Relojero') ?>>Relojero</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select name="lavado" class="form-select form-select-sm">
+                                                            <option value="NO" <?= $fsel('lavado', 'NO') ?>>NO</option>
+                                                            <option value="SI" <?= $fsel('lavado', 'SI') ?>>SI</option>
+                                                        </select>
+                                                    </td>
+                                                    <td style="background:#ffff00;"><input type="text" class="form-control form-control-sm" style="background:#ffff00;" name="bordado" value="<?= htmlspecialchars($fv('bordado')) ?>"></td>
+                                                    <td>
+                                                        <select name="muestra" class="form-select form-select-sm">
+                                                            <option value="NO" <?= $fsel('muestra', 'NO') ?>>NO</option>
+                                                            <option value="SI" <?= $fsel('muestra', 'SI') ?>>SI</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <?php if (in_array($fila['id_tipo_prenda'], [1, 2, 5, 6])) { ?>
+                                                            <select name="cuello_option" class="form-select form-select-sm">
+                                                                <option value=""></option>
+                                                                <option value="Botón Down" <?= $fsel('cuello_option', 'Botón Down') ?>>Botón Down</option>
+                                                                <option value="Botón Down Oculto" <?= $fsel('cuello_option', 'Botón Down Oculto') ?>>Botón Down Oculto</option>
+                                                                <option value="Sin Botón Down" <?= $fsel('cuello_option', 'Sin Botón Down') ?>>Sin Botón Down</option>
+                                                                <option value="Sport" <?= $fsel('cuello_option', 'Sport') ?>>Sport</option>
+                                                                <option value="Camisero" <?= $fsel('cuello_option', 'Camisero') ?>>Camisero</option>
+                                                                <option value="Tejido" <?= $fsel('cuello_option', 'Tejido') ?>>Tejido</option>
+                                                                <option value="Y Puños Tejidos" <?= $fsel('cuello_option', 'Y Puños Tejidos') ?>>Y Puños Tejidos</option>
+                                                                <option value="Y Puños en la misma tela" <?= $fsel('cuello_option', 'Y Puños en la misma tela') ?>>Y Puños en la misma tela</option>
+                                                                <option value="Sastre" <?= $fsel('cuello_option', 'Sastre') ?>>Sastre</option>
+                                                                <option value="Smoking" <?= $fsel('cuello_option', 'Smoking') ?>>Smoking</option>
+                                                                <option value="En V" <?= $fsel('cuello_option', 'En V') ?>>En V</option>
+                                                                <option value="Corbata" <?= $fsel('cuello_option', 'Corbata') ?>>Corbata</option>
+                                                                <option value="Nerhú" <?= $fsel('cuello_option', 'Nerhú') ?>>Nerhú</option>
+                                                            </select>
+                                                        <?php } else { ?>
+                                                            <input type="text" class="form-control form-control-sm" value="" readonly>
+                                                        <?php } ?>
+                                                    </td>
+                                                    <td>
+                                                        <select name="empaque" class="form-select form-select-sm">
+                                                            <option value=""></option>
+                                                            <option value="Doblada" <?= $fsel('empaque', 'Doblada') ?>>Doblada</option>
+                                                            <option value="Colgada" <?= $fsel('empaque', 'Colgada') ?>>Colgada</option>
+                                                            <option value="Doblado casero" <?= $fsel('empaque', 'Doblado casero') ?>>Doblado casero</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- TELA -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <?php
+                                    $colores = [];
+                                    for ($i = 1; $i <= 6; $i++) {
+                                        $clave = ($i == 1) ? 'color_tela' : 'color_tela' . $i;
+                                        if (!empty($fila[$clave])) {
+                                            $colores[] = [
+                                                'sufijo' => ($i == 1) ? '' : $i,
+                                                'valor'  => $fila[$clave]
+                                            ];
+                                        }
+                                    }
+                                    ?>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                            <thead>
+                                                <tr class="table-primary">
+                                                    <th style="text-align: center; vertical-align: middle; width: 10%;">Codigo</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 12%;">Color</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 40%;">Nombre de la Tela</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Composicion</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 10%;">Ancho</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 13%;">AREA</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($colores as $c): ?>
+                                                    <tr>
+                                                        <td><input type="text" class="form-control form-control-sm text-center" name="codigo_tela<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($fv('codigo_tela' . $c['sufijo'])); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300"></td>
+                                                        <td><input type="text" class="form-control form-control-sm text-center" name="color_tela<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($c['valor']); ?>"></td>
+                                                        <td><?php echo htmlspecialchars($fila['tela']); ?></td>
+                                                        <td><?php echo htmlspecialchars($fila['caracteristicas_tela']); ?></td>
+                                                        <td><?php echo htmlspecialchars($fila['ancho_tela']); ?></td>
+                                                        <td style="background:#ffff00;"><input type="text" class="form-control form-control-sm text-center" style="background:#ffff00;" name="area_tela<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($fv('area_tela' . $c['sufijo'])); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300"></td>
+                                                    </tr>
                                                 <?php endforeach; ?>
-                                            </div>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                <?php endif; ?>
+                                </div>
 
-                                <!-- Modal Editar Superior Hombre -->
-                                <?php if ($fila['id_tipo_producto'] == 1): ?>
-
-                                    <?php if (
-                                        !empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_bolsillo']) || !empty($fila['id_boton']) || !empty($fila['id_boton2']) || !empty($fila['id_broche']) || !empty($fila['id_fajon_cintura']) || !empty($fila['id_faya']) || !empty($fila['id_cinta']) ||
-                                        !empty($fila['id_cordon']) || !empty($fila['id_cremallera']) || !empty($fila['id_cremallera2']) || !empty($fila['id_cuello']) || !empty($fila['id_deslizador']) || !empty($fila['id_entretela']) || !empty($fila['id_entretela2']) || !empty($fila['id_estampado']) || !empty($fila['id_fusionado']) || !empty($fila['id_guata']) || !empty($fila['id_hiladilla']) ||
-                                        !empty($fila['id_hombrera']) || !empty($fila['id_marquilla']) || !empty($fila['id_plumilla']) || !empty($fila['id_pretina']) || !empty($fila['id_puntera']) || !empty($fila['id_puño']) || !empty($fila['id_resorte']) || !empty($fila['id_resorte2']) || !empty($fila['id_sesgo']) || !empty($fila['id_trabilla']) || !empty($fila['id_velcro']) || !empty($fila['id_vinilo']) || !empty($fila['id_vivo'])
-                                    ): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsillo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsillo:</span>
-                                                            <?= $fila['tipo_bolsillo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton:</span>
-                                                            <?= $fila['insumo_boton'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton 2:</span>
-                                                            <?= $fila['insumo_boton2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_broche'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Broche:</span>
-                                                            <?= $fila['insumo_broche'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cinta'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Reflectiva:</span>
-                                                            <?= $fila['insumo_reflectiva'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cordon'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cordon:</span>
-                                                            <?= $fila['insumo_cordon'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera:</span>
-                                                            <?= $fila['insumo_cremallera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera 2:</span>
-                                                            <?= $fila['insumo_cremallera2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cuello'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cuello:</span>
-                                                            <?= $fila['insumo_cuello'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_deslizador'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Deslizador:</span>
-                                                            <?= $fila['insumo_deslizador'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela:</span>
-                                                            <?= $fila['insumo_entretela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela 2:</span>
-                                                            <?= $fila['insumo_entretela2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_estampado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Estampado:</span>
-                                                            <?= $fila['tipo_estampado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fajon_cintura'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fajon Cintura:</span>
-                                                            <?= $fila['insumo_fajon_cintura'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_faya'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Faya:</span>
-                                                            <?= $fila['insumo_faya'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fusionado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fusionado:</span>
-                                                            <?= $fila['insumo_fusionado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_guata'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Guata:</span>
-                                                            <?= $fila['insumo_guata'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hiladilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hiladilla:</span>
-                                                            <?= $fila['insumo_hiladilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hombrera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hombrera:</span>
-                                                            <?= $fila['insumo_hombrera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_plumilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Plumilla:</span>
-                                                            <?= $fila['insumo_plumilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_pretina'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Pretina:</span>
-                                                            <?= $fila['insumo_pretina'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puño'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puño:</span>
-                                                            <?= $fila['insumo_puño'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puntera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puntera:</span>
-                                                            <?= $fila['insumo_puntera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte:</span>
-                                                            <?= $fila['insumo_resorte'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte 2:</span>
-                                                            <?= $fila['insumo_resorte2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_sesgo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Sesgo:</span>
-                                                            <?= $fila['insumo_sesgo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_trabilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Trabilla:</span>
-                                                            <?= $fila['insumo_trabilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_velcro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Velcro:</span>
-                                                            <?= $fila['insumo_velcro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vinilo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vinilo:</span>
-                                                            <?= $fila['insumo_vinilo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vivo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vivo:</span>
-                                                            <?= $fila['insumo_vivo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 26; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Cuarta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas1 = ['XS', 'S', 'M', 'L', 'XL'];
-                                            foreach ($tallas1 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Quinta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas2 = ['2XL', '3XL', '4XL', '5XL', '6XL'];
-                                            foreach ($tallas2 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Sexta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
+                                <!-- TELA COMBINADA -->
+                                <?php if (!empty($fila['id_telacombi'])): ?>   
+                                    <div class="card shadow-sm border-0 mb-3">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-sm align-middle mb-0">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="fw-bold text-center" style="width:10%;">Combinado</td>
+                                                        <td style="width:90%;">
+                                                            <input type="text" class="form-control form-control-sm text-center" name="ubicacion_combinado" value="<?php echo htmlspecialchars($fv('ubicacion_combinado')); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
 
                                     <?php
-                                    $frentes = $fila['frentes'];
-                                    $espalda = $fila['espalda'];
-                                    $mangas = $fila['mangas'];
-                                    $cuello = $fila['cuello'];
-                                    $puño = $fila['puño'];
-                                    $otros = $fila['otros'];
-                                    $observaciones = $fila['observaciones'];
+                                    $colores_combi = [];
+                                    for ($i = 1; $i <= 6; $i++) {
+                                        $clave = ($i == 1) ? 'color_telacombi' : 'color_telacombi' . $i;
+                                        if (!empty($fila[$clave])) {
+                                            $colores_combi[] = [
+                                                'sufijo' => ($i == 1) ? '' : $i,
+                                                'valor'  => $fila[$clave]
+                                            ];
+                                        }
+                                    }
                                     ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Frente:</label>
-                                        <?php if (empty($frentes)): ?>
-                                            <textarea class="form-control" name="frentes" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="frentes" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($frentes); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Espalda:</label>
-                                        <?php if (empty($espalda)): ?>
-                                            <textarea class="form-control" name="espalda" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="espalda" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($espalda); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Mangas:</label>
-                                        <?php if (empty($mangas)): ?>
-                                            <textarea class="form-control" name="mangas" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="mangas" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($mangas); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Cuello:</label>
-                                        <?php if (empty($cuello)): ?>
-                                            <textarea class="form-control" name="cuello" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="cuello" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($cuello); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Puño:</label>
-                                        <?php if (empty($puño)): ?>
-                                            <textarea class="form-control" name="puño" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="puño" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($puño); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Otros:</label>
-                                        <?php if (empty($otros)): ?>
-                                            <textarea class="form-control" name="otros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="otros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($otros); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Observaciones:</label>
-                                        <?php if (empty($observaciones)): ?>
-                                            <textarea class="form-control" name="observaciones" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="4"><?php echo htmlspecialchars($observaciones); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
 
-                                    <input type="hidden" name="talla_28" value="0"><input type="hidden" name="talla_30" value="0"><input type="hidden" name="talla_32" value="0"><input type="hidden" name="talla_34" value="0"><input type="hidden" name="talla_36" value="0"><input type="hidden" name="talla_38" value="0">
-                                    <input type="hidden" name="talla_40" value="0"><input type="hidden" name="talla_42" value="0"><input type="hidden" name="talla_44" value="0"><input type="hidden" name="talla_46" value="0"><input type="hidden" name="talla_48" value="0">
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
+                                    <div class="card shadow-sm border-0 mb-3">
+                                        <div class="table-responsive">
+                                            <table id="mytabla" class="table table-bordered table-sm text-center mb-0">
+                                                <thead>
+                                                    <tr class="table-primary">
+                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Codigo</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 12%;">Color</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 40%;">Nombre de la Tela Combinada</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 15%;">Composicion</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Ancho</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($colores_combi as $c): ?>
+                                                        <tr>
+                                                            <td><input type="text" class="form-control form-control-sm text-center" name="codigo_telacombi<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($fv('codigo_telacombi' . $c['sufijo'])); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300"></td>
+                                                            <td><input type="text" class="form-control form-control-sm text-center" name="color_telacombi<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($c['valor']); ?>"></td>
+                                                            <td><?php echo htmlspecialchars($fila['tela_combi']); ?></td>
+                                                            <td><?php echo htmlspecialchars($fila['caracteristicas_combi']); ?></td>
+                                                            <td><?php echo htmlspecialchars($fila['ancho_telacombi']); ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 <?php endif; ?>
 
-                                <!-- Modal Editar Superior Mujer -->
-                                <?php if ($fila['id_tipo_producto'] == 2): ?>
-
-                                    <?php if (
-                                        !empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_bolsillo']) || !empty($fila['id_boton']) || !empty($fila['id_boton2']) || !empty($fila['id_broche']) || !empty($fila['id_fajon_cintura']) || !empty($fila['id_faya']) || !empty($fila['id_cinta']) ||
-                                        !empty($fila['id_cordon']) || !empty($fila['id_cremallera']) || !empty($fila['id_cremallera2']) || !empty($fila['id_cuello']) || !empty($fila['id_deslizador']) || !empty($fila['id_entretela']) || !empty($fila['id_entretela2']) || !empty($fila['id_estampado']) || !empty($fila['id_fusionado']) || !empty($fila['id_guata']) || !empty($fila['id_hiladilla']) ||
-                                        !empty($fila['id_hombrera']) || !empty($fila['id_marquilla']) || !empty($fila['id_plumilla']) || !empty($fila['id_pretina']) || !empty($fila['id_puntera']) || !empty($fila['id_puño']) || !empty($fila['id_resorte']) || !empty($fila['id_resorte2']) || !empty($fila['id_sesgo']) || !empty($fila['id_trabilla']) || !empty($fila['id_velcro']) || !empty($fila['id_vinilo']) || !empty($fila['id_vivo'])
-                                    ): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsillo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsillo:</span>
-                                                            <?= $fila['tipo_bolsillo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton:</span>
-                                                            <?= $fila['insumo_boton'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton 2:</span>
-                                                            <?= $fila['insumo_boton2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_broche'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Broche:</span>
-                                                            <?= $fila['insumo_broche'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cinta'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Reflectiva:</span>
-                                                            <?= $fila['insumo_reflectiva'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cordon'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cordon:</span>
-                                                            <?= $fila['insumo_cordon'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera:</span>
-                                                            <?= $fila['insumo_cremallera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera 2:</span>
-                                                            <?= $fila['insumo_cremallera2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cuello'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cuello:</span>
-                                                            <?= $fila['insumo_cuello'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_deslizador'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Deslizador:</span>
-                                                            <?= $fila['insumo_deslizador'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela:</span>
-                                                            <?= $fila['insumo_entretela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela 2:</span>
-                                                            <?= $fila['insumo_entretela2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_estampado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Estampado:</span>
-                                                            <?= $fila['tipo_estampado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fajon_cintura'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fajon Cintura:</span>
-                                                            <?= $fila['insumo_fajon_cintura'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_faya'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Faya:</span>
-                                                            <?= $fila['insumo_faya'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fusionado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fusionado:</span>
-                                                            <?= $fila['insumo_fusionado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_guata'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Guata:</span>
-                                                            <?= $fila['insumo_guata'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hiladilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hiladilla:</span>
-                                                            <?= $fila['insumo_hiladilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hombrera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hombrera:</span>
-                                                            <?= $fila['insumo_hombrera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_plumilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Plumilla:</span>
-                                                            <?= $fila['insumo_plumilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_pretina'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Pretina:</span>
-                                                            <?= $fila['insumo_pretina'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puño'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puño:</span>
-                                                            <?= $fila['insumo_puño'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puntera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puntera:</span>
-                                                            <?= $fila['insumo_puntera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte:</span>
-                                                            <?= $fila['insumo_resorte'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte 2:</span>
-                                                            <?= $fila['insumo_resorte2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_sesgo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Sesgo:</span>
-                                                            <?= $fila['insumo_sesgo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_trabilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Trabilla:</span>
-                                                            <?= $fila['insumo_trabilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_velcro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Velcro:</span>
-                                                            <?= $fila['insumo_velcro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vinilo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vinilo:</span>
-                                                            <?= $fila['insumo_vinilo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vivo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vivo:</span>
-                                                            <?= $fila['insumo_vivo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 26; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                            <?php $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
+                                <!-- TELA FORRO -->
+                                <?php if (!empty($fila['id_telaforro'])): ?>
+                                    <div class="card shadow-sm border-0 mb-3">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-sm align-middle mb-0">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="fw-bold text-center" style="width:10%;">Forro</td>
+                                                        <td style="width:90%;">
+                                                            <input type="text" class="form-control form-control-sm text-center" name="ubicacion_forro" value="<?php echo htmlspecialchars($fv('ubicacion_forro')); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
 
                                     <?php
-                                    $frentes = $fila['frentes'];
-                                    $espalda = $fila['espalda'];
-                                    $mangas = $fila['mangas'];
-                                    $cuello = $fila['cuello'];
-                                    $puño = $fila['puño'];
-                                    $otros = $fila['otros'];
-                                    $observaciones = $fila['observaciones'];
+                                    $colores_forro = [];
+                                    for ($i = 1; $i <= 6; $i++) {
+                                        $clave = ($i == 1) ? 'color_telaforro' : 'color_telaforro' . $i;
+                                        if (!empty($fila[$clave])) {
+                                            $colores_forro[] = [
+                                                'sufijo' => ($i == 1) ? '' : $i,
+                                                'valor'  => $fila[$clave]
+                                            ];
+                                        }
+                                    }
                                     ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Frente:</label>
-                                        <?php if (empty($frentes)): ?>
-                                            <textarea class="form-control" name="frentes" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="frentes" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($frentes); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Espalda:</label>
-                                        <?php if (empty($espalda)): ?>
-                                            <textarea class="form-control" name="espalda" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="espalda" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($espalda); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Mangas:</label>
-                                        <?php if (empty($mangas)): ?>
-                                            <textarea class="form-control" name="mangas" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="mangas" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($mangas); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Cuello:</label>
-                                        <?php if (empty($cuello)): ?>
-                                            <textarea class="form-control" name="cuello" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="cuello" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($cuello); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Puño:</label>
-                                        <?php if (empty($puño)): ?>
-                                            <textarea class="form-control" name="puño" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="puño" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($puño); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Otros:</label>
-                                        <?php if (empty($otros)): ?>
-                                            <textarea class="form-control" name="otros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="otros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($otros); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Observaciones:</label>
-                                        <?php if (empty($observaciones)): ?>
-                                            <textarea class="form-control" name="observaciones" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="4"><?php echo htmlspecialchars($observaciones); ?></textarea>
-                                        <?php endif; ?>
+
+                                    <div class="card shadow-sm border-0 mb-3">
+                                        <div class="table-responsive">
+                                            <table id="mytabla" class="table table-bordered table-sm text-center mb-0">
+                                                <thead>
+                                                    <tr class="table-primary">
+                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Codigo</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 12%;">Color</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 40%;">Nombre de la Tela Forro</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 15%;">Composicion</th>
+                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Ancho</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($colores_forro as $c): ?>
+                                                        <tr>
+                                                            <td><input type="text" class="form-control form-control-sm text-center" name="codigo_telaforro<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($fv('codigo_telaforro' . $c['sufijo'])); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300"></td>
+                                                            <td><input type="text" class="form-control form-control-sm text-center" name="color_telaforro<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($c['valor']); ?>"></td>
+                                                            <td><?php echo htmlspecialchars($fila['tela_forro']); ?></td>
+                                                            <td><?php echo htmlspecialchars($fila['caracteristicas_forro']); ?></td>
+                                                            <td><?php echo htmlspecialchars($fila['ancho_forro']); ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
 
-                                    <input type="hidden" name="talla_XS" value="0"><input type="hidden" name="talla_S" value="0"><input type="hidden" name="talla_M" value="0"><input type="hidden" name="talla_L" value="0"><input type="hidden" name="talla_XL" value="0"><input type="hidden" name="talla_2XL" value="0"><input type="hidden" name="talla_3XL" value="0">
-                                    <input type="hidden" name="talla_4XL" value="0"><input type="hidden" name="talla_5XL" value="0"><input type="hidden" name="talla_6XL" value="0"><input type="hidden" name="talla_28" value="0"><input type="hidden" name="talla_30" value="0"><input type="hidden" name="talla_32" value="0"><input type="hidden" name="talla_34" value="0">
-                                    <input type="hidden" name="talla_36" value="0"><input type="hidden" name="talla_38" value="0"><input type="hidden" name="talla_40" value="0"><input type="hidden" name="talla_42" value="0"><input type="hidden" name="talla_44" value="0"><input type="hidden" name="talla_46" value="0"><input type="hidden" name="talla_48" value="0">
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
-                                    </div>
                                 <?php endif; ?>
 
-                                <!-- Modal Editar Inferior Hombre -->
-                                <?php if ($fila['id_tipo_producto'] == 3): ?>
-
-                                    <?php if (
-                                        !empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_bolsillo']) || !empty($fila['id_boton']) || !empty($fila['id_boton2']) || !empty($fila['id_broche']) || !empty($fila['id_fajon_cintura']) || !empty($fila['id_faya']) || !empty($fila['id_cinta']) ||
-                                        !empty($fila['id_cordon']) || !empty($fila['id_cremallera']) || !empty($fila['id_cremallera2']) || !empty($fila['id_cuello']) || !empty($fila['id_deslizador']) || !empty($fila['id_entretela']) || !empty($fila['id_entretela2']) || !empty($fila['id_estampado']) || !empty($fila['id_fusionado']) || !empty($fila['id_guata']) || !empty($fila['id_hiladilla']) ||
-                                        !empty($fila['id_hombrera']) || !empty($fila['id_marquilla']) || !empty($fila['id_plumilla']) || !empty($fila['id_pretina']) || !empty($fila['id_puntera']) || !empty($fila['id_puño']) || !empty($fila['id_resorte']) || !empty($fila['id_resorte2']) || !empty($fila['id_sesgo']) || !empty($fila['id_trabilla']) || !empty($fila['id_velcro']) || !empty($fila['id_vinilo']) || !empty($fila['id_vivo'])
-                                    ): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsillo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsillo:</span>
-                                                            <?= $fila['tipo_bolsillo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton:</span>
-                                                            <?= $fila['insumo_boton'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton 2:</span>
-                                                            <?= $fila['insumo_boton2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_broche'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Broche:</span>
-                                                            <?= $fila['insumo_broche'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cinta'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Reflectiva:</span>
-                                                            <?= $fila['insumo_reflectiva'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cordon'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cordon:</span>
-                                                            <?= $fila['insumo_cordon'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera:</span>
-                                                            <?= $fila['insumo_cremallera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera 2:</span>
-                                                            <?= $fila['insumo_cremallera2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cuello'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cuello:</span>
-                                                            <?= $fila['insumo_cuello'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_deslizador'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Deslizador:</span>
-                                                            <?= $fila['insumo_deslizador'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela:</span>
-                                                            <?= $fila['insumo_entretela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela 2:</span>
-                                                            <?= $fila['insumo_entretela2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_estampado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Estampado:</span>
-                                                            <?= $fila['tipo_estampado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fajon_cintura'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fajon Cintura:</span>
-                                                            <?= $fila['insumo_fajon_cintura'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_faya'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Faya:</span>
-                                                            <?= $fila['insumo_faya'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fusionado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fusionado:</span>
-                                                            <?= $fila['insumo_fusionado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_guata'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Guata:</span>
-                                                            <?= $fila['insumo_guata'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hiladilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hiladilla:</span>
-                                                            <?= $fila['insumo_hiladilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hombrera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hombrera:</span>
-                                                            <?= $fila['insumo_hombrera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_plumilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Plumilla:</span>
-                                                            <?= $fila['insumo_plumilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_pretina'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Pretina:</span>
-                                                            <?= $fila['insumo_pretina'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puño'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puño:</span>
-                                                            <?= $fila['insumo_puño'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puntera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puntera:</span>
-                                                            <?= $fila['insumo_puntera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte:</span>
-                                                            <?= $fila['insumo_resorte'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte 2:</span>
-                                                            <?= $fila['insumo_resorte2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_sesgo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Sesgo:</span>
-                                                            <?= $fila['insumo_sesgo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_trabilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Trabilla:</span>
-                                                            <?= $fila['insumo_trabilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_velcro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Velcro:</span>
-                                                            <?= $fila['insumo_velcro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vinilo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vinilo:</span>
-                                                            <?= $fila['insumo_vinilo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vivo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vivo:</span>
-                                                            <?= $fila['insumo_vivo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 30; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Cuarta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 32; $i <= 40; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Quinta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 42; $i <= 48; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Sexta Línea -->
-                                        <div class="row justify-content-center text-center">
+                                <!-- DESCRIPCIONES -->
+                                <div class="card shadow-sm mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;width:100%;">
                                             <?php
-                                            $tallas1 = ['XS', 'S', 'M', 'L', 'XL'];
-                                            foreach ($tallas1 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Septima Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas2 = ['2XL', '3XL', '4XL', '5XL', '6XL'];
-                                            foreach ($tallas2 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Octava Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
+                                            // Todos los labels
+                                            $labels = [
+                                                'mangas'          => 'Descripción de las Mangas',
+                                                'cuello'          => 'Descripción del Cuello',
+                                                'puño'            => 'Descripción de los Puños',
+                                                'pretina'         => 'Descripción de la Pretina',
+                                                'fajon'           => 'Descripción del Fajón',
+                                                'boton'           => 'Descripción de los Botones',
+                                                'cremallera'      => 'Descripción de las Cremalleras',
+                                            ];
+
+                                            // Campos por tipo de producto
+                                            $tiposProducto = [
+                                                1 => ['mangas', 'cuello', 'puño', 'boton', 'cremallera'],
+                                                2 => ['mangas', 'cuello', 'puño', 'boton', 'cremallera'],
+                                                3 => ['pretina', 'boton', 'cremallera'],
+                                                4 => ['pretina', 'boton', 'cremallera'],
+                                                5 => ['mangas', 'cuello', 'puño', 'fajon', 'boton', 'cremallera'],
+                                                6 => ['mangas', 'cuello', 'puño', 'pretina', 'boton', 'cremallera'],
+                                                7 => ['mangas', 'cuello', 'puño', 'pretina', 'fajon', 'boton', 'cremallera'],
+                                            ];
+
+                                            $idTipo = $fila['id_tipo_producto'];
+
+                                            if (isset($tiposProducto[$idTipo])) :
+                                            ?>
+                                                <tbody>
+                                                    <?php foreach ($tiposProducto[$idTipo] as $campo): ?>
+                                                        <tr>
+                                                            <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                <?= $labels[$campo] ?>
+                                                            </td>
+                                                            <td colspan="4">
+                                                                <textarea class="form-control" name="<?= $campo ?>" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fila[$campo] ?? '') ?></textarea>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            <?php endif; ?>
+                                            <tbody>
+                                                <!-- TIPO OPCION-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        <select name="tipo_opcion" class="form-select form-select-sm text-center fw-bold" style="background-color:#d9e3f0; font-weight:bold; border:1px solid #b8c7d9;">
+                                                            <option value="Bordado" <?= $fsel('tipo_opcion', 'Bordado') ?>>Bordado</option>
+                                                            <option value="Estampado" <?= $fsel('tipo_opcion', 'Estampado') ?>>Estampado</option>
+                                                            <option value="Subliminado" <?= $fsel('tipo_opcion', 'Subliminado') ?>>Subliminado</option>
+                                                            <option value="Transfer" <?= $fsel('tipo_opcion', 'Transfer') ?>>Transfer</option>
+                                                        </select>
+                                                    </td>
+                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                        <textarea class="form-control text-center fw-bold" style="background:#ffff00; color:red;" name="opcion_escrito" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fv('opcion_escrito')) ?></textarea>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- REF SUGERIDA -->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Ref sugerida
+                                                    </td>
+                                                    <td colspan="4">
+                                                        <textarea class="form-control" name="ref_sugerida" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fv('ref_sugerida')) ?></textarea>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- OBSERVACIÓN PARA COSTEO-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Observaciónes para el Costeo
+                                                    </td>
+                                                    <td colspan="4">
+                                                        <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo $fila['observaciones']; ?></textarea>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- OBSERVACIÓN DE TALLAS-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Observaciónes de las Tallas
+                                                    </td>
+                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                        <textarea class="form-control text-center fw-bold" style="background:#ffff00; color:red;" name="observacion_tallas" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fv('observacion_tallas')) ?></textarea>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- OBSERVACIÓN DEL STOCK-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Observaciónes del Stock
+                                                    </td>
+                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                        <textarea class="form-control text-center fw-bold" style="background:#ffff00; color:red;" name="observacion_stock" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fv('observacion_stock')) ?></textarea>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
+                                </div>
 
+                                <!-- CURVA DE TALLAS -->
+                                <div class="card shadow-sm border-0 mt-3">
                                     <?php
-                                    $delanteros = $fila['delanteros'];
-                                    $traseros = $fila['traseros'];
-                                    $pretina = $fila['pretina'];
-                                    $ensamble = $fila['ensamble'];
-                                    $otros = $fila['otros'];
-                                    $observaciones = $fila['observaciones'];
+                                    // Reutilizamos la misma lógica de colores que en la tarjeta de TELA
+                                    $colores_curva = [];
+                                    for ($i = 1; $i <= 6; $i++) {
+                                        $clave = ($i == 1) ? 'color_tela' : 'color_tela' . $i;
+                                        if (!empty($fila[$clave])) {
+                                            $colores_curva[] = $fila[$clave];
+                                        }
+                                    }
                                     ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Delanteros:</label>
-                                        <?php if (empty($fila['delanteros'])): ?>
-                                            <textarea class="form-control" name="delanteros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="delanteros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['delanteros']); ?></textarea>
-                                        <?php endif; ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0"
+                                            id="tablaTallas<?php echo $fila['id_producto']; ?>"
+                                            data-colores='<?php echo htmlspecialchars(json_encode($colores_curva, JSON_UNESCAPED_UNICODE), ENT_QUOTES); ?>'
+                                            data-guardadas='<?php echo htmlspecialchars(json_encode($fila, JSON_UNESCAPED_UNICODE), ENT_QUOTES); ?>'>
+                                        </table>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Traseros:</label>
-                                        <?php if (empty($fila['traseros'])): ?>
-                                            <textarea class="form-control" name="traseros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="traseros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['traseros']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Pretina:</label>
-                                        <?php if (empty($fila['pretina'])): ?>
-                                            <textarea class="form-control" name="pretina" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="pretina" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['pretina']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Ensamble:</label>
-                                        <?php if (empty($fila['ensamble'])): ?>
-                                            <textarea class="form-control" name="ensamble" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="ensamble" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['ensamble']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Otros:</label>
-                                        <?php if (empty($fila['otros'])): ?>
-                                            <textarea class="form-control" name="otros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="otros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['otros']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Observaciones:</label>
-                                        <?php if (empty($fila['observaciones'])): ?>
-                                            <textarea class="form-control" name="observaciones" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['observaciones']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Modal Editar Inferior Mujer -->
-                                <?php if ($fila['id_tipo_producto'] == 4): ?>
-
-                                    <?php if (
-                                        !empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_bolsillo']) || !empty($fila['id_boton']) || !empty($fila['id_boton2']) || !empty($fila['id_broche']) || !empty($fila['id_fajon_cintura']) || !empty($fila['id_faya']) || !empty($fila['id_cinta']) ||
-                                        !empty($fila['id_cordon']) || !empty($fila['id_cremallera']) || !empty($fila['id_cremallera2']) || !empty($fila['id_cuello']) || !empty($fila['id_deslizador']) || !empty($fila['id_entretela']) || !empty($fila['id_entretela2']) || !empty($fila['id_estampado']) || !empty($fila['id_fusionado']) || !empty($fila['id_guata']) || !empty($fila['id_hiladilla']) ||
-                                        !empty($fila['id_hombrera']) || !empty($fila['id_marquilla']) || !empty($fila['id_plumilla']) || !empty($fila['id_pretina']) || !empty($fila['id_puntera']) || !empty($fila['id_puño']) || !empty($fila['id_resorte']) || !empty($fila['id_resorte2']) || !empty($fila['id_sesgo']) || !empty($fila['id_trabilla']) || !empty($fila['id_velcro']) || !empty($fila['id_vinilo']) || !empty($fila['id_vivo'])
-                                    ): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsillo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsillo:</span>
-                                                            <?= $fila['tipo_bolsillo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton:</span>
-                                                            <?= $fila['insumo_boton'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton 2:</span>
-                                                            <?= $fila['insumo_boton2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_broche'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Broche:</span>
-                                                            <?= $fila['insumo_broche'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cinta'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Reflectiva:</span>
-                                                            <?= $fila['insumo_reflectiva'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cordon'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cordon:</span>
-                                                            <?= $fila['insumo_cordon'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera:</span>
-                                                            <?= $fila['insumo_cremallera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera 2:</span>
-                                                            <?= $fila['insumo_cremallera2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cuello'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cuello:</span>
-                                                            <?= $fila['insumo_cuello'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_deslizador'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Deslizador:</span>
-                                                            <?= $fila['insumo_deslizador'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela:</span>
-                                                            <?= $fila['insumo_entretela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela 2:</span>
-                                                            <?= $fila['insumo_entretela2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_estampado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Estampado:</span>
-                                                            <?= $fila['tipo_estampado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fajon_cintura'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fajon Cintura:</span>
-                                                            <?= $fila['insumo_fajon_cintura'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_faya'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Faya:</span>
-                                                            <?= $fila['insumo_faya'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fusionado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fusionado:</span>
-                                                            <?= $fila['insumo_fusionado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_guata'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Guata:</span>
-                                                            <?= $fila['insumo_guata'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hiladilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hiladilla:</span>
-                                                            <?= $fila['insumo_hiladilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hombrera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hombrera:</span>
-                                                            <?= $fila['insumo_hombrera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_plumilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Plumilla:</span>
-                                                            <?= $fila['insumo_plumilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_pretina'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Pretina:</span>
-                                                            <?= $fila['insumo_pretina'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puño'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puño:</span>
-                                                            <?= $fila['insumo_puño'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puntera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puntera:</span>
-                                                            <?= $fila['insumo_puntera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte:</span>
-                                                            <?= $fila['insumo_resorte'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte 2:</span>
-                                                            <?= $fila['insumo_resorte2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_sesgo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Sesgo:</span>
-                                                            <?= $fila['insumo_sesgo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_trabilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Trabilla:</span>
-                                                            <?= $fila['insumo_trabilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_velcro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Velcro:</span>
-                                                            <?= $fila['insumo_velcro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vinilo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vinilo:</span>
-                                                            <?= $fila['insumo_vinilo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vivo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vivo:</span>
-                                                            <?= $fila['insumo_vivo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 26; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                            <?php $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-
-                                    <?php
-                                    $delanteros = $fila['delanteros'];
-                                    $traseros = $fila['traseros'];
-                                    $pretina = $fila['pretina'];
-                                    $ensamble = $fila['ensamble'];
-                                    $otros = $fila['otros'];
-                                    $observaciones = $fila['observaciones'];
-                                    ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Delanteros:</label>
-                                        <?php if (empty($fila['delanteros'])): ?>
-                                            <textarea class="form-control" name="delanteros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="delanteros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['delanteros']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Traseros:</label>
-                                        <?php if (empty($fila['traseros'])): ?>
-                                            <textarea class="form-control" name="traseros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="traseros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['traseros']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Pretina:</label>
-                                        <?php if (empty($fila['pretina'])): ?>
-                                            <textarea class="form-control" name="pretina" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="pretina" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['pretina']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Ensamble:</label>
-                                        <?php if (empty($fila['ensamble'])): ?>
-                                            <textarea class="form-control" name="ensamble" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="ensamble" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['ensamble']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Otros:</label>
-                                        <?php if (empty($fila['otros'])): ?>
-                                            <textarea class="form-control" name="otros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="otros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['otros']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Observaciones:</label>
-                                        <?php if (empty($fila['observaciones'])): ?>
-                                            <textarea class="form-control" name="observaciones" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['observaciones']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <input type="hidden" name="talla_XS" value="0"><input type="hidden" name="talla_S" value="0"><input type="hidden" name="talla_M" value="0"><input type="hidden" name="talla_L" value="0"><input type="hidden" name="talla_XL" value="0"><input type="hidden" name="talla_2XL" value="0"><input type="hidden" name="talla_3XL" value="0">
-                                    <input type="hidden" name="talla_4XL" value="0"><input type="hidden" name="talla_5XL" value="0"><input type="hidden" name="talla_6XL" value="0"><input type="hidden" name="talla_28" value="0"><input type="hidden" name="talla_30" value="0"><input type="hidden" name="talla_32" value="0"><input type="hidden" name="talla_34" value="0">
-                                    <input type="hidden" name="talla_36" value="0"><input type="hidden" name="talla_38" value="0"><input type="hidden" name="talla_40" value="0"><input type="hidden" name="talla_42" value="0"><input type="hidden" name="talla_44" value="0"><input type="hidden" name="talla_46" value="0"><input type="hidden" name="talla_48" value="0">
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Modal Editar Chaqueta -->
-                                <?php if ($fila['id_tipo_producto'] == 5): ?>
-
-
-                                    <?php if (
-                                        !empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_bolsillo']) || !empty($fila['id_boton']) || !empty($fila['id_boton2']) || !empty($fila['id_broche']) || !empty($fila['id_fajon_cintura']) || !empty($fila['id_faya']) || !empty($fila['id_cinta']) ||
-                                        !empty($fila['id_cordon']) || !empty($fila['id_cremallera']) || !empty($fila['id_cremallera2']) || !empty($fila['id_cuello']) || !empty($fila['id_deslizador']) || !empty($fila['id_entretela']) || !empty($fila['id_entretela2']) || !empty($fila['id_estampado']) || !empty($fila['id_fusionado']) || !empty($fila['id_guata']) || !empty($fila['id_hiladilla']) ||
-                                        !empty($fila['id_hombrera']) || !empty($fila['id_marquilla']) || !empty($fila['id_plumilla']) || !empty($fila['id_pretina']) || !empty($fila['id_puntera']) || !empty($fila['id_puño']) || !empty($fila['id_resorte']) || !empty($fila['id_resorte2']) || !empty($fila['id_sesgo']) || !empty($fila['id_trabilla']) || !empty($fila['id_velcro']) || !empty($fila['id_vinilo']) || !empty($fila['id_vivo'])
-                                    ): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsillo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsillo:</span>
-                                                            <?= $fila['tipo_bolsillo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton:</span>
-                                                            <?= $fila['insumo_boton'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton 2:</span>
-                                                            <?= $fila['insumo_boton2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_broche'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Broche:</span>
-                                                            <?= $fila['insumo_broche'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cinta'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Reflectiva:</span>
-                                                            <?= $fila['insumo_reflectiva'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cordon'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cordon:</span>
-                                                            <?= $fila['insumo_cordon'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera:</span>
-                                                            <?= $fila['insumo_cremallera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera 2:</span>
-                                                            <?= $fila['insumo_cremallera2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cuello'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cuello:</span>
-                                                            <?= $fila['insumo_cuello'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_deslizador'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Deslizador:</span>
-                                                            <?= $fila['insumo_deslizador'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela:</span>
-                                                            <?= $fila['insumo_entretela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela 2:</span>
-                                                            <?= $fila['insumo_entretela2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_estampado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Estampado:</span>
-                                                            <?= $fila['tipo_estampado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fajon_cintura'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fajon Cintura:</span>
-                                                            <?= $fila['insumo_fajon_cintura'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_faya'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Faya:</span>
-                                                            <?= $fila['insumo_faya'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fusionado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fusionado:</span>
-                                                            <?= $fila['insumo_fusionado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_guata'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Guata:</span>
-                                                            <?= $fila['insumo_guata'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hiladilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hiladilla:</span>
-                                                            <?= $fila['insumo_hiladilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hombrera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hombrera:</span>
-                                                            <?= $fila['insumo_hombrera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_plumilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Plumilla:</span>
-                                                            <?= $fila['insumo_plumilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_pretina'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Pretina:</span>
-                                                            <?= $fila['insumo_pretina'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puño'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puño:</span>
-                                                            <?= $fila['insumo_puño'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puntera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puntera:</span>
-                                                            <?= $fila['insumo_puntera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte:</span>
-                                                            <?= $fila['insumo_resorte'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte 2:</span>
-                                                            <?= $fila['insumo_resorte2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_sesgo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Sesgo:</span>
-                                                            <?= $fila['insumo_sesgo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_trabilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Trabilla:</span>
-                                                            <?= $fila['insumo_trabilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_velcro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Velcro:</span>
-                                                            <?= $fila['insumo_velcro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vinilo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vinilo:</span>
-                                                            <?= $fila['insumo_vinilo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vivo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vivo:</span>
-                                                            <?= $fila['insumo_vivo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 26; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Cuarta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas1 = ['XS', 'S', 'M', 'L', 'XL'];
-                                            foreach ($tallas1 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Quinta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas2 = ['2XL', '3XL', '4XL', '5XL', '6XL'];
-                                            foreach ($tallas2 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Sexta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-
-                                    <?php
-                                    $frentes = $fila['frentes'];
-                                    $espalda = $fila['espalda'];
-                                    $mangas = $fila['mangas'];
-                                    $cuello = $fila['cuello'];
-                                    $puño = $fila['puño'];
-                                    $fajon = $fila['fajon'];
-                                    $forro = $fila['forro'];
-                                    $observaciones = $fila['observaciones'];
-                                    ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Frente:</label>
-                                        <?php if (empty($frentes)): ?>
-                                            <textarea class="form-control" name="frentes" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="frentes" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($frentes); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Espalda:</label>
-                                        <?php if (empty($espalda)): ?>
-                                            <textarea class="form-control" name="espalda" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="espalda" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($espalda); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Mangas:</label>
-                                        <?php if (empty($mangas)): ?>
-                                            <textarea class="form-control" name="mangas" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="mangas" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($mangas); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Cuello:</label>
-                                        <?php if (empty($cuello)): ?>
-                                            <textarea class="form-control" name="cuello" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="cuello" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($cuello); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Puño:</label>
-                                        <?php if (empty($puño)): ?>
-                                            <textarea class="form-control" name="puño" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="puño" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($puño); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Fajon:</label>
-                                        <?php if (empty($fajon)): ?>
-                                            <textarea class="form-control" name="fajon" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="fajon" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fajon); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Forro:</label>
-                                        <?php if (empty($forro)): ?>
-                                            <textarea class="form-control" name="forro" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="forro" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($forro); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Observaciones:</label>
-                                        <?php if (empty($observaciones)): ?>
-                                            <textarea class="form-control" name="observaciones" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="4"><?php echo htmlspecialchars($observaciones); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <input type="hidden" name="talla_28" value="0"><input type="hidden" name="talla_30" value="0"><input type="hidden" name="talla_32" value="0"><input type="hidden" name="talla_34" value="0"><input type="hidden" name="talla_36" value="0"><input type="hidden" name="talla_38" value="0">
-                                    <input type="hidden" name="talla_40" value="0"><input type="hidden" name="talla_42" value="0"><input type="hidden" name="talla_44" value="0"><input type="hidden" name="talla_46" value="0"><input type="hidden" name="talla_48" value="0">
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Modal Editar Overol -->
-                                <?php if ($fila['id_tipo_producto'] == 6): ?>
-
-
-                                    <?php if (
-                                        !empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_bolsillo']) || !empty($fila['id_boton']) || !empty($fila['id_boton2']) || !empty($fila['id_broche']) || !empty($fila['id_fajon_cintura']) || !empty($fila['id_faya']) || !empty($fila['id_cinta']) ||
-                                        !empty($fila['id_cordon']) || !empty($fila['id_cremallera']) || !empty($fila['id_cremallera2']) || !empty($fila['id_cuello']) || !empty($fila['id_deslizador']) || !empty($fila['id_entretela']) || !empty($fila['id_entretela2']) || !empty($fila['id_estampado']) || !empty($fila['id_fusionado']) || !empty($fila['id_guata']) || !empty($fila['id_hiladilla']) ||
-                                        !empty($fila['id_hombrera']) || !empty($fila['id_marquilla']) || !empty($fila['id_plumilla']) || !empty($fila['id_pretina']) || !empty($fila['id_puntera']) || !empty($fila['id_puño']) || !empty($fila['id_resorte']) || !empty($fila['id_resorte2']) || !empty($fila['id_sesgo']) || !empty($fila['id_trabilla']) || !empty($fila['id_velcro']) || !empty($fila['id_vinilo']) || !empty($fila['id_vivo'])
-                                    ): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsillo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsillo:</span>
-                                                            <?= $fila['tipo_bolsillo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton:</span>
-                                                            <?= $fila['insumo_boton'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton 2:</span>
-                                                            <?= $fila['insumo_boton2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_broche'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Broche:</span>
-                                                            <?= $fila['insumo_broche'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cinta'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Reflectiva:</span>
-                                                            <?= $fila['insumo_reflectiva'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cordon'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cordon:</span>
-                                                            <?= $fila['insumo_cordon'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera:</span>
-                                                            <?= $fila['insumo_cremallera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera 2:</span>
-                                                            <?= $fila['insumo_cremallera2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cuello'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cuello:</span>
-                                                            <?= $fila['insumo_cuello'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_deslizador'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Deslizador:</span>
-                                                            <?= $fila['insumo_deslizador'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela:</span>
-                                                            <?= $fila['insumo_entretela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela 2:</span>
-                                                            <?= $fila['insumo_entretela2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_estampado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Estampado:</span>
-                                                            <?= $fila['tipo_estampado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fajon_cintura'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fajon Cintura:</span>
-                                                            <?= $fila['insumo_fajon_cintura'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_faya'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Faya:</span>
-                                                            <?= $fila['insumo_faya'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fusionado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fusionado:</span>
-                                                            <?= $fila['insumo_fusionado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_guata'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Guata:</span>
-                                                            <?= $fila['insumo_guata'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hiladilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hiladilla:</span>
-                                                            <?= $fila['insumo_hiladilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hombrera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hombrera:</span>
-                                                            <?= $fila['insumo_hombrera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_plumilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Plumilla:</span>
-                                                            <?= $fila['insumo_plumilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_pretina'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Pretina:</span>
-                                                            <?= $fila['insumo_pretina'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puño'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puño:</span>
-                                                            <?= $fila['insumo_puño'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puntera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puntera:</span>
-                                                            <?= $fila['insumo_puntera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte:</span>
-                                                            <?= $fila['insumo_resorte'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte 2:</span>
-                                                            <?= $fila['insumo_resorte2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_sesgo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Sesgo:</span>
-                                                            <?= $fila['insumo_sesgo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_trabilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Trabilla:</span>
-                                                            <?= $fila['insumo_trabilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_velcro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Velcro:</span>
-                                                            <?= $fila['insumo_velcro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vinilo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vinilo:</span>
-                                                            <?= $fila['insumo_vinilo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vivo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vivo:</span>
-                                                            <?= $fila['insumo_vivo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 26; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Cuarta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas1 = ['XS', 'S', 'M', 'L', 'XL'];
-                                            foreach ($tallas1 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Quinta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas2 = ['2XL', '3XL', '4XL', '5XL', '6XL'];
-                                            foreach ($tallas2 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Sexta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-
-                                    <?php
-                                    $frentes = $fila['frentes'];
-                                    $espalda = $fila['espalda'];
-                                    $mangas = $fila['mangas'];
-                                    $delanteros = $fila['delanteros'];
-                                    $traseros = $fila['traseros'];
-                                    $ensamble = $fila['ensamble'];
-                                    $observaciones = $fila['observaciones'];
-                                    ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Frente:</label>
-                                        <?php if (empty($frentes)): ?>
-                                            <textarea class="form-control" name="frentes" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="frentes" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($frentes); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Espalda:</label>
-                                        <?php if (empty($espalda)): ?>
-                                            <textarea class="form-control" name="espalda" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="espalda" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($espalda); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Mangas:</label>
-                                        <?php if (empty($mangas)): ?>
-                                            <textarea class="form-control" name="mangas" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="mangas" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($mangas); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Delanteros:</label>
-                                        <?php if (empty($fila['delanteros'])): ?>
-                                            <textarea class="form-control" name="delanteros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="delanteros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['delanteros']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Traseros:</label>
-                                        <?php if (empty($fila['traseros'])): ?>
-                                            <textarea class="form-control" name="traseros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="traseros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['traseros']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Descripcion Ensamble:</label>
-                                        <?php if (empty($fila['ensamble'])): ?>
-                                            <textarea class="form-control" name="ensamble" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="ensamble" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($fila['ensamble']); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Observaciones:</label>
-                                        <?php if (empty($observaciones)): ?>
-                                            <textarea class="form-control" name="observaciones" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="4"><?php echo htmlspecialchars($observaciones); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <input type="hidden" name="talla_28" value="0"><input type="hidden" name="talla_30" value="0"><input type="hidden" name="talla_32" value="0"><input type="hidden" name="talla_34" value="0"><input type="hidden" name="talla_36" value="0"><input type="hidden" name="talla_38" value="0">
-                                    <input type="hidden" name="talla_40" value="0"><input type="hidden" name="talla_42" value="0"><input type="hidden" name="talla_44" value="0"><input type="hidden" name="talla_46" value="0"><input type="hidden" name="talla_48" value="0">
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Modal Editar Otros -->
-                                <?php if ($fila['id_tipo_producto'] == 7): ?>
-
-
-                                    <?php if (
-                                        !empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_bolsillo']) || !empty($fila['id_boton']) || !empty($fila['id_boton2']) || !empty($fila['id_broche']) || !empty($fila['id_fajon_cintura']) || !empty($fila['id_faya']) || !empty($fila['id_cinta']) ||
-                                        !empty($fila['id_cordon']) || !empty($fila['id_cremallera']) || !empty($fila['id_cremallera2']) || !empty($fila['id_cuello']) || !empty($fila['id_deslizador']) || !empty($fila['id_entretela']) || !empty($fila['id_entretela2']) || !empty($fila['id_estampado']) || !empty($fila['id_fusionado']) || !empty($fila['id_guata']) || !empty($fila['id_hiladilla']) ||
-                                        !empty($fila['id_hombrera']) || !empty($fila['id_marquilla']) || !empty($fila['id_plumilla']) || !empty($fila['id_pretina']) || !empty($fila['id_puntera']) || !empty($fila['id_puño']) || !empty($fila['id_resorte']) || !empty($fila['id_resorte2']) || !empty($fila['id_sesgo']) || !empty($fila['id_trabilla']) || !empty($fila['id_velcro']) || !empty($fila['id_vinilo']) || !empty($fila['id_vivo'])
-                                    ): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsillo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsillo:</span>
-                                                            <?= $fila['tipo_bolsillo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton:</span>
-                                                            <?= $fila['insumo_boton'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_boton2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Boton 2:</span>
-                                                            <?= $fila['insumo_boton2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_broche'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Broche:</span>
-                                                            <?= $fila['insumo_broche'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cinta'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Reflectiva:</span>
-                                                            <?= $fila['insumo_reflectiva'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cordon'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cordon:</span>
-                                                            <?= $fila['insumo_cordon'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera:</span>
-                                                            <?= $fila['insumo_cremallera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cremallera2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cremallera 2:</span>
-                                                            <?= $fila['insumo_cremallera2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_cuello'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cuello:</span>
-                                                            <?= $fila['insumo_cuello'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_deslizador'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Deslizador:</span>
-                                                            <?= $fila['insumo_deslizador'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela:</span>
-                                                            <?= $fila['insumo_entretela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_entretela2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Entretela 2:</span>
-                                                            <?= $fila['insumo_entretela2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_estampado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Estampado:</span>
-                                                            <?= $fila['tipo_estampado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fajon_cintura'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fajon Cintura:</span>
-                                                            <?= $fila['insumo_fajon_cintura'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_faya'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Cinta Faya:</span>
-                                                            <?= $fila['insumo_faya'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_fusionado'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Fusionado:</span>
-                                                            <?= $fila['insumo_fusionado'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_guata'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Guata:</span>
-                                                            <?= $fila['insumo_guata'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hiladilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hiladilla:</span>
-                                                            <?= $fila['insumo_hiladilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_hombrera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Hombrera:</span>
-                                                            <?= $fila['insumo_hombrera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_plumilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Plumilla:</span>
-                                                            <?= $fila['insumo_plumilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_pretina'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Pretina:</span>
-                                                            <?= $fila['insumo_pretina'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puño'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puño:</span>
-                                                            <?= $fila['insumo_puño'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_puntera'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Puntera:</span>
-                                                            <?= $fila['insumo_puntera'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte:</span>
-                                                            <?= $fila['insumo_resorte'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_resorte2'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Resorte 2:</span>
-                                                            <?= $fila['insumo_resorte2'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_sesgo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Sesgo:</span>
-                                                            <?= $fila['insumo_sesgo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_trabilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Trabilla:</span>
-                                                            <?= $fila['insumo_trabilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_velcro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Velcro:</span>
-                                                            <?= $fila['insumo_velcro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vinilo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vinilo:</span>
-                                                            <?= $fila['insumo_vinilo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_vivo'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Vivo:</span>
-                                                            <?= $fila['insumo_vivo'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 30; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Cuarta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 32; $i <= 40; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Quinta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 42; $i <= 48; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Sexta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas1 = ['XS', 'S', 'M', 'L', 'XL'];
-                                            foreach ($tallas1 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Septima Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas2 = ['2XL', '3XL', '4XL', '5XL', '6XL'];
-                                            foreach ($tallas2 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Octava Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-
-                                    <?php
-                                    $otros = $fila['otros'];
-                                    $observaciones = $fila['observaciones'];
-                                    ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Otros:</label>
-                                        <?php if (empty($otros)): ?>
-                                            <textarea class="form-control" name="otros" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="otros" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo htmlspecialchars($otros); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Observaciones:</label>
-                                        <?php if (empty($observaciones)): ?>
-                                            <textarea class="form-control" name="observaciones" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="4"><?php echo htmlspecialchars($observaciones); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Modal Editar Comprados -->
-                                <?php if ($fila['id_tipo_producto'] == 8): ?>
-
-
-                                    <?php if (!empty($fila['id_tela']) || !empty($fila['id_telacombi']) || !empty($fila['id_telaforro']) || !empty($fila['id_bolsa']) || !empty($fila['id_marquilla'])): ?>
-
-                                        <div class="card-text-container">
-                                            <div class="mb-2 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">
-                                                    Datos sobre la cotizacion
-                                                </h6>
-
-                                                <?php if (!empty($fila['id_tela'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela:</span>
-                                                            <?= $fila['insumo_tela'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telacombi'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela Combiada:</span>
-                                                            <?= $fila['insumo_telacombi'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_telaforro'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Tela de Forro:</span>
-                                                            <?= $fila['insumo_telaforro'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Bolsa:</span>
-                                                            <?= $fila['insumo_bolsa'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div>
-                                                        <p class="card-text mb-1" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px; margin-right: 3px; margin-left: 3px; max-width: 100%; word-wrap: break-word; text-align: justify;">
-                                                            <span class="font-weight-bold">Tipo de Marquilla:</span>
-                                                            <?= $fila['insumo_marquilla'] ?>
-                                                        </p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- numero de prendas -->
-                                    <div class="mb-2 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Ingrese el numero de prendas de cada Talla</h6>
-                                        <div class="row justify-content-center mb-1">
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad Prendas:</span> <?= $fila['suma_prendas'] ?>
-                                                </p>
-                                            </div>
-                                            <div class="col-auto">
-                                                <p class="card-text" style="font-family: 'Agency FB', sans-serif; color: black; font-size: 18px;">
-                                                    <span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <!-- Primera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 2; $i <= 10; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Segunda Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 12; $i <= 20; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Tercera Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 22; $i <= 30; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Cuarta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 32; $i <= 40; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Quinta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php for ($i = 42; $i <= 48; $i += 2) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $i ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $i ?>" value="<?= isset($fila["talla_$i"]) && $fila["talla_$i"] !== '' ? $fila["talla_$i"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <!-- Sexta Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas1 = ['XS', 'S', 'M', 'L', 'XL'];
-                                            foreach ($tallas1 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Septima Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas2 = ['2XL', '3XL', '4XL', '5XL', '6XL'];
-                                            foreach ($tallas2 as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;"><?= $talla ?>:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        <!-- Octava Línea -->
-                                        <div class="row justify-content-center text-center">
-                                            <?php
-                                            $tallas = ['especial'];
-                                            foreach ($tallas as $talla) : ?>
-                                                <div class="col-3 col-sm-2 mb-2">
-                                                    <label class="form-label" style="color: #000;">Especial:</label>
-                                                    <input type="number" class="form-control" name="talla_<?= $talla ?>" value="<?= isset($fila["talla_$talla"]) && $fila["talla_$talla"] !== '' ? $fila["talla_$talla"] : 0; ?>" min="0" pattern="[0-9]+" style="width: 70px;" onfocus="borrarCero(this)" onwheel="deshabilitarScroll(event)" oninput="guardarUltimoValor(this)" onblur="restaurarValorSiVacio(this)">
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-
-                                    <?php
-                                    $valor_agregado = $fila['valor_agregado'];
-                                    ?>
-                                    <div class="mb-3">
-                                        <label class="form-label" style="color: #000000;">Valor Agregado por la Empresa al Producto:</label>
-                                        <?php if (empty($valor_agregado)): ?>
-                                            <textarea class="form-control" name="valor_agregado" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
-                                        <?php else: ?>
-                                            <textarea class="form-control" name="valor_agregado" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="4"><?php echo htmlspecialchars($valor_agregado); ?></textarea>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <div class="modal-footer">
-                                        <button type="submit" name="editar_datos" class="btn btn-success">Editar</button>
-                                    </div>
-                                <?php endif; ?>
+                                </div>
+
+                                <!-- BUTTON -->
+                                <div class="modal-footer justify-content-center">
+                                    <button type="submit" name="crear_ficha_tecnica" class="btn btn-success">
+                                        <i class="bi bi-save"></i> Guardar Ficha Técnica
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Modales Informacion -->
-            <div class="modal fade" id="Info<?php echo $fila['id_producto']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content rounded-4">
-                        <?php if ($fila['id_tipo_producto'] != 8): ?>
-                            <div class="modal-header justify-content-center" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%); position: relative;">
-                                <h5 class="modal-title text-white fw-bold text-center w-100" id="exampleModalLabel">Información producto:<br><?= $fila['nombre_prenda'] ?></h5>
-                                <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="contenidoPDF<?= $fila['id_producto']; ?>">
-                                    <form action="" method="post" id="formulario" enctype="multipart/form-data">
-                                        <input type="hidden" name="id_producto" value="<?php echo $fila['id_producto']; ?>">
-                                        <!-- Datos de la solicitud -->
-                                        <div class="card-text-container">
-                                            <?php
-                                            // Array de imágenes
-                                            $imagenes = [
-                                                $fila['imagen'],
-                                                $fila['imagen2'],
-                                                $fila['imagen3'],
-                                                $fila['imagen4'],
-                                            ];
+            <!-- Modal Ficha Tecnica Comprado-->
+            <div class="modal fade" id="FichaTecnicaEx<?php echo $fila['id_producto']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-100 w-100 px-5">
+                    <div class="modal-content shadow-lg border-0 rounded-4">
+                        <div class="modal-body">
+                            <form action="" method="post" id="formulario" enctype="multipart/form-data">
+                                <input type="hidden" name="id_producto" value="<?php echo $fila['id_producto']; ?>">
+                                <input type="hidden" name="nit" value="<?php echo $fila['nit']; ?>">
+                                <input type="hidden" name="precio_compra" value="<?php echo $fila['precio_compra']; ?>">
 
-                                            // Filtrar imágenes no vacías
-                                            $imagenesValidas = array_filter($imagenes, fn($imagen) => !empty($imagen));
-                                            ?>
-
-                                            <?php if (!empty($imagenesValidas)): ?>
-                                                <div class="d-flex flex-wrap justify-content-center">
-                                                    <div class="mb-2 mt-1 text-center border rounded p-2">
-                                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Imágenes Guía</h6>
-                                                        <div class="d-flex justify-content-center mb-2">
-                                                            <?php foreach ($imagenesValidas as $imagen): ?>
-                                                                <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                                    <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
-                                                                </div>
-                                                            <?php endforeach; ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <div>
-                                                <?php
-                                                // Array de logos
-                                                $logos = [
-                                                    $fila['logo1'],
-                                                    $fila['logo2'],
-                                                    $fila['logo3'],
-                                                    $fila['logo4']
-                                                ];
-
-                                                // Definimos la función si no existe
-                                                if (!function_exists('displayFile')) {
-                                                    function displayFile($file)
-                                                    {
-                                                        $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
-                                                        $fileName = basename($file);
-                                                        $filePath = 'logos_empresas/' . $file;
-
-                                                        if (in_array($fileExtension, ['pdf', 'doc', 'docx'])) {
-                                                            echo '<a href="' . $filePath . '" class="btn btn-outline-primary mx-1 mb-2" target="_blank" download>' . $fileName . '</a>';
-                                                        } else {
-                                                            echo '<a href="' . $filePath . '" target="_blank" download class="d-block mx-1 mb-2">
-                                                                                    <img src="' . $filePath . '" alt="' . $fileName . '" class="img-fluid rounded shadow-sm" style="max-width: 130px;">
-                                                                                </a>';
-                                                        }
-                                                    }
-                                                }
-                                                ?>
-
-                                                <?php if (array_filter($logos)): // Comprobamos si hay al menos un logo no vacío 
-                                                ?>
-                                                    <div class="mb-1 text-center border rounded p-1">
-                                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Logos de la Empresa</h6>
-                                                        <div class="card-body d-flex justify-content-center flex-wrap">
-                                                            <?php foreach ($logos as $logo): ?>
-                                                                <?php if (!empty($logo)): ?>
-                                                                    <div class="text-center p-1">
-                                                                        <?php displayFile($logo); ?>
-                                                                    </div>
-                                                                <?php endif; ?>
-                                                            <?php endforeach; ?>
-                                                        </div>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <!---->
-
-                                        <div class="mb-1 mt-1 text-center border rounded p-1">
-                                            <div class="mb-2 row">
-                                                <div class="col-md-6">
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Cantidad de Prendas:</span> <?= $fila['cant_prendas'] ?></p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?></p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <?php if (!empty($fila['id_tela'])): ?>
-                                            <div class="mb-1 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Datos de la Tela</h6>
-                                                <div>
-                                                    <p class="card-text" style="color: black"><span class="font-weight-bold">Tipo de Tela:</span> <?= $fila['tela'] ?>
-                                                        <?= !empty($fila['ancho_tela']) ? " Ancho " . $fila['ancho_tela'] : "" ?>
-                                                        <?= !empty($fila['peso_tela']) ? " Peso " . $fila['peso_tela'] : "" ?>
-                                                        <?= !empty($fila['caracteristicas']) ? "," . $fila['caracteristicas'] : "" ?>
-                                                        <?= !empty($fila['rendimiento']) ? " Rendimiento " . $fila['rendimiento'] : "" ?>
-                                                        <?= !empty($fila['encogimiento']) ? " Encogimiento " . $fila['encogimiento'] : "" ?>
-                                                        <?= !empty($fila['color_tela']) ? " Color " . $fila['color_tela'] : "" ?>
-                                                    </p>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Consumo:</span> <?= htmlspecialchars($fila['promedio_consumo']) ?> Mts</p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio unitario:</span> $<?= htmlspecialchars($fila['precio_tela']) ?></p>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Valor Total Tela:</span> <?= htmlspecialchars($fila['valor_tela']) ?></p>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($fila['id_telacombi'])): ?>
-                                            <div class="mb-1 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Datos de la Tela Combinada</h6>
-                                                <div>
-                                                    <p class="card-text" style="color: black"><span class="font-weight-bold">Tipo de Tela Combinada:</span> <?= $fila['tela_combi'] ?>
-                                                        <?= !empty($fila['ancho_telacombi']) ? " Ancho " . $fila['ancho_telacombi'] : "" ?>
-                                                        <?= !empty($fila['peso_telacombi']) ? " Peso " . $fila['peso_telacombi'] : "" ?>
-                                                        <?= !empty($fila['caract_telacombi']) ? "," . $fila['caract_telacombi'] : "" ?>
-                                                        <?= !empty($fila['rend_telacombi']) ? " Rendimiento " . $fila['rend_telacombi'] : "" ?>
-                                                        <?= !empty($fila['encog_telacombi']) ? " Encogimiento " . $fila['encog_telacombi'] : "" ?>
-                                                        <?= !empty($fila['color_telacombi']) ? " Color " . $fila['color_telacombi'] : "" ?>
-                                                    </p>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Consumo:</span> <?= htmlspecialchars($fila['promedio_telacombi']) ?> Mts</p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio unitario:</span> $<?= htmlspecialchars($fila['precio_telacombinada']) ?></p>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Valor Tela:</span> <?= htmlspecialchars($fila['valor_telacombi']) ?></p>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($fila['id_telaforro'])): ?>
-                                            <div class="mb-1 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Datos de la Tela Forro</h6>
-                                                <div>
-                                                    <p class="card-text" style="color: black"><span class="font-weight-bold">Tipo de Tela Forro:</span> <?= $fila['tela_forro'] ?>
-                                                        <?= !empty($fila['ancho_forro']) ? " Ancho " . $fila['ancho_forro'] : "" ?>
-                                                        <?= !empty($fila['peso_forro']) ? " Peso " . $fila['peso_forro'] : "" ?>
-                                                        <?= !empty($fila['caract_forro']) ? "," . $fila['caract_forro'] : "" ?>
-                                                        <?= !empty($fila['rend_forro']) ? " Rendimiento " . $fila['rend_forro'] : "" ?>
-                                                        <?= !empty($fila['encog_forro']) ? " Encogimiento " . $fila['encog_forro'] : "" ?>
-                                                        <?= !empty($fila['color_telaforro']) ? " Color " . $fila['color_telaforro'] : "" ?>
-                                                    </p>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Consumo:</span> <?= htmlspecialchars($fila['promedio_forro']) ?> Mts</p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio unitario:</span> $<?= htmlspecialchars($fila['precio_forro']) ?></p>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Valor Tela:</span> <?= htmlspecialchars($fila['valor_forro']) ?></p>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <?php
-                                        $secciones = [
-                                            ['id' => 'entretela', 'titulo' => 'Datos de la Entrela', 'insumo' => 'insumo_entretela', 'consumo' => 'cant_entretela', 'precio' => 'precio_entretela', 'valor' => 'valor_entretela'],
-                                            ['id' => 'entretela2', 'titulo' => 'Datos de la Entrela 2', 'insumo' => 'insumo_entretela2', 'consumo' => 'cant_entretela2', 'precio' => 'precio_entretela2', 'valor' => 'valor_entretela2'],
-                                            ['id' => 'boton', 'titulo' => 'Datos del Botón Principal', 'insumo' => 'insumo_boton', 'consumo' => 'cant_boton', 'precio' => 'precio_boton', 'valor' => 'valor_boton'],
-                                            ['id' => 'boton2', 'titulo' => 'Datos del Botón Secundario', 'insumo' => 'insumo_boton2', 'consumo' => 'cant_boton2', 'precio' => 'precio_boton2', 'valor' => 'valor_boton2'],
-                                            ['id' => 'broche', 'titulo' => 'Datos del Broche', 'insumo' => 'insumo_broche', 'consumo' => 'cant_broche', 'precio' => 'precio_broche', 'valor' => 'valor_broche'],
-                                            ['id' => 'cinta', 'titulo' => 'Datos de la Cinta Reflectiva', 'insumo' => 'insumo_cinta', 'consumo' => 'cant_cinta', 'precio' => 'precio_cinta', 'valor' => 'valor_cinta'],
-                                            ['id' => 'cordon', 'titulo' => 'Datos del Cordon', 'insumo' => 'insumo_cordon', 'consumo' => 'cant_cordon', 'precio' => 'precio_cordon', 'valor' => 'valor_cordon'],
-                                            ['id' => 'cremallera', 'titulo' => 'Datos de la Cremallera 1', 'insumo' => 'insumo_cremallera', 'consumo' => 'cant_cremallera', 'precio' => 'precio_cremallera', 'valor' => 'valor_cremallera'],
-                                            ['id' => 'cremallera2', 'titulo' => 'Datos de la Cremallera 2', 'insumo' => 'insumo_cremallera2', 'consumo' => 'cant_cremallera2', 'precio' => 'precio_cremallera2', 'valor' => 'valor_cremallera2'],
-                                            ['id' => 'cuello', 'titulo' => 'Datos del Cuello', 'insumo' => 'insumo_cuello', 'consumo' => 'consumo_cuello', 'precio' => 'precio_cuello', 'valor' => 'valor_cuello'],
-                                            ['id' => 'deslizador', 'titulo' => 'Datos del Deslizador', 'insumo' => 'insumo_deslizador', 'consumo' => 'cant_deslizador', 'precio' => 'precio_deslizador', 'valor' => 'valor_deslizador'],
-                                            ['id' => 'fajon_cintura', 'titulo' => 'Datos del Fajón de Cintura', 'insumo' => 'insumo_fajon_cintura', 'consumo' => 'cant_fajon_cintura', 'precio' => 'precio_fajon_cintura', 'valor' => 'valor_fajon_cintura'],
-                                            ['id' => 'faya', 'titulo' => 'Datos de la Cinta Faya', 'insumo' => 'insumo_faya', 'consumo' => 'cant_faya', 'precio' => 'precio_faya', 'valor' => 'valor_faya'],
-                                            ['id' => 'fusionado', 'titulo' => 'Datos del Fusionado', 'insumo' => 'insumo_fusionado', 'consumo' => 'consumo_fusionado', 'precio' => 'precio_fusionado', 'valor' => 'valor_fusionado'],
-                                            ['id' => 'guata', 'titulo' => 'Datos de la Guata', 'insumo' => 'insumo_guata', 'consumo' => 'cant_guata', 'precio' => 'precio_guata', 'valor' => 'valor_guata'],
-                                            ['id' => 'hiladilla', 'titulo' => 'Datos de la Hiladilla', 'insumo' => 'insumo_hiladilla', 'consumo' => 'cant_hiladilla', 'precio' => 'precio_hiladilla', 'valor' => 'valor_hiladilla'],
-                                            ['id' => 'hombrera', 'titulo' => 'Datos de la Hombrera', 'insumo' => 'insumo_hombrera', 'consumo' => 'cant_hombrera', 'precio' => 'precio_hombrera', 'valor' => 'valor_hombrera'],
-                                            ['id' => 'plumilla', 'titulo' => 'Datos de la Plumilla', 'insumo' => 'insumo_plumilla', 'consumo' => 'cant_plumilla', 'precio' => 'precio_plumilla', 'valor' => 'valor_plumilla'],
-                                            ['id' => 'pretina', 'titulo' => 'Datos de la Pretina', 'insumo' => 'insumo_pretina', 'consumo' => 'cant_pretina', 'precio' => 'precio_pretina', 'valor' => 'valor_pretina'],
-                                            ['id' => 'puño', 'titulo' => 'Datos del Puño', 'insumo' => 'insumo_puño', 'consumo' => 'consumo_puño', 'precio' => 'precio_puño', 'valor' => 'valor_puño'],
-                                            ['id' => 'puntera', 'titulo' => 'Datos de la Puntera', 'insumo' => 'insumo_puntera', 'consumo' => 'cant_puntera', 'precio' => 'precio_puntera', 'valor' => 'valor_puntera'],
-                                            ['id' => 'resorte', 'titulo' => 'Datos del Resorte 1', 'insumo' => 'insumo_resorte2', 'consumo' => 'cant_resorte2', 'precio' => 'precio_resorte2', 'valor' => 'valor_resorte2'],
-                                            ['id' => 'resorte2', 'titulo' => 'Datos del Resorte 2', 'insumo' => 'insumo_resorte', 'consumo' => 'cant_resorte', 'precio' => 'precio_resorte', 'valor' => 'valor_resorte'],
-                                            ['id' => 'sesgo', 'titulo' => 'Datos del Sesgo', 'insumo' => 'insumo_sesgo', 'consumo' => 'cant_sesgo', 'precio' => 'precio_sesgo', 'valor' => 'valor_sesgo'],
-                                            ['id' => 'trabilla', 'titulo' => 'Datos de la Trabilla', 'insumo' => 'insumo_trabilla', 'consumo' => 'cant_trabilla', 'precio' => 'precio_trabilla', 'valor' => 'valor_trabilla'],
-                                            ['id' => 'velcro', 'titulo' => 'Datos del Velcro', 'insumo' => 'insumo_velcro', 'consumo' => 'cant_velcro', 'precio' => 'precio_velcro', 'valor' => 'valor_velcro'],
-                                            ['id' => 'vinilo', 'titulo' => 'Datos del Vinilo', 'insumo' => 'insumo_vinilo', 'consumo' => 'cant_vinilo', 'precio' => 'precio_vinilo', 'valor' => 'valor_vinilo'],
-                                            ['id' => 'vivo', 'titulo' => 'Datos del Vivo', 'insumo' => 'insumo_vivo', 'consumo' => 'cant_vivo', 'precio' => 'precio_vivo', 'valor' => 'valor_vivo'],
-                                        ];
-
-                                        foreach ($secciones as $seccion):
-                                            if ($fila["id_{$seccion['id']}"] > 0): ?>
-                                                <div class="mb-1 mt-1 text-center border rounded p-1">
-                                                    <h6 class="text-muted font-weight-bold bg-light p-1 rounded"><?= $seccion['titulo'] ?></h6>
-                                                    <p class="card-text" style="color: #333;margin-bottom: 0;"><span class="font-weight-bold">Insumo:</span> <?= $fila[$seccion['insumo']] ?></p>
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <p class="card-text" style="color: black;"><span class="font-weight-bold">Consumo o Cantidad:</span> <?= $fila[$seccion['consumo']] ?></p>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio Unitario:</span> $<?= $fila[$seccion['precio']] ?></p>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Costo Produccion:</span> $<?= $fila[$seccion['valor']] ?></p>
-                                                    </div>
-                                                </div>
-                                        <?php endif;
-                                        endforeach;
-                                        ?>
-
-                                        <?php if (!empty($fila['producto'])): ?>
-                                            <div class="mb-1 mt-1 text-center border rounded p-1">
-                                                <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Datos Mano de Obra</h6>
-                                                <div>
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Mano de Obra para:</span> <?= $fila['producto'] ?></p>
-                                                </div>
-                                                <div>
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio:</span> $<?= $fila['precio_obra'] ?></p>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <div class="mb-1 mt-1 text-center border rounded p-1">
-                                            <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Otros datos</h6>
-                                            <div class="row">
-                                                <?php
-                                                $tieneBordado = !empty($fila['precio_bordado']);
-                                                $tieneEstampado = !empty($fila['precio_estampado']);
-
-                                                $claseCol = ($tieneBordado && $tieneEstampado) ? 'col-md-6' : 'col-md-12 text-center';
-                                                ?>
-
-                                                <?php if ($tieneBordado): ?>
-                                                    <div class="<?= $claseCol ?>">
-                                                        <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio Bordado:</span> $<?= $fila['precio_bordado'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if ($tieneEstampado): ?>
-                                                    <div class="<?= $claseCol ?>">
-                                                        <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio Estampado:</span> $<?= $fila['precio_estampado'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php
-                                                $tieneFlete = !empty($fila['valor_flete']);
-                                                $tieneLogistica = !empty($fila['precio_logistica']);
-
-                                                $claseCol = ($tieneFlete && $tieneLogistica) ? 'col-md-6' : 'col-md-12 text-center';
-                                                ?>
-
-                                                <?php if ($tieneFlete): ?>
-                                                    <div class="<?= $claseCol ?>">
-                                                        <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio del Flete:</span> $<?= $fila['valor_flete'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if ($tieneLogistica): ?>
-                                                    <div class="<?= $claseCol ?>">
-                                                        <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio Logística:</span> $<?= $fila['precio_logistica'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php if (!empty($fila['tipo_entrega'])): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Tipo de Entrega:</span> <?= $fila['tipo_entrega'] ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio de Entrega:</span> $<?= $fila['precio_entrega'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php if (!empty($fila['id_bolsa'])): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio de la Bolsa:</span> $<?= $fila['precio_bolsa'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                                <?php if (!empty($fila['id_marquilla'])): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio de Marquilla:</span> $<?= $fila['precio_marquilla'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php if (!empty($fila['id_acabado'])): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Tipo de Acabado:</span> <?= $fila['insumo_acabado'] ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio del Acabado:</span> $<?= $fila['precio_acabado'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php if (!empty($fila['id_encarterada']) && $fila['id_encarterada'] != 1): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Tipo de Encarterada:</span> <?= $fila['tipo_encarterada'] ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio:</span> $<?= $fila['precio_encarterada'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php if (!empty($fila['id_puesta']) && $fila['id_puesta'] != 1): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Tipo de Puesta de Cinta:</span> <?= $fila['tipo_puesta'] ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio:</span> $<?= $fila['precio_puesta'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php if (!empty($fila['id_diseño'])): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Tipo de Diseño:</span> <?= $fila['opcion_diseño'] ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio del Diseño:</span> $<?= $fila['valor_diseño'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php if (!empty($fila['id_corte'])): ?>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Cant. Corte:</span> <?= $fila['cant_corte'] ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio del Corte:</span> $<?= $fila['precio_corte'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="row">
-                                                <?php
-                                                $tieneMargen = !empty($fila['margen_bruto']);
-                                                $tieneEstampilla = !empty($fila['valor_porcentajeestampilla']);
-
-                                                $claseCol = ($tieneMargen && $tieneEstampilla) ? 'col-md-6' : 'col-md-12 text-center';
-                                                ?>
-
-                                                <?php if ($tieneMargen): ?>
-                                                    <div class="<?= $claseCol ?>">
-                                                        <p class="card-text" style="color: black;"> <span class="font-weight-bold">% Margen Bruto:</span> $<?= $fila['margen_bruto'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if ($tieneEstampilla): ?>
-                                                    <div class="<?= $claseCol ?>">
-                                                        <p class="card-text" style="color: black;"> <span class="font-weight-bold">% Estampilla:</span> $<?= $fila['valor_porcentajeestampilla'] ?></p>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <br>
-                                    </form>
+                                <div class="modal-header text-white justify-content-center position-relative" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
+                                    <div class="d-flex align-items-center text-center">
+                                        <img src="../../img/unidotaciones.png" alt="Logo" width="150" class="me-3 rounded">
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
-                            </div>
-                        <?php endif; ?>
-                        <?php if ($fila['id_tipo_producto'] == 8): ?>
-                            <div class="modal-header" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                <h5 class="modal-title text-white" id="exampleModalLabel">Informacion producto: <?= $fila['nombre_producto'] ?></h5>
-                                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form action="" method="post" id="formulario" enctype="multipart/form-data">
-                                    <input type="hidden" name="id_producto" value="<?php echo $fila['id_producto']; ?>">
-                                    <!-- Datos de la solicitud -->
-                                    <div class="card-text-container">
-                                        <?php
-                                        // Array de imágenes
-                                        $imagenes = [
-                                            $fila['imagen'],
-                                            $fila['imagen2'],
-                                            $fila['imagen3'],
-                                            $fila['imagen4'],
-                                        ];
 
-                                        // Filtrar imágenes no vacías
-                                        $imagenesValidas = array_filter($imagenes, fn($imagen) => !empty($imagen));
-                                        ?>
+                                <div class="text-white text-center py-2 fw-bold" style="background-color:#18a000;">
+                                    FICHA TÉCNICA DE PRODUCCIÓN
+                                </div>
 
-                                        <?php if (!empty($imagenesValidas)): ?>
-                                            <div class="d-flex flex-wrap justify-content-center">
-                                                <div class="mb-2 mt-1 text-center border rounded p-2">
-                                                    <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Imágenes Guía</h6>
-                                                    <div class="d-flex justify-content-center mb-2">
-                                                        <?php foreach ($imagenesValidas as $imagen): ?>
-                                                            <div class="text-center border rounded p-1 mx-2" style="max-width: 130px;">
-                                                                <img src="../../img/pedidos/<?= $imagen ?>" alt="Imagen del producto" class="img-fluid" style="width: 130px; height: 130px; object-fit: cover;">
-                                                            </div>
-                                                        <?php endforeach; ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
+                                <!-- FECHAS -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                            <thead>
+                                                <tr class="table-primary">
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Comercial</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Ficha Tecnica</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Trazo</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Corte</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 16%;">Fecha Numeracion</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 16%;">Personalizado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <?php echo $ficha_existe && $fv('fecha_comercial') ? date('d/m/Y', strtotime($fv('fecha_comercial'))) : date('d/m/Y'); ?>
+                                                        <input type="hidden" name="fecha_comercial" value="<?php echo $ficha_existe && $fv('fecha_comercial') ? date('Y-m-d', strtotime($fv('fecha_comercial'))) : date('Y-m-d'); ?>">
+                                                    </td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td>
+                                                        <?php echo ($fila['id_entrega'] == 2) ? 'Sí' : 'No'; ?>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
-                                        <div>
-                                            <?php
-                                            // Array de logos
-                                            $logos = [
-                                                $fila['logo1'],
-                                                $fila['logo2'],
-                                                $fila['logo3'],
-                                                $fila['logo4']
+                                <!-- ENCABEZADO FICHA -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <!-- BLOQUE IZQUIERDO 40% -->
+                                                    <td class="fw-bold text-end" style="width:12%;" name="fecha_pedido">Fecha Pedido:</td>
+                                                    <td class="text-center" style="width:28%;">
+                                                        <?php
+                                                        $dias = ['Sunday' => 'Domingo', 'Monday' => 'Lunes', 'Tuesday' => 'Martes', 'Wednesday' => 'Miércoles', 'Thursday' => 'Jueves', 'Friday' => 'Viernes', 'Saturday' => 'Sábado'];
+
+                                                        $meses = [1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'];
+
+                                                        echo $dias[date('l')] . ', ' . date('d') . ' de ' . $meses[date('n')] . ' del ' . date('Y');
+                                                        ?>
+                                                    </td>
+
+                                                    <!-- BLOQUE DERECHO 60% -->
+                                                    <td class="fw-bold text-center" style="width:11%;">Fecha de Entrega:</td>
+                                                    <td class="text-center" style="width:20%;">
+                                                        <input type="date" class="form-control form-control-sm text-center" name="fecha_entrega"
+                                                        value="<?= $ficha_existe && $fv('fecha_entrega') ? date('Y-m-d', strtotime($fv('fecha_entrega'))) : sumar_dias_habiles(new DateTime(), 30)->format('Y-m-d') ?>">
+                                                    </td>
+
+                                                    <td class="fw-bold text-center" style="width:17%;">Número de Ficha</td>
+                                                    <td class="text-center fw-bold" style="width:12%; background:#ffff00;">
+                                                        <input type="text" class="form-control form-control-sm text-center" style="background:#ffff00;" name="num_ficha" value="<?= $ficha_existe ? $fv('num_ficha') : $siguiente_ficha ?>" <?= $ficha_existe ? 'readonly' : '' ?>>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="fw-bold text-end">Ciudad:</td>
+                                                    <td class="text-center">PEREIRA</td>
+
+                                                    <td class="fw-bold text-center">Cliente:</td>
+                                                    <td class="text-center fw-bold" colspan="3" style="color:red;">
+                                                        <?php echo $fila['cliente']; ?>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold text-end">Destino:</td>
+                                                    <td class="text-center">UNIDOTACIONES DEL EJE S.A.S</td>
+
+                                                    <td class="fw-bold text-center">NIT:</td>
+                                                    <td class="text-center">
+                                                        <?php echo $fila['cod_cliente']; ?>
+                                                    </td>
+
+                                                    <td class="fw-bold text-center">Forma de Pago:</td>
+                                                    <td>
+                                                        <input type="text" class="form-control form-control-sm text-center" name="forma_pago" style="color:red;" value="<?= htmlspecialchars($fv('forma_pago')) ?>">
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="fw-bold text-end">Cuenta:</td>
+                                                    <td class="text-center">9.011.918.976</td>
+
+                                                    <td class="fw-bold text-center">Dirección:</td>
+                                                    <td class="text-center" colspan="3">
+                                                        <?php echo $fila['direccion1']; ?>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- PRENDA -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                            <thead>
+                                                <tr class="table-primary">
+                                                    <th style="text-align: center; vertical-align: middle; width: 20%;">Prenda</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 9%;">Manga</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Genero</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Marca</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Bolsillo</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Lavado</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Bordado</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 9%;">Muestra F</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Cuello</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 12%;">Tipo de Empaque</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($fila['nombre_producto']); ?></td>
+                                                    <td>
+                                                        <?php if (in_array($fila['id_tipo_prenda'], [1, 2, 5, 6])) { ?>
+                                                            <select name="manga" class="form-select form-select-sm">
+                                                                <option value=""></option>
+                                                                <option value="Larga" <?= $fsel('manga', 'Larga') ?>>Larga</option>
+                                                                <option value="Corta" <?= $fsel('manga', 'Corta') ?>>Corta</option>
+                                                                <option value="Sisa" <?= $fsel('manga', 'Sisa') ?>>Sisa</option>
+                                                                <option value="Al Codo" <?= $fsel('manga', 'Al Codo') ?>>Al Codo</option>
+                                                                <option value="Japonesa" <?= $fsel('manga', 'Japonesa') ?>>Japonesa</option>
+                                                                <option value="Rodada" <?= $fsel('manga', 'Rodada') ?>>Rodada</option>
+                                                                <option value="Ranglan" <?= $fsel('manga', 'Ranglan') ?>>Ranglan</option>
+                                                                <option value="3/4" <?= $fsel('manga', '3/4') ?>>3/4</option>
+                                                                <option value="Clásico" <?= $fsel('manga', 'Clásico') ?>>Clásico</option>
+                                                                <option value="Informal" <?= $fsel('manga', 'Informal') ?>>Informal</option>
+                                                            </select>
+                                                        <?php } else { ?>
+                                                            <input type="text" class="form-control form-control-sm" value="" readonly>
+                                                        <?php } ?>
+                                                    </td>
+                                                    <td>
+                                                        <select name="genero" id="generoEx<?php echo $fila['id_producto']; ?>" class="form-select form-select-sm genero-select">
+                                                            <option value=""></option>
+                                                            <option value="Dama" <?= $fsel('genero', 'Dama') ?>>Dama</option>
+                                                            <option value="Hombre" <?= $fsel('genero', 'Hombre') ?>>Hombre</option>
+                                                            <option value="Junior" <?= $fsel('genero', 'Junior') ?>>Junior</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>UDE</td>
+                                                    <td>
+                                                        <select name="bolsillo" class="form-select form-select-sm">
+                                                            <option value="NO" <?= $fsel('bolsillo', 'NO') ?>>NO</option>
+                                                            <option value="SI" <?= $fsel('bolsillo', 'SI') ?>>SI</option>
+                                                            <option value="Imitación" <?= $fsel('bolsillo', 'Imitación') ?>>Imitación</option>
+                                                            <option value="1" <?= $fsel('bolsillo', '1') ?>>1</option>
+                                                            <option value="2" <?= $fsel('bolsillo', '2') ?>>2</option>
+                                                            <option value="3" <?= $fsel('bolsillo', '3') ?>>3</option>
+                                                            <option value="4" <?= $fsel('bolsillo', '4') ?>>4</option>
+                                                            <option value="5" <?= $fsel('bolsillo', '5') ?>>5</option>
+                                                            <option value="Relojero" <?= $fsel('bolsillo', 'Relojero') ?>>Relojero</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select name="lavado" class="form-select form-select-sm">
+                                                            <option value="NO" <?= $fsel('lavado', 'NO') ?>>NO</option>
+                                                            <option value="SI" <?= $fsel('lavado', 'SI') ?>>SI</option>
+                                                        </select>
+                                                    </td>
+                                                    <td style="background:#ffff00;"><input type="text" class="form-control form-control-sm" style="background:#ffff00;" name="bordado" value="<?= htmlspecialchars($fv('bordado')) ?>"></td>
+                                                    <td>
+                                                        <select name="muestra" class="form-select form-select-sm">
+                                                            <option value="NO" <?= $fsel('muestra', 'NO') ?>>NO</option>
+                                                            <option value="SI" <?= $fsel('muestra', 'SI') ?>>SI</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <?php if (in_array($fila['id_tipo_prenda'], [1, 2, 5, 6])) { ?>
+                                                            <select name="cuello_option" class="form-select form-select-sm">
+                                                                <option value=""></option>
+                                                                <option value="Botón Down" <?= $fsel('cuello_option', 'Botón Down') ?>>Botón Down</option>
+                                                                <option value="Botón Down Oculto" <?= $fsel('cuello_option', 'Botón Down Oculto') ?>>Botón Down Oculto</option>
+                                                                <option value="Sin Botón Down" <?= $fsel('cuello_option', 'Sin Botón Down') ?>>Sin Botón Down</option>
+                                                                <option value="Sport" <?= $fsel('cuello_option', 'Sport') ?>>Sport</option>
+                                                                <option value="Camisero" <?= $fsel('cuello_option', 'Camisero') ?>>Camisero</option>
+                                                                <option value="Tejido" <?= $fsel('cuello_option', 'Tejido') ?>>Tejido</option>
+                                                                <option value="Y Puños Tejidos" <?= $fsel('cuello_option', 'Y Puños Tejidos') ?>>Y Puños Tejidos</option>
+                                                                <option value="Y Puños en la misma tela" <?= $fsel('cuello_option', 'Y Puños en la misma tela') ?>>Y Puños en la misma tela</option>
+                                                                <option value="Sastre" <?= $fsel('cuello_option', 'Sastre') ?>>Sastre</option>
+                                                                <option value="Smoking" <?= $fsel('cuello_option', 'Smoking') ?>>Smoking</option>
+                                                                <option value="En V" <?= $fsel('cuello_option', 'En V') ?>>En V</option>
+                                                                <option value="Corbata" <?= $fsel('cuello_option', 'Corbata') ?>>Corbata</option>
+                                                                <option value="Nerhú" <?= $fsel('cuello_option', 'Nerhú') ?>>Nerhú</option>
+                                                            </select>
+                                                        <?php } else { ?>
+                                                            <input type="text" class="form-control form-control-sm" value="" readonly>
+                                                        <?php } ?>
+                                                    </td>
+                                                    <td>
+                                                        <select name="empaque" class="form-select form-select-sm">
+                                                            <option value=""></option>
+                                                            <option value="Doblada" <?= $fsel('empaque', 'Doblada') ?>>Doblada</option>
+                                                            <option value="Colgada" <?= $fsel('empaque', 'Colgada') ?>>Colgada</option>
+                                                            <option value="Doblado casero" <?= $fsel('empaque', 'Doblado casero') ?>>Doblado casero</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- DESCRIPCION PRENDA -->
+                                <div class="card shadow-sm border-0 mb-3">
+                                    <?php
+                                    $colores = [];
+                                    for ($i = 1; $i <= 6; $i++) {
+                                        $clave = ($i == 1) ? 'color_tela' : 'color_tela' . $i;
+                                        if (!empty($fila[$clave])) {
+                                            $colores[] = [
+                                                'sufijo' => ($i == 1) ? '' : $i,
+                                                'valor'  => $fila[$clave]
                                             ];
+                                        }
+                                    }
+                                    ?>
 
-                                            // Definimos la función si no existe
-                                            if (!function_exists('displayFile')) {
-                                                function displayFile($file)
-                                                {
-                                                    $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
-                                                    $fileName = basename($file);
-                                                    $filePath = 'logos_empresas/' . $file;
-
-                                                    if (in_array($fileExtension, ['pdf', 'doc', 'docx'])) {
-                                                        echo '<a href="' . $filePath . '" class="btn btn-outline-primary mx-1 mb-2" target="_blank" download>' . $fileName . '</a>';
-                                                    } else {
-                                                        echo '<a href="' . $filePath . '" target="_blank" download class="d-block mx-1 mb-2">
-                                                                                <img src="' . $filePath . '" alt="' . $fileName . '" class="img-fluid rounded shadow-sm" style="max-width: 130px;">
-                                                                            </a>';
-                                                    }
-                                                }
-                                            }
-                                            ?>
-
-                                            <?php if (array_filter($logos)): // Comprobamos si hay al menos un logo no vacío 
-                                            ?>
-                                                <div class="mb-1 text-center border rounded p-1">
-                                                    <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Logos de la Empresa</h6>
-                                                    <div class="card-body d-flex justify-content-center flex-wrap">
-                                                        <?php foreach ($logos as $logo): ?>
-                                                            <?php if (!empty($logo)): ?>
-                                                                <div class="text-center p-1">
-                                                                    <?php displayFile($logo); ?>
-                                                                </div>
-                                                            <?php endif; ?>
-                                                        <?php endforeach; ?>
-                                                    </div>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                            <thead>
+                                                <tr class="table-primary">
+                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Codigo</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Color</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 40%;">Nombre de la Prenda</th>
+                                                    <th style="text-align: center; vertical-align: middle; width: 30%;">Composicion</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($colores as $c): ?>
+                                                    <tr>
+                                                        <td><input type="text" class="form-control form-control-sm text-center" name="codigo_tela<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($fv('codigo_tela' . $c['sufijo'])); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300"></td>
+                                                        <td><input type="text" class="form-control form-control-sm text-center" name="color_tela<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($c['valor']); ?>"></td>
+                                                        <td><?php echo htmlspecialchars($fila['nombre_producto']); ?></td>
+                                                        <td><input type="text" class="form-control form-control-sm text-center" name="composicion<?php echo $c['sufijo']; ?>" value="<?php echo htmlspecialchars($fv('composicion' . $c['sufijo'])); ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="300"></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <!---->
+                                </div>
 
-                                    <div class="mb-1 mt-1 text-center border rounded p-1">
-                                        <div class="mb-2 row">
-                                            <div class="col-md-6">
-                                                <p class="card-text" style="color: black;"><span class="font-weight-bold">Cantidad de Prendas:</span> <?= $fila['cant_prendas'] ?></p>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <p class="card-text" style="color: black;"><span class="font-weight-bold">Cantidad de Tallas:</span> <?= $fila['cant_tallas'] ?></p>
-                                            </div>
-                                        </div>
+                                <!-- DESCRIPCIONES -->
+                                <div class="card shadow-sm mb-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;width:100%;">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Valor Agregado
+                                                    </td>
+                                                    <td colspan="4">
+                                                        <textarea class="form-control" name="valor_agregado" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fila['valor_agregado'] ?? '') ?></textarea>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tbody>
+                                                <!-- TIPO OPCION-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        <select name="tipo_opcion" class="form-select form-select-sm text-center fw-bold" style="background-color:#d9e3f0; font-weight:bold; border:1px solid #b8c7d9;">
+                                                            <option value="Bordado" <?= $fsel('tipo_opcion', 'Bordado') ?>>Bordado</option>
+                                                            <option value="Estampado" <?= $fsel('tipo_opcion', 'Estampado') ?>>Estampado</option>
+                                                            <option value="Subliminado" <?= $fsel('tipo_opcion', 'Subliminado') ?>>Subliminado</option>
+                                                            <option value="Transfer" <?= $fsel('tipo_opcion', 'Transfer') ?>>Transfer</option>
+                                                        </select>
+                                                    </td>
+                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                        <textarea class="form-control text-center fw-bold" style="background:#ffff00; color:red;" name="opcion_escrito" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fv('opcion_escrito')) ?></textarea>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- OBSERVACIÓN PARA COSTEO-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Observaciónes para el Costeo
+                                                    </td>
+                                                    <td colspan="4">
+                                                        <textarea class="form-control" name="observaciones" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo $fila['observaciones']; ?></textarea>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- OBSERVACIÓN DE TALLAS-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Observaciónes de las Tallas
+                                                    </td>
+                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                        <textarea class="form-control text-center fw-bold" style="background:#ffff00; color:red;" name="observacion_tallas" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fv('observacion_tallas')) ?></textarea>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- OBSERVACIÓN DEL STOCK-->
+                                                <tr>
+                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                        Observaciónes del Stock
+                                                    </td>
+                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                        <textarea class="form-control text-center fw-bold" style="background:#ffff00; color:red;" name="observacion_stock" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?= htmlspecialchars($fv('observacion_stock')) ?></textarea>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
+                                </div>
 
-                                    <?php if (!empty($fila['nombre_proveedor'])): ?>
-                                        <div class="mb-1 mt-1 text-center border rounded p-1">
-                                            <h6 class="text-muted font-weight-bold bg-light p-1 rounded">proveedor</h6>
-                                            <div class="mb-2 row justify-content-center">
-                                                <div>
-                                                    <p class="card-text mb-0" style="color: black; text-align: left; width: 100%; margin: 10px;"><span class="font-weight-bold"></span> <?= $fila['nombre_proveedor'] ?></p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-                                    <div class="mb-1 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Descripcion Producto</h6>
-                                        <div class="mb-2 row justify-content-center">
-                                            <?php
-                                            if (!empty($fila['observaciones'])): ?>
-                                                <div>
-                                                    <p class="card-text mb-0" style="color: black; text-align: left; width: 100%; margin: 10px;"><span class="font-weight-bold"></span> <?= $fila['observaciones'] ?></p>
-                                                </div>
-                                            <?php endif;
-                                            ?>
-                                        </div>
+                                <!-- CURVA DE TALLAS -->
+                                <div class="card shadow-sm border-0 mt-3">
+                                    <?php
+                                    // Reutilizamos la misma lógica de colores que en la tarjeta de TELA
+                                    $colores_curva = [];
+                                    for ($i = 1; $i <= 6; $i++) {
+                                        $clave = ($i == 1) ? 'color_tela' : 'color_tela' . $i;
+                                        if (!empty($fila[$clave])) {
+                                            $colores_curva[] = $fila[$clave];
+                                        }
+                                    }
+                                    ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm align-middle text-center mb-0"
+                                            id="tablaTallasEx<?php echo $fila['id_producto']; ?>"
+                                            data-colores='<?php echo htmlspecialchars(json_encode($colores_curva, JSON_UNESCAPED_UNICODE), ENT_QUOTES); ?>'
+                                            data-guardadas='<?php echo htmlspecialchars(json_encode($fila, JSON_UNESCAPED_UNICODE), ENT_QUOTES); ?>'>
+                                        </table>
                                     </div>
-                                    <div class="mb-1 mt-1 text-center border rounded p-1">
-                                        <h6 class="text-muted font-weight-bold bg-light p-1 rounded">Otros datos</h6>
-                                        <div class="row">
-                                            <?php
-                                            $tieneBordado = !empty($fila['precio_bordado']);
-                                            $tieneEstampado = !empty($fila['precio_estampado']);
+                                </div>
 
-                                            $claseCol = ($tieneBordado && $tieneEstampado) ? 'col-md-6' : 'col-md-12 text-center';
-                                            ?>
-
-                                            <?php if ($tieneBordado): ?>
-                                                <div class="<?= $claseCol ?>">
-                                                    <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio Bordado:</span> $<?= $fila['precio_bordado'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <?php if ($tieneEstampado): ?>
-                                                <div class="<?= $claseCol ?>">
-                                                    <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio Estampado:</span> $<?= $fila['precio_estampado'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php
-                                            $tieneFlete = !empty($fila['valor_flete']);
-                                            $tieneLogistica = !empty($fila['precio_logistica']);
-
-                                            $claseCol = ($tieneFlete && $tieneLogistica) ? 'col-md-6' : 'col-md-12 text-center';
-                                            ?>
-
-                                            <?php if ($tieneFlete): ?>
-                                                <div class="<?= $claseCol ?>">
-                                                    <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio del Flete:</span> $<?= $fila['valor_flete'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <?php if ($tieneLogistica): ?>
-                                                <div class="<?= $claseCol ?>">
-                                                    <p class="card-text" style="color: black;"> <span class="font-weight-bold">Precio Logística:</span> $<?= $fila['precio_logistica'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php if (!empty($fila['tipo_entrega'])): ?>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Tipo de Entrega:</span> <?= $fila['tipo_entrega'] ?></p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio de Entrega:</span> $<?= $fila['precio_entrega'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php if (!empty($fila['id_bolsa'])): ?>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio de la Bolsa:</span> $<?= $fila['precio_bolsa'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($fila['id_marquilla'])): ?>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio de Marquilla:</span> $<?= $fila['precio_marquilla'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php if (!empty($fila['id_acabado'])): ?>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Tipo de Acabado:</span> <?= $fila['insumo_acabado'] ?></p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio del Acabado:</span> $<?= $fila['precio_acabado'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php if (!empty($fila['id_encarterada'])): ?>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Tipo de Encarterada:</span> <?= $fila['tipo_encarterada'] ?></p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <p class="card-text mb-1" style="color: black;"><span class="font-weight-bold">Precio de Encarterada:</span> $<?= $fila['precio_encarterada'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php if (!empty($fila['id_diseño'])): ?>
-                                                <div class="col-md-6">
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Tipo de Diseño:</span> <?= $fila['opcion_diseño'] ?></p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio del Diseño:</span> $<?= $fila['valor_diseño'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php if (!empty($fila['id_corte'])): ?>
-                                                <div class="col-md-6">
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Cant. Corte:</span> <?= $fila['cant_corte'] ?></p>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <p class="card-text" style="color: black;"><span class="font-weight-bold">Precio del Corte:</span> $<?= $fila['precio_corte'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="row">
-                                            <?php
-                                            $tieneMargen = !empty($fila['margen_bruto']);
-                                            $tieneEstampilla = !empty($fila['valor_porcentajeestampilla']);
-
-                                            $claseCol = ($tieneMargen && $tieneEstampilla) ? 'col-md-6' : 'col-md-12 text-center';
-                                            ?>
-
-                                            <?php if ($tieneMargen): ?>
-                                                <div class="<?= $claseCol ?>">
-                                                    <p class="card-text" style="color: black;"> <span class="font-weight-bold">% Margen Bruto:</span> $<?= $fila['margen_bruto'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <?php if ($tieneEstampilla): ?>
-                                                <div class="<?= $claseCol ?>">
-                                                    <p class="card-text" style="color: black;"> <span class="font-weight-bold">% Estampilla:</span> $<?= $fila['valor_porcentajeestampilla'] ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <br>
-                                </form>
-                            </div>
-                        <?php endif; ?>
+                                <!-- BUTTON -->
+                                <div class="modal-footer justify-content-center">
+                                    <button type="submit" name="crear_ficha_tecnicaEx" class="btn btn-success">
+                                        <i class="bi bi-save"></i> Guardar Ficha Técnica
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Pasar a llenar la Ficha Tecnica -->
-            <div class="modal fade" id="fichatecnica<?php echo $fila['id_producto']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="CambiarEstado<?php echo $fila['id_producto']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content rounded-4">
                         <div class="modal-header text-white rounded-top" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
@@ -5214,21 +2220,13 @@
                                 <input type="hidden" name="id_usuario" value="<?php echo $fila['id_usuario']; ?>">
                                 <input type="hidden" name="id_pedido" value="<?php echo $fila['id_pedido']; ?>">
 
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text" id="basic-addon1">Núm. Ficha Tecnica</span>
-                                    <input type="text" class="form-control" name="num_ficha" value="<?= $siguiente_ficha ?>">
-                                </div>
-
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text" id="basic-addon1">Codigo Orden Compra</span>
-                                    <input type="text" class="form-control" name="num_orden_compra" pattern="[A-Za-z0-9,\sáéíóúÁÉÍÓÚñÑ.@\-_]+" maxlength="100">
-                                </div>
-
-                                <div class="alert alert-warning" role="alert">
-                                    <strong><i class="bi bi-exclamation-triangle-fill"></i> NOTA:</strong> Si oprime continuar el producto pasara a ser visto por Diseño para llenar su Ficha Tecnica.
+                                <div class="alert alert-warning border-0 shadow-sm rounded-3">
+                                    <strong><i class="bi bi-info-circle-fill me-2"></i>Información importante</strong>
+                                    <hr class="my-2">
+                                    Al continuar, el producto será remitido al área de <strong>Diseño</strong> para finalizar el diligenciamiento de la ficha técnica. Asimismo, la información será compartida con el área de <strong>Compras</strong>, permitiendo iniciar el proceso de adquisición de los insumos requeridos para su fabricación.
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" name="cambiar_estadoProducto" class="btn btn-success">Continuar</button>
+                                    <button type="submit" name="cambiar_estado" class="btn btn-success">Continuar</button>
                                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Volver</button>
                                 </div>
                             </form>
@@ -5274,119 +2272,253 @@
                     </div>
                 </div>
             </div>
+
         <?php
         }
         ?>
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-        
+
+        <script>
+            const hombre = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL", "Especial"];
+            const dama = ["4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "Especial"];
+
+            document.addEventListener("change", function(e) {
+                if (e.target.classList.contains("genero-select")) {
+                    construirTabla(e.target);
+                }
+            });
+
+            function escapeHtml(str) {
+                const div = document.createElement("div");
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function construirTabla(generoEl) {
+                const idProducto = generoEl.id.replace("generoEx", "").replace("genero", "");
+
+                const tabla = generoEl.id.startsWith("generoEx")
+                    ? document.getElementById("tablaTallasEx" + idProducto)
+                    : document.getElementById("tablaTallas" + idProducto);
+                if (!tabla) return;
+
+                let tallas = [];
+                if (generoEl.value === "Hombre") {
+                    tallas = hombre;
+                } else if (generoEl.value === "Dama" || generoEl.value === "Junior") {
+                    tallas = dama;
+                }
+
+                if (tallas.length === 0) {
+                    tabla.innerHTML = "";
+                    return;
+                }
+
+                // Colores que vienen desde PHP (color_tela, color_tela2 ... color_tela6)
+                let colores = [];
+                try {
+                    colores = JSON.parse(tabla.dataset.colores || "[]");
+                } catch (e) {
+                    colores = [];
+                }
+                if (colores.length === 0) colores = [""]; // fallback: al menos una fila
+
+                // Datos de tallas/stock ya guardados en la ficha (para reconstruir la curva)
+                let guardadas = {};
+                try {
+                    guardadas = JSON.parse(tabla.dataset.guardadas || "{}") || {};
+                } catch (e) {
+                    guardadas = {};
+                }
+
+                let html = `
+                    <thead>
+                        <tr>
+                            <td colspan="${tallas.length + 3}" class="fw-bold" style="background:#ffff00; position:relative; text-align:center;">
+                                <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%);">Cant Prendas: ${guardadas['suma_prendas'] ?? 0}</span>
+                                CURVA INICIAL
+                            </td>
+                        </tr>
+                        <tr class="table-primary">
+                            <th style="text-align: center; vertical-align: middle; width: 5%;">Stock</th>
+                            <th style="text-align: center; vertical-align: middle; width: 18%;">Color</th>`;
+                tallas.forEach(t => {
+                    html += `<th style="text-align: center; vertical-align: middle; width: 5%;">${t}</th>`;
+                });
+                html += `
+                            <th style="text-align: center; vertical-align: middle; width: 8%;">Total Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody${idProducto}">`;
+
+                colores.forEach((color, index) => {
+                    const g = index + 1; // grupo / color (1..6)
+                    const prefijoTalla = (g === 1) ? "talla_" : "talla" + g + "_";
+                    const prefijoStock = (g === 1) ? "stock_" : "stock" + g + "_";
+                    const colTotalStock = (g === 1) ? "total_stock" : "total_stock" + g;
+                    let totalFila = 0;
+
+                    const stockRowId = "filaStock" + idProducto + "_" + g;
+
+                    // ¿Este color ya tiene algo guardado en stock? Si es asi, la fila
+                    // arranca visible (no hay que volver a presionar el boton).
+                    let tieneStockGuardado = false;
+                    tallas.forEach(t => {
+                        const key = (t === "Especial") ? "especial" : t;
+                        const v = guardadas[prefijoStock + key];
+                        if (v !== undefined && v !== null && v !== "" && parseInt(v) !== 0) tieneStockGuardado = true;
+                    });
+                    const claseVisibilidadStock = tieneStockGuardado ? "" : "d-none";
+
+                    html += `<tr id="filaTalla${idProducto}_${g}" data-group="${g}" data-producto="${idProducto}">
+                        <td class="text-center align-middle">
+                            <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm btn-toggle-stock" data-target="${stockRowId}">
+                                <i class="bi bi-box-seam-fill me-1"></i>Stock
+                            </button>
+                        </td>
+                        <td class="text-center align-middle">
+                            <span class="fw-bold">${g} - ${escapeHtml(color)}</span>
+                            <input type="hidden" name="color[]" value="${escapeHtml(color)}">
+                        </td>`;
+                    tallas.forEach((t, i) => {
+                        const key = (t === "Especial") ? "especial" : t;
+                        let val = guardadas[prefijoTalla + key];
+                        val = (val === undefined || val === null) ? "" : val;
+                        if (val !== "") totalFila += parseInt(val) || 0;
+                        html += `<td>
+                            <input type="number" min="0" value="${val}" class="form-control form-control-sm text-center cantidad" name="cantidad_${i}[]" style="text-align:center;">
+                        </td>`;
+                    });
+                    html += `<td>
+                        <input type="text" readonly value="${totalFila}" class="form-control form-control-sm text-center totalFila" style="text-align:center;">
+                    </td>
+                    </tr>`;
+
+                    // Fila de STOCK de este color (con color distinto para diferenciar; visible
+                    // desde el inicio si ya tenia datos guardados)
+                    const totalStockGuardado = guardadas[colTotalStock];
+                    const totalStockInicial = (totalStockGuardado === undefined || totalStockGuardado === null || totalStockGuardado === "") ? 0 : (parseInt(totalStockGuardado) || 0);
+
+                    html += `<tr id="${stockRowId}" class="${claseVisibilidadStock} table-warning" data-group="${g}" data-producto="${idProducto}">
+                        <td></td>
+                        <td class="text-center align-middle">
+                            <span class="fw-bold">Stock en Color: ${escapeHtml(color)}</span>
+                        </td>`;
+                    tallas.forEach((t, i) => {
+                        const key = (t === "Especial") ? "especial" : t;
+                        let val = guardadas[prefijoStock + key];
+                        val = (val === undefined || val === null) ? "" : val;
+                        html += `<td>
+                            <input type="number" min="0" value="${val}" class="form-control form-control-sm text-center stock-input" name="stock_${i}[]" style="text-align:center;">
+                        </td>`;
+                    });
+                    html += `<td>
+                            <input type="text" readonly value="${totalStockInicial}" class="form-control form-control-sm text-center totalStockFila" style="text-align:center;">
+                        </td>
+                    </tr>`;
+                });
+
+                // Fila de resumen general (unidades_totales = suma de todos los colores, tallas + stock)
+                const unidadesTotalesGuardadas = guardadas['unidades_totales'];
+                let unidadesTotalesIniciales = 0;
+                if (unidadesTotalesGuardadas !== undefined && unidadesTotalesGuardadas !== null && unidadesTotalesGuardadas !== "") {
+                    unidadesTotalesIniciales = parseInt(unidadesTotalesGuardadas) || 0;
+                }
+                html += `<tr class="table-info fw-bold" id="filaResumen${idProducto}">
+                    <td colspan="${tallas.length + 2}" class="text-end">Unidades Totales</td>
+                    <td class="text-center">
+                        <input type="text" readonly value="${unidadesTotalesIniciales}" class="form-control form-control-sm text-center fw-bold unidadesTotalesFila" style="text-align:center;">
+                    </td>
+                </tr>`;
+
+                html += `</tbody>`;
+
+                tabla.innerHTML = html;
+
+                // Recalcula Total Unidades de un color especifico, y el resumen general
+                function recomputarGrupo(g) {
+                    const filaTalla = tabla.querySelector(`#filaTalla${idProducto}_${g}`);
+                    const filaStock = tabla.querySelector(`#filaStock${idProducto}_${g}`);
+                    if (!filaTalla) return;
+
+                    let totalTallas = 0;
+                    filaTalla.querySelectorAll(".cantidad").forEach(c => {
+                        totalTallas += parseInt(c.value) || 0;
+                    });
+
+                    const totalFilaEl = filaTalla.querySelector(".totalFila");
+                    if (totalFilaEl) totalFilaEl.value = totalTallas;
+
+                    let totalStock = 0;
+                    if (filaStock) {
+                        filaStock.querySelectorAll(".stock-input").forEach(c => {
+                            totalStock += parseInt(c.value) || 0;
+                        });
+                        const totalStockFilaEl = filaStock.querySelector(".totalStockFila");
+                        if (totalStockFilaEl) totalStockFilaEl.value = totalStock;
+                    }
+
+                    recomputarResumenGeneral();
+                }
+
+                // Suma (tallas + stock) de TODOS los colores
+                function recomputarResumenGeneral() {
+                    let totalGeneral = 0;
+                    tabla.querySelectorAll('tr[id^="filaTalla' + idProducto + '_"]').forEach(fila => {
+                        const g = fila.dataset.group;
+                        let totalTallas = 0;
+                        fila.querySelectorAll(".cantidad").forEach(c => totalTallas += parseInt(c.value) || 0);
+                        let totalStock = 0;
+                        const filaStock = tabla.querySelector(`#filaStock${idProducto}_${g}`);
+                        if (filaStock) {
+                            filaStock.querySelectorAll(".stock-input").forEach(c => totalStock += parseInt(c.value) || 0);
+                        }
+                        totalGeneral += totalTallas + totalStock;
+                    });
+                    const resumenEl = tabla.querySelector(".unidadesTotalesFila");
+                    if (resumenEl) resumenEl.value = totalGeneral;
+                }
+
+                // Botones "+": muestran/ocultan la fila de stock de ESE color unicamente
+                tabla.querySelectorAll(".btn-toggle-stock").forEach(btn => {
+                    btn.addEventListener("click", function() {
+                        const fila = document.getElementById(this.dataset.target);
+                        if (fila) fila.classList.toggle("d-none");
+                    });
+                });
+
+                // Recalcular cuando cambian las cantidades de tallas
+                tabla.querySelectorAll(".cantidad").forEach(input => {
+                    input.addEventListener("input", function() {
+                        const g = this.closest("tr").dataset.group;
+                        recomputarGrupo(g);
+                    });
+                });
+
+                // Recalcular cuando cambian las cantidades de stock
+                tabla.querySelectorAll(".stock-input").forEach(input => {
+                    input.addEventListener("input", function() {
+                        const g = this.closest("tr").dataset.group;
+                        recomputarGrupo(g);
+                    });
+                });
+            }
+
+            // Al cargar la pagina, reconstruir la curva de tallas para los productos
+            // que ya tienen genero guardado en su ficha tecnica (modo edicion).
+            document.addEventListener("DOMContentLoaded", function() {
+                document.querySelectorAll(".genero-select").forEach(function(sel) {
+                    if (sel.value) construirTabla(sel);
+                });
+            });
+        </script>
         <script>
             // Cerrar la alerta de éxito después de 10 segundos
             setTimeout(function() {
                 document.getElementById('successAlert').style.display = 'none';
             }, 3000);
-        </script>
-        <script>
-            // Variable global para almacenar el último valor
-            let ultimoValor = 0;
-
-            function borrarCero(input) {
-                // Guardar el último valor antes de cambiarlo
-                ultimoValor = input.value;
-                // Si el valor es 0, establecer el valor del campo a una cadena vacía
-                if (input.value === '0') {
-                    input.value = '';
-                }
-            }
-
-            function guardarUltimoValor(input) {
-                // Guardar el último valor válido del input
-                ultimoValor = input.value;
-            }
-
-            function deshabilitarScroll(event) {
-                event.preventDefault();
-            }
-
-            function restaurarValorSiVacio(input) {
-                // Si el campo está vacío, restaurar el valor a 0
-                if (input.value === '') {
-                    input.value = '0';
-                }
-            }
-
-            document.querySelectorAll('input[type=number]').forEach(input => {
-                input.addEventListener('wheel', function(event) {
-                    event.preventDefault();
-                });
-            });
-        </script>
-        <script>
-            document.querySelectorAll('.imagenInput').forEach(input => {
-                input.addEventListener('change', function(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const preview = document.getElementById(event.target.id.replace('Input', 'Preview'));
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                });
-            });
-        </script>
-        <script>
-            function previewImage(input, previewId, filenameId) {
-                const file = input.files[0];
-                if (file) {
-                    const fileName = file.name;
-                    const preview = document.getElementById(previewId);
-                    const fileNameElement = document.getElementById(filenameId);
-
-                    // Validar si el archivo es una imagen
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                            fileNameElement.style.display = 'none'; // Esconde el nombre del archivo si es una imagen
-                        }
-                        reader.readAsDataURL(file);
-                    } else {
-                        preview.style.display = 'none'; // Esconde la vista previa de la imagen si no es una imagen
-                        fileNameElement.textContent = fileName;
-                        fileNameElement.style.display = 'block'; // Muestra el nombre del archivo si no es una imagen
-                    }
-                }
-            }
-        </script>
-        <script>
-            function previewFile(input, previewId, filenameId) {
-                const file = input.files[0];
-                if (file) {
-                    const fileName = file.name;
-                    const preview = document.getElementById(previewId);
-                    const fileNameElement = document.getElementById(filenameId);
-
-                    // Validar si el archivo es una imagen
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                            fileNameElement.style.display = 'none'; // Esconde el nombre del archivo si es una imagen
-                        }
-                        reader.readAsDataURL(file);
-                    } else {
-                        preview.style.display = 'none'; // Esconde la vista previa de la imagen si no es una imagen
-                        fileNameElement.textContent = fileName;
-                        fileNameElement.style.display = 'block'; // Muestra el nombre del archivo si no es una imagen
-                    }
-                }
-            }
         </script>
     </body>
 </html>

@@ -49,8 +49,7 @@
                             while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                 $id = $lista["id_prenda"];
                                 $nombre = $lista["nombre_prenda"];
-                                $selected = ($nombre == $fila['nombre_prenda']) ? 'selected' : '';
-                                echo "<option value='$id' $selected>$nombre</option>";
+                                echo "<option value='$id'>$nombre</option>";
                             }
                             ?>
                         </select>
@@ -60,7 +59,7 @@
                     <!-- Tela -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela y Agregue sus Colores:</label>
 
                             <!-- Combobox visible -->
                             <input type="text" class="form-control comboTela" placeholder="Buscar tela..." autocomplete="off">
@@ -70,31 +69,30 @@
                             <select name="id_tela" class="form-select d-none selectTela">
                                 <option value="0" selected>Sin seleccionar</option>
                                 <?php
-                                    setlocale(LC_TIME, 'spanish');
-                                    $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
-                                    FROM tela 
-                                    LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
-                                    WHERE tela.precio > 0';
+                                setlocale(LC_TIME, 'spanish');
+                                $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
+                                                        FROM tela 
+                                                        LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
+                                                        WHERE tela.precio > 0';
 
-                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
 
-                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                        $id = $lista["id_tela"];
-                                        $nombre = $lista["tela"];
+                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                    $id = $lista["id_tela"];
+                                    $nombre = $lista["tela"];
 
-                                        if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
-                                        if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
-                                        if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
-                                        if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
-                                        if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
-                                        $proveedor = $lista["nombre"];
-                                        $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
-                                    }
+                                    if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
+                                    if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
+                                    if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
+                                    if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
+                                    if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
+                                    $proveedor = $lista["nombre"];
+                                    $fecha_bd = $lista["fecha_actualizacion"];
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
+                                }
                                 ?>
                             </select>
                             <div class="precioTelaContainer mt-2" style="display:none;">
@@ -118,15 +116,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela:</label>
-                        <input type="text" class="form-control" name="color_tela" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela combinada -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Combinada:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Combinada y Agregue sus Colores:</label>
 
                             <!-- Combobox input visible -->
                             <input type="text" class="form-control comboTelaCombi" placeholder="Buscar tela combinada..." autocomplete="off">
@@ -138,7 +144,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho, tela_combinada.peso, tela_combinada.caracteristicas, tela_combinada.rendimiento, tela_combinada.encogimiento, tela_combinada.precio, tela_combinada.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
+                                                            FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telacombi"];
@@ -150,11 +156,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -174,15 +179,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Combinada:</label>
-                        <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresCombi">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela Forro -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Forro:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Forro y Agregue sus Colores:</label>
 
                             <!-- Input de búsqueda -->
                             <input type="text" class="form-control comboTelaForro" placeholder="Buscar tela forro..." autocomplete="off">
@@ -194,7 +207,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho, tela_forro.peso, tela_forro.caracteristicas, tela_forro.rendimiento, tela_forro.encogimiento, tela_forro.precio, tela_forro.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
+                                                            FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telaforro"];
@@ -206,11 +219,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -230,8 +242,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Forro:</label>
-                        <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresForro">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
@@ -564,8 +584,7 @@
                             while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                 $id = $lista["id_prenda"];
                                 $nombre = $lista["nombre_prenda"];
-                                $selected = ($nombre == $fila['nombre_prenda']) ? 'selected' : '';
-                                echo "<option value='$id' $selected>$nombre</option>";
+                                echo "<option value='$id'>$nombre</option>";
                             }
                             ?>
                         </select>
@@ -575,7 +594,7 @@
                     <!-- Tela -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela y Agregue sus Colores:</label>
 
                             <!-- Combobox visible -->
                             <input type="text" class="form-control comboTela" placeholder="Buscar tela..." autocomplete="off">
@@ -585,31 +604,30 @@
                             <select name="id_tela" class="form-select d-none selectTela">
                                 <option value="0" selected>Sin seleccionar</option>
                                 <?php
-                                    setlocale(LC_TIME, 'spanish');
-                                    $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
-                                    FROM tela 
-                                    LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
-                                    WHERE tela.precio > 0';
+                                setlocale(LC_TIME, 'spanish');
+                                $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
+                                                        FROM tela 
+                                                        LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
+                                                        WHERE tela.precio > 0';
 
-                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
 
-                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                        $id = $lista["id_tela"];
-                                        $nombre = $lista["tela"];
+                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                    $id = $lista["id_tela"];
+                                    $nombre = $lista["tela"];
 
-                                        if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
-                                        if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
-                                        if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
-                                        if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
-                                        if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
-                                        $proveedor = $lista["nombre"];
-                                        $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
-                                    }
+                                    if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
+                                    if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
+                                    if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
+                                    if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
+                                    if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
+                                    $proveedor = $lista["nombre"];
+                                    $fecha_bd = $lista["fecha_actualizacion"];
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
+                                }
                                 ?>
                             </select>
                             <div class="precioTelaContainer mt-2" style="display:none;">
@@ -633,15 +651,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela:</label>
-                        <input type="text" class="form-control" name="color_tela" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela combinada -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Combinada:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Combinada y Agregue sus Colores:</label>
 
                             <!-- Combobox input visible -->
                             <input type="text" class="form-control comboTelaCombi" placeholder="Buscar tela combinada..." autocomplete="off">
@@ -653,7 +679,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho, tela_combinada.peso, tela_combinada.caracteristicas, tela_combinada.rendimiento, tela_combinada.encogimiento, tela_combinada.precio, tela_combinada.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
+                                                            FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telacombi"];
@@ -665,11 +691,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -689,15 +714,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Combinada:</label>
-                        <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresCombi">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela Forro -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Forro:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Forro y Agregue sus Colores:</label>
 
                             <!-- Input de búsqueda -->
                             <input type="text" class="form-control comboTelaForro" placeholder="Buscar tela forro..." autocomplete="off">
@@ -709,7 +742,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho, tela_forro.peso, tela_forro.caracteristicas, tela_forro.rendimiento, tela_forro.encogimiento, tela_forro.precio, tela_forro.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
+                                                            FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telaforro"];
@@ -721,11 +754,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -745,8 +777,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Forro:</label>
-                        <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresForro">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
@@ -1079,8 +1119,7 @@
                             while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                 $id = $lista["id_prenda"];
                                 $nombre = $lista["nombre_prenda"];
-                                $selected = ($nombre == $fila['nombre_prenda']) ? 'selected' : '';
-                                echo "<option value='$id' $selected>$nombre</option>";
+                                echo "<option value='$id'>$nombre</option>";
                             }
                             ?>
                         </select>
@@ -1090,7 +1129,7 @@
                     <!-- Tela -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela y Agregue sus Colores:</label>
 
                             <!-- Combobox visible -->
                             <input type="text" class="form-control comboTela" placeholder="Buscar tela..." autocomplete="off">
@@ -1100,31 +1139,30 @@
                             <select name="id_tela" class="form-select d-none selectTela">
                                 <option value="0" selected>Sin seleccionar</option>
                                 <?php
-                                    setlocale(LC_TIME, 'spanish');
-                                    $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
-                                    FROM tela 
-                                    LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
-                                    WHERE tela.precio > 0';
+                                setlocale(LC_TIME, 'spanish');
+                                $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
+                                                        FROM tela 
+                                                        LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
+                                                        WHERE tela.precio > 0';
 
-                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
 
-                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                        $id = $lista["id_tela"];
-                                        $nombre = $lista["tela"];
+                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                    $id = $lista["id_tela"];
+                                    $nombre = $lista["tela"];
 
-                                        if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
-                                        if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
-                                        if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
-                                        if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
-                                        if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
-                                        $proveedor = $lista["nombre"];
-                                        $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
-                                    }
+                                    if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
+                                    if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
+                                    if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
+                                    if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
+                                    if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
+                                    $proveedor = $lista["nombre"];
+                                    $fecha_bd = $lista["fecha_actualizacion"];
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
+                                }
                                 ?>
                             </select>
                             <div class="precioTelaContainer mt-2" style="display:none;">
@@ -1148,15 +1186,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela:</label>
-                        <input type="text" class="form-control" name="color_tela" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela combinada -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Combinada:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Combinada y Agregue sus Colores:</label>
 
                             <!-- Combobox input visible -->
                             <input type="text" class="form-control comboTelaCombi" placeholder="Buscar tela combinada..." autocomplete="off">
@@ -1168,7 +1214,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho, tela_combinada.peso, tela_combinada.caracteristicas, tela_combinada.rendimiento, tela_combinada.encogimiento, tela_combinada.precio, tela_combinada.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
+                                                            FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telacombi"];
@@ -1180,11 +1226,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -1204,15 +1249,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Combinada:</label>
-                        <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresCombi">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela Forro -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Forro:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Forro y Agregue sus Colores:</label>
 
                             <!-- Input de búsqueda -->
                             <input type="text" class="form-control comboTelaForro" placeholder="Buscar tela forro..." autocomplete="off">
@@ -1224,7 +1277,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho, tela_forro.peso, tela_forro.caracteristicas, tela_forro.rendimiento, tela_forro.encogimiento, tela_forro.precio, tela_forro.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
+                                                            FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telaforro"];
@@ -1236,11 +1289,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -1260,8 +1312,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Forro:</label>
-                        <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresForro">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
@@ -1558,8 +1618,7 @@
                             while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                 $id = $lista["id_prenda"];
                                 $nombre = $lista["nombre_prenda"];
-                                $selected = ($nombre == $fila['nombre_prenda']) ? 'selected' : '';
-                                echo "<option value='$id' $selected>$nombre</option>";
+                                echo "<option value='$id'>$nombre</option>";
                             }
                             ?>
                         </select>
@@ -1569,7 +1628,7 @@
                     <!-- Tela -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela y Agregue sus Colores:</label>
 
                             <!-- Combobox visible -->
                             <input type="text" class="form-control comboTela" placeholder="Buscar tela..." autocomplete="off">
@@ -1579,31 +1638,30 @@
                             <select name="id_tela" class="form-select d-none selectTela">
                                 <option value="0" selected>Sin seleccionar</option>
                                 <?php
-                                    setlocale(LC_TIME, 'spanish');
-                                    $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
-                                    FROM tela 
-                                    LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
-                                    WHERE tela.precio > 0';
+                                setlocale(LC_TIME, 'spanish');
+                                $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
+                                                        FROM tela 
+                                                        LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
+                                                        WHERE tela.precio > 0';
 
-                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
 
-                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                        $id = $lista["id_tela"];
-                                        $nombre = $lista["tela"];
+                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                    $id = $lista["id_tela"];
+                                    $nombre = $lista["tela"];
 
-                                        if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
-                                        if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
-                                        if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
-                                        if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
-                                        if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
-                                        $proveedor = $lista["nombre"];
-                                        $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
-                                    }
+                                    if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
+                                    if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
+                                    if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
+                                    if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
+                                    if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
+                                    $proveedor = $lista["nombre"];
+                                    $fecha_bd = $lista["fecha_actualizacion"];
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
+                                }
                                 ?>
                             </select>
                             <div class="precioTelaContainer mt-2" style="display:none;">
@@ -1627,15 +1685,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela:</label>
-                        <input type="text" class="form-control" name="color_tela" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela combinada -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Combinada:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Combinada y Agregue sus Colores:</label>
 
                             <!-- Combobox input visible -->
                             <input type="text" class="form-control comboTelaCombi" placeholder="Buscar tela combinada..." autocomplete="off">
@@ -1647,7 +1713,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho, tela_combinada.peso, tela_combinada.caracteristicas, tela_combinada.rendimiento, tela_combinada.encogimiento, tela_combinada.precio, tela_combinada.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
+                                                            FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telacombi"];
@@ -1659,11 +1725,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -1683,15 +1748,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Combinada:</label>
-                        <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresCombi">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela Forro -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Forro:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Forro y Agregue sus Colores:</label>
 
                             <!-- Input de búsqueda -->
                             <input type="text" class="form-control comboTelaForro" placeholder="Buscar tela forro..." autocomplete="off">
@@ -1703,7 +1776,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho, tela_forro.peso, tela_forro.caracteristicas, tela_forro.rendimiento, tela_forro.encogimiento, tela_forro.precio, tela_forro.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
+                                                            FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telaforro"];
@@ -1715,11 +1788,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -1739,8 +1811,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Forro:</label>
-                        <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresForro">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
@@ -2037,8 +2117,7 @@
                             while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                 $id = $lista["id_prenda"];
                                 $nombre = $lista["nombre_prenda"];
-                                $selected = ($nombre == $fila['nombre_prenda']) ? 'selected' : '';
-                                echo "<option value='$id' $selected>$nombre</option>";
+                                echo "<option value='$id'>$nombre</option>";
                             }
                             ?>
                         </select>
@@ -2048,7 +2127,7 @@
                     <!-- Tela -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela y Agregue sus Colores:</label>
 
                             <!-- Combobox visible -->
                             <input type="text" class="form-control comboTela" placeholder="Buscar tela..." autocomplete="off">
@@ -2058,31 +2137,30 @@
                             <select name="id_tela" class="form-select d-none selectTela">
                                 <option value="0" selected>Sin seleccionar</option>
                                 <?php
-                                    setlocale(LC_TIME, 'spanish');
-                                    $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
-                                    FROM tela 
-                                    LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
-                                    WHERE tela.precio > 0';
+                                setlocale(LC_TIME, 'spanish');
+                                $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
+                                                        FROM tela 
+                                                        LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
+                                                        WHERE tela.precio > 0';
 
-                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
 
-                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                        $id = $lista["id_tela"];
-                                        $nombre = $lista["tela"];
+                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                    $id = $lista["id_tela"];
+                                    $nombre = $lista["tela"];
 
-                                        if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
-                                        if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
-                                        if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
-                                        if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
-                                        if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
-                                        $proveedor = $lista["nombre"];
-                                        $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
-                                    }
+                                    if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
+                                    if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
+                                    if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
+                                    if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
+                                    if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
+                                    $proveedor = $lista["nombre"];
+                                    $fecha_bd = $lista["fecha_actualizacion"];
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
+                                }
                                 ?>
                             </select>
                             <div class="precioTelaContainer mt-2" style="display:none;">
@@ -2106,15 +2184,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela:</label>
-                        <input type="text" class="form-control" name="color_tela" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela combinada -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Combinada:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Combinada y Agregue sus Colores:</label>
 
                             <!-- Combobox input visible -->
                             <input type="text" class="form-control comboTelaCombi" placeholder="Buscar tela combinada..." autocomplete="off">
@@ -2126,7 +2212,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho, tela_combinada.peso, tela_combinada.caracteristicas, tela_combinada.rendimiento, tela_combinada.encogimiento, tela_combinada.precio, tela_combinada.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
+                                                            FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telacombi"];
@@ -2138,11 +2224,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -2162,15 +2247,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Combinada:</label>
-                        <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresCombi">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela Forro -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Forro:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Forro y Agregue sus Colores:</label>
 
                             <!-- Input de búsqueda -->
                             <input type="text" class="form-control comboTelaForro" placeholder="Buscar tela forro..." autocomplete="off">
@@ -2182,7 +2275,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho, tela_forro.peso, tela_forro.caracteristicas, tela_forro.rendimiento, tela_forro.encogimiento, tela_forro.precio, tela_forro.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
+                                                            FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telaforro"];
@@ -2194,11 +2287,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -2218,8 +2310,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Forro:</label>
-                        <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresForro">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
@@ -2556,8 +2656,7 @@
                             while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                 $id = $lista["id_prenda"];
                                 $nombre = $lista["nombre_prenda"];
-                                $selected = ($nombre == $fila['nombre_prenda']) ? 'selected' : '';
-                                echo "<option value='$id' $selected>$nombre</option>";
+                                echo "<option value='$id'>$nombre</option>";
                             }
                             ?>
                         </select>
@@ -2567,7 +2666,7 @@
                     <!-- Tela -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela y Agregue sus Colores:</label>
 
                             <!-- Combobox visible -->
                             <input type="text" class="form-control comboTela" placeholder="Buscar tela..." autocomplete="off">
@@ -2577,31 +2676,30 @@
                             <select name="id_tela" class="form-select d-none selectTela">
                                 <option value="0" selected>Sin seleccionar</option>
                                 <?php
-                                    setlocale(LC_TIME, 'spanish');
-                                    $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
-                                    FROM tela 
-                                    LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
-                                    WHERE tela.precio > 0';
+                                setlocale(LC_TIME, 'spanish');
+                                $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
+                                                        FROM tela 
+                                                        LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
+                                                        WHERE tela.precio > 0';
 
-                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
 
-                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                        $id = $lista["id_tela"];
-                                        $nombre = $lista["tela"];
+                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                    $id = $lista["id_tela"];
+                                    $nombre = $lista["tela"];
 
-                                        if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
-                                        if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
-                                        if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
-                                        if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
-                                        if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
-                                        $proveedor = $lista["nombre"];
-                                        $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
-                                    }
+                                    if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
+                                    if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
+                                    if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
+                                    if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
+                                    if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
+                                    $proveedor = $lista["nombre"];
+                                    $fecha_bd = $lista["fecha_actualizacion"];
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
+                                }
                                 ?>
                             </select>
                             <div class="precioTelaContainer mt-2" style="display:none;">
@@ -2625,15 +2723,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela:</label>
-                        <input type="text" class="form-control" name="color_tela" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela combinada -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Combinada:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Combinada y Agregue sus Colores:</label>
 
                             <!-- Combobox input visible -->
                             <input type="text" class="form-control comboTelaCombi" placeholder="Buscar tela combinada..." autocomplete="off">
@@ -2645,7 +2751,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho, tela_combinada.peso, tela_combinada.caracteristicas, tela_combinada.rendimiento, tela_combinada.encogimiento, tela_combinada.precio, tela_combinada.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
+                                                            FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telacombi"];
@@ -2657,11 +2763,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -2681,15 +2786,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Combinada:</label>
-                        <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresCombi">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela Forro -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Forro:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Forro y Agregue sus Colores:</label>
 
                             <!-- Input de búsqueda -->
                             <input type="text" class="form-control comboTelaForro" placeholder="Buscar tela forro..." autocomplete="off">
@@ -2701,7 +2814,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho, tela_forro.peso, tela_forro.caracteristicas, tela_forro.rendimiento, tela_forro.encogimiento, tela_forro.precio, tela_forro.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
+                                                            FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telaforro"];
@@ -2713,11 +2826,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -2737,8 +2849,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Forro:</label>
-                        <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresForro">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
@@ -3075,8 +3195,7 @@
                             while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                 $id = $lista["id_prenda"];
                                 $nombre = $lista["nombre_prenda"];
-                                $selected = ($nombre == $fila['nombre_prenda']) ? 'selected' : '';
-                                echo "<option value='$id' $selected>$nombre</option>";
+                                echo "<option value='$id'>$nombre</option>";
                             }
                             ?>
                         </select>
@@ -3086,7 +3205,7 @@
                     <!-- Tela -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela y Agregue sus Colores:</label>
 
                             <!-- Combobox visible -->
                             <input type="text" class="form-control comboTela" placeholder="Buscar tela..." autocomplete="off">
@@ -3096,31 +3215,30 @@
                             <select name="id_tela" class="form-select d-none selectTela">
                                 <option value="0" selected>Sin seleccionar</option>
                                 <?php
-                                    setlocale(LC_TIME, 'spanish');
-                                    $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
-                                    FROM tela 
-                                    LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
-                                    WHERE tela.precio > 0';
+                                setlocale(LC_TIME, 'spanish');
+                                $consulta_mysql = 'SELECT tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.caracteristicas, tela.rendimiento, tela.encogimiento, tela.precio, tela.fecha_actualizacion, proveedor_tela.nombre 
+                                                        FROM tela 
+                                                        LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor 
+                                                        WHERE tela.precio > 0';
 
-                                    $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
+                                $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
 
-                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                        $id = $lista["id_tela"];
-                                        $nombre = $lista["tela"];
+                                while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
+                                    $id = $lista["id_tela"];
+                                    $nombre = $lista["tela"];
 
-                                        if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
-                                        if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
-                                        if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
-                                        if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
-                                        if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
-                                        $proveedor = $lista["nombre"];
-                                        $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
-                                    }
+                                    if (!empty($lista["ancho"])) $nombre .= " Ancho " . $lista["ancho"];
+                                    if (!empty($lista["peso"])) $nombre .= " Peso " . $lista["peso"];
+                                    if (!empty($lista["rendimiento"])) $nombre .= " Rendimiento " . $lista["rendimiento"];
+                                    if (!empty($lista["encogimiento"])) $nombre .= " Encogimiento " . $lista["encogimiento"];
+                                    if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
+                                    $proveedor = $lista["nombre"];
+                                    $fecha_bd = $lista["fecha_actualizacion"];
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
+                                }
                                 ?>
                             </select>
                             <div class="precioTelaContainer mt-2" style="display:none;">
@@ -3144,15 +3262,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela:</label>
-                        <input type="text" class="form-control" name="color_tela" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela combinada -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Combinada:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Combinada y Agregue sus Colores:</label>
 
                             <!-- Combobox input visible -->
                             <input type="text" class="form-control comboTelaCombi" placeholder="Buscar tela combinada..." autocomplete="off">
@@ -3164,7 +3290,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho, tela_combinada.peso, tela_combinada.caracteristicas, tela_combinada.rendimiento, tela_combinada.encogimiento, tela_combinada.precio, tela_combinada.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
+                                                            FROM tela_combinada LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telacombi"];
@@ -3176,11 +3302,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -3200,15 +3325,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Combinada:</label>
-                        <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresCombi">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telacombi" placeholder="Ingrese color de la tela combinada" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorCombi">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
                     <!-- Tela Forro -->
                     <div class="mb-3 row">
                         <div class="col-sm-12 position-relative">
-                            <label class="form-label" style="color: #000000;">Elija el tipo de Tela Forro:</label>
+                            <label class="form-label" style="color: #000000;">Seleccione el Tipo de Tela Forro y Agregue sus Colores:</label>
 
                             <!-- Input de búsqueda -->
                             <input type="text" class="form-control comboTelaForro" placeholder="Buscar tela forro..." autocomplete="off">
@@ -3220,7 +3353,7 @@
                                 <?php
                                 setlocale(LC_TIME, 'spanish');
                                 $consulta_mysql = 'SELECT tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho, tela_forro.peso, tela_forro.caracteristicas, tela_forro.rendimiento, tela_forro.encogimiento, tela_forro.precio, tela_forro.fecha_actualizacion, proveedor_tela.id_proveedor, proveedor_tela.nombre 
-                                        FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
+                                                            FROM tela_forro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.precio > 0';
                                 $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
                                 while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
                                     $id = $lista["id_telaforro"];
@@ -3232,11 +3365,10 @@
                                     if (!empty($lista["caracteristicas"])) $nombre .= " , " . $lista["caracteristicas"];
                                     $proveedor = $lista["nombre"];
                                     $fecha_bd = $lista["fecha_actualizacion"];
-                                        $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd)) 
-                                            ? "No Aplica" 
-                                            : strftime('%d de %B del %Y', strtotime($fecha_bd));
-                                        $selected = ($id == $fila['id_tela']) ? 'selected' : '';
-                                        echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}' $selected>$nombre - $proveedor</option>";
+                                    $fecha = ($fecha_bd === '0000-00-00' || empty($fecha_bd))
+                                        ? "No Aplica"
+                                        : strftime('%d de %B del %Y', strtotime($fecha_bd));
+                                    echo "<option value='$id' data-precio='{$lista['precio']}' data-fecha='{$fecha}'> $nombre - $proveedor </option>";
                                 }
                                 ?>
                             </select>
@@ -3256,8 +3388,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Color de Tela Forro:</label>
-                        <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese el color de la Tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                        <div class="contenedorColoresForro">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_telaforro" placeholder="Ingrese color de la tela forro" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColorForro">
+                            + Agregar color
+                        </button>
                     </div>
                     <!---->
 
@@ -3585,8 +3725,9 @@
                             ?>
                         </select>
                     </div>
+                    <!-- Prenda y Color -->
                     <div class="mb-3">
-                        <label class="form-label" style="color: #000000;">Elija el tipo de Prenda:</label>
+                        <label class="form-label" style="color: #000000;">Elija el tipo de Prenda y Agregue sus Colores:</label>
                         <select name="id_prendacomprada" class="form-select" id="id_prendacomprada" required>
                             <option value="" selected disabled>Seleccione una opción</option>
                             <?php
@@ -3603,6 +3744,19 @@
                             ?>
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <div class="contenedorColores">
+                            <div class="input-group mb-2 color-item">
+                                <span class="input-group-text">🎨</span>
+                                <input type="text" class="form-control" name="color_tela" placeholder="Ingrese color de la tela" pattern="[A-Za-z0-9.# %+-]+" maxlength="300">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm agregarColor">
+                            + Agregar color
+                        </button>
+                    </div>
+                    <!---->
                     <div class="mb-3">
                         <label class="form-label" style="color: #000000;">Valor agregado a la Prenda:</label>
                         <textarea class="form-control" name="valor_agregado" placeholder="Ingresa una descripción" pattern="[A-Za-z-Zñóéí ]+" maxlength="300" rows="1"></textarea>

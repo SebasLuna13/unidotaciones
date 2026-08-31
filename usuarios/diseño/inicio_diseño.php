@@ -48,8 +48,8 @@
 
         // Segunda consulta: actualizar producto
         $consulta2 = "UPDATE producto SET color_tela = '$color_tela', color_telacombi = '$color_telacombi', color_telaforro = '$color_telaforro', frentes = '$frentes', 
-                                espalda = '$espalda', mangas = '$mangas', cuello = '$cuello', puño = '$puño', delanteros = '$delanteros', traseros = '$traseros', pretina = '$pretina', 
-                                ensamble = '$ensamble', fajon = '$fajon', forro = '$forro', otros = '$otros', fecha_produccion = '$fecha_produccion', estado = 'AceptadoD' WHERE id_producto = '$id_producto'";
+                                        espalda = '$espalda', mangas = '$mangas', cuello = '$cuello', puño = '$puño', delanteros = '$delanteros', traseros = '$traseros', pretina = '$pretina', 
+                                        ensamble = '$ensamble', fajon = '$fajon', forro = '$forro', otros = '$otros', fecha_produccion = '$fecha_produccion', estado = 'AceptadoD' WHERE id_producto = '$id_producto'";
 
         $resultado2 = mysqli_query($enlace, $consulta2);
 
@@ -63,10 +63,10 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-        
+
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        
+
         <!-- Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
@@ -78,10 +78,10 @@
         <link rel="stylesheet" href="../../css/barra.css">
         <link href="../../css/sb-admin-2.min.css" rel="stylesheet">
         <link rel="icon" type="image/png" href="../../img/Logo.png">
-        
-        <title>Diseño | Inicio Diseño</title>
-    <head>
 
+        <title>Diseño | Inicio Diseño</title>
+
+    <head>
     <body id="page-top">
         <div id="wrapper">
             <!-- Sidebar -->
@@ -164,8 +164,16 @@
                                         </thead>
                                         <tbody>
                                             <?php
-                                            $consulta = "SELECT pedido.id_pedido, producto.id_producto, producto.num_ficha, producto.nombre_producto, prenda.id_prenda, prenda.nombre_prenda, cliente.nit, cliente.cliente, producto.estado, producto.fecha_fichatecnica, producto.id_tipo_producto, producto.fecha_entrega
-                                                                    FROM pedido LEFT JOIN cliente ON pedido.nit = cliente.nit LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda WHERE producto.estado = 'Diseño' ORDER BY producto.fecha_fichatecnica ASC";
+                                            $consulta = "SELECT pedido.id_pedido, producto.id_producto, ficha_tecnica.num_ficha, ficha_tecnica.id_producto AS id_producto_ficha, prenda.id_prenda, 
+                                                                prenda.nombre_prenda, prenda_comprada.id_prendacomprada, prenda_comprada.nombre_producto, 
+                                                                cliente.nit, cliente.cliente, producto.estado, producto.id_tipo_producto, ficha_tecnica.fecha_pedido, ficha_tecnica.fecha_entrega
+                                                                    FROM pedido 
+                                                                    LEFT JOIN cliente ON pedido.nit = cliente.nit 
+                                                                    LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido 
+                                                                    LEFT JOIN ficha_tecnica ON producto.id_producto = ficha_tecnica.id_producto
+                                                                    LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda 
+                                                                    LEFT JOIN prenda_comprada ON producto.id_prendacomprada = prenda_comprada.id_prendacomprada
+                                                                    WHERE producto.estado = 'Diseño' ORDER BY ficha_tecnica.fecha_pedido ASC";
 
                                             $resultado = mysqli_query($enlace, $consulta);
 
@@ -183,7 +191,7 @@
                                                     <?php
                                                     $meses = [1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'];
 
-                                                    $fecha1 = new DateTime($fila['fecha_fichatecnica']);
+                                                    $fecha1 = new DateTime($fila['fecha_pedido']);
                                                     $fecha2 = new DateTime($fila['fecha_entrega']);
                                                     ?>
 
@@ -195,7 +203,8 @@
                                                         <?= $fecha2->format('d') . ' de ' . $meses[$fecha2->format('n')] . ' del ' . $fecha2->format('Y'); ?>
                                                     </td>
                                                     <td>
-                                                        <button type="button" class="btn btn-info btn-block mb-2" data-bs-toggle="modal" data-bs-target="#modalFichaTecnica<?php echo $fila['id_producto']; ?>">
+                                                        <button type="button" class="btn btn-info btn-block mb-2" data-bs-toggle="modal" data-bs-target="#modalFichaTecnica<?= $fila['id_producto'] ?>"
+                                                            data-id-producto="<?= $fila['id_producto'] ?>">
                                                             <i class="bi bi-search"></i> Datos del Producto
                                                         </button>
                                                     </td>
@@ -210,735 +219,996 @@
                                 while ($fila = mysqli_fetch_array($resultado)) {
                                     $id_producto = $fila['id_producto'];
                                 ?>
-                                    <!-- Modal Activar -->
-                                    <div class="modal fade" id="modalFichaTecnica<?php echo $id_producto; ?>" tabindex="-1">
-                                        <div class="modal-dialog modal-xl modal-dialog-centered">
+
+                                    <!-- Modal Ficha Tecnica -->
+                                    <div class="modal fade" id="modalFichaTecnica<?php echo $fila['id_producto']; ?>" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered mw-100 w-100 px-5">
                                             <div class="modal-content shadow-lg border-0 rounded-4">
-
-                                                <div class="modal-header text-white justify-content-center position-relative" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                                    <div class="d-flex align-items-center text-center">
-                                                        <img src="../../img/Logo.png" alt="Logo" width="70" class="me-3 rounded">
-                                                        <div class="text-start">
-                                                            <h5 class="mb-0 fw-bold">UNIDOTACIONES DEL EJE</h5>
-                                                            <small> -------------- | 3469021 - 3115516823</small>
-                                                        </div>
-                                                    </div>
-                                                    <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal"></button>
-                                                </div>
-
-                                                <div class="text-white text-center py-2 fw-bold" style="background-color:#18a000;">
-                                                    FICHA TÉCNICA DE PRODUCCIÓN
-                                                </div>
-
                                                 <?php
-                                                $consultaFicha = "SELECT pedido.id_pedido, producto.id_producto, producto.num_ficha, prenda.id_prenda, prenda.nombre_prenda, cliente.nit, cliente.cliente, producto.suma_prendas, producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, producto.logo1, producto.logo2, producto.logo3, producto.logo4,
-                                                                producto.frentes, producto.espalda, producto.mangas, producto.cuello, producto.puño, producto.delanteros, producto.traseros, producto.pretina, producto.ensamble, producto.fajon, producto.forro, producto.otros, producto.observaciones, producto.estado, orden_compra.id_ordencompra, orden_compra.prendas_comprar, orden_compra.precio_prendacompra,
-                                                                producto.talla_XS, producto.talla_S, producto.talla_M, producto.talla_L, producto.talla_XL, producto.talla_2XL, producto.talla_3XL, producto.talla_4XL, producto.talla_5XL, producto.talla_6XL, producto.talla_2, producto.talla_4, producto.talla_6, producto.talla_8, producto.talla_10, producto.talla_12, producto.talla_14,
-                                                                producto.talla_16, producto.talla_18, producto.talla_20, producto.talla_22, producto.talla_24, producto.talla_26, producto.talla_28, producto.talla_30, producto.talla_32, producto.talla_34, producto.talla_36, producto.talla_38, producto.talla_40, producto.talla_42, producto.talla_44, producto.talla_46, producto.talla_48, producto.talla_especial, 
-                                                                tela.id_tela, producto.id_tela, tela.tela, producto.promedio_consumo, producto.color_tela, orden_compra.consumo_tela, orden_compra.precio_telacompra,
-                                                                tela_combinada.id_telacombi, producto.id_telacombi, tela_combinada.tela_combi, producto.promedio_telacombi, producto.color_telacombi, orden_compra.consumo_telacombi, orden_compra.precio_telacombicompra,
-                                                                tela_forro.id_telaforro, producto.id_telaforro, tela_forro.tela_forro, producto.promedio_forro, producto.color_telaforro, orden_compra.consumo_telaforro, orden_compra.precio_telaforrocompra,
-                                                                entretela.id_entretela, producto.id_entretela, entretela.insumo AS insumo_entretela, entretela.medida AS medida_entretela, producto.cant_entretela, orden_compra.consumo_totalentretela, orden_compra.precio_entretelacompra,
-                                                                entretela2.id_entretela2, producto.id_entretela2, entretela2.insumo AS insumo_entretela2, entretela2.medida AS medida_entretela2, producto.cant_entretela2, orden_compra.consumo_totalentretela2, orden_compra.precio_entretela2compra,
-                                                                bolsa.id_bolsa, producto.id_bolsa, bolsa.insumo AS insumo_bolsa, bolsa.medida AS medida_bolsa,
-                                                                boton.id_boton, producto.id_boton, boton.insumo AS insumo_boton, boton.medida AS medida_boton, producto.cant_boton, orden_compra.consumo_totalboton, orden_compra.precio_botoncompra,
-                                                                boton2.id_boton2, producto.id_boton2, boton2.insumo AS insumo_boton2, boton2.medida AS medida_boton2, producto.cant_boton2, orden_compra.consumo_totalboton2, orden_compra.precio_boton2compra,
-                                                                broche.id_broche, producto.id_broche, broche.insumo AS insumo_broche, broche.medida AS medida_broche, producto.cant_broche, orden_compra.consumo_totalbroche, orden_compra.precio_brochecompra,
-                                                                cinta_faya.id_faya, producto.id_faya, cinta_faya.insumo AS insumo_faya, cinta_faya.medida AS medida_faya, producto.cant_faya, orden_compra.consumo_totalfaya, orden_compra.precio_fayacompra,
-                                                                cinta_reflectiva.id_cinta, producto.id_cinta, cinta_reflectiva.insumo AS insumo_cinta, cinta_reflectiva.medida AS medida_cinta, producto.cant_cinta, orden_compra.consumo_totalcinta, orden_compra.precio_cintacompra,
-                                                                cordon.id_cordon, producto.id_cordon, cordon.insumo AS insumo_cordon, cordon.medida AS medida_cordon, producto.cant_cordon, orden_compra.consumo_totalcordon, orden_compra.precio_cordoncompra,
-                                                                cremallera.id_cremallera, producto.id_cremallera, cremallera.insumo AS insumo_cremallera, cremallera.medida AS medida_cremallera, producto.cant_cremallera, orden_compra.consumo_totalcremallera, orden_compra.precio_cremalleracompra,
-                                                                cremallera2.id_cremallera2, producto.id_cremallera2, cremallera2.insumo AS insumo_cremallera2, cremallera2.medida AS medida_cremallera2, producto.cant_cremallera2, orden_compra.consumo_totalcremallera2, orden_compra.precio_cremallera2compra,
-                                                                cuello.id_cuello, producto.id_cuello, cuello.insumo AS insumo_cuello, cuello.medida AS medida_cuello, producto.consumo_cuello, orden_compra.consumo_totalcuello, orden_compra.precio_cuellocompra,
-                                                                deslizador.id_deslizador, producto.id_deslizador, deslizador.insumo AS insumo_deslizador, deslizador.medida AS medida_deslizador, producto.cant_deslizador, orden_compra.consumo_totaldeslizador, orden_compra.precio_deslizadorcompra,
-                                                                fajon_cintura.id_fajon_cintura, producto.id_fajon_cintura, fajon_cintura.insumo AS insumo_fajon_cintura, fajon_cintura.medida AS medida_fajon_cintura, producto.cant_fajon_cintura, orden_compra.consumo_totalfajon_cintura, orden_compra.precio_fajon_cinturacompra,
-                                                                fusionado.id_fusionado, producto.id_fusionado, fusionado.insumo AS insumo_fusionado, fusionado.medida AS medida_fusionado, producto.consumo_fusionado,
-                                                                guata.id_guata, producto.id_guata, guata.insumo AS insumo_guata, guata.medida AS medida_guata, producto.cant_guata, orden_compra.consumo_totalguata, orden_compra.precio_guatacompra,
-                                                                hiladilla.id_hiladilla, producto.id_hiladilla, hiladilla.insumo AS insumo_hiladilla, hiladilla.medida AS medida_hiladilla, producto.cant_hiladilla, orden_compra.consumo_totalhiladilla, orden_compra.precio_hiladillacompra,
-                                                                hombrera.id_hombrera, producto.id_hombrera, hombrera.insumo AS insumo_hombrera, hombrera.medida AS medida_hombrera, producto.cant_hombrera, orden_compra.consumo_totalhombrera, orden_compra.precio_hombreracompra,
-                                                                marquilla.id_marquilla, producto.id_marquilla, marquilla.insumo AS insumo_marquilla, marquilla.medida AS medida_marquilla,
-                                                                plumilla.id_plumilla, producto.id_plumilla, plumilla.insumo AS insumo_plumilla, plumilla.medida AS medida_plumilla, producto.cant_plumilla, orden_compra.consumo_totalplumilla, orden_compra.precio_plumillacompra,
-                                                                pretina.id_pretina, producto.id_pretina, pretina.insumo AS insumo_pretina, pretina.medida AS medida_pretina, producto.cant_pretina, orden_compra.consumo_totalpretina, orden_compra.precio_pretinacompra,
-                                                                puntera.id_puntera, producto.id_puntera, puntera.insumo AS insumo_puntera, puntera.medida AS medida_puntera, producto.cant_puntera, orden_compra.consumo_totalpuntera, orden_compra.precio_punteracompra,
-                                                                puño.id_puño, producto.id_puño, puño.insumo AS insumo_puño, puño.medida AS medida_puño, producto.consumo_puño, orden_compra.consumo_totalpuño, orden_compra.precio_puñocompra,
-                                                                resorte.id_resorte, producto.id_resorte, resorte.insumo AS insumo_resorte, resorte.medida AS medida_resorte, producto.cant_resorte, orden_compra.consumo_totalresorte, orden_compra.precio_resortecompra,
-                                                                resorte2.id_resorte2, producto.id_resorte2, resorte2.insumo AS insumo_resorte2, resorte2.medida AS medida_resorte2, producto.cant_resorte2, orden_compra.consumo_totalresorte2, orden_compra.precio_resorte2compra,
-                                                                sesgo.id_sesgo, producto.id_sesgo, sesgo.insumo AS insumo_sesgo, sesgo.medida AS medida_sesgo, producto.cant_sesgo, orden_compra.consumo_totalsesgo, orden_compra.precio_sesgocompra,
-                                                                trabilla.id_trabilla, producto.id_trabilla, trabilla.insumo AS insumo_trabilla, trabilla.medida AS medida_trabilla, producto.cant_trabilla, orden_compra.consumo_totaltrabilla, orden_compra.precio_trabillacompra,
-                                                                velcro.id_velcro, producto.id_velcro, velcro.insumo AS insumo_velcro, velcro.medida AS medida_velcro, producto.cant_velcro, orden_compra.consumo_totalvelcro, orden_compra.precio_velcrocompra,
-                                                                vinilo.id_vinilo, producto.id_vinilo, vinilo.insumo AS insumo_vinilo, vinilo.medida AS medida_vinilo, producto.cant_vinilo, orden_compra.consumo_totalvinilo, orden_compra.precio_vinilocompra,
-                                                                vivo.id_vivo, producto.id_vivo, vivo.insumo AS insumo_vivo, vivo.medida AS medida_vivo, producto.cant_vivo, orden_compra.consumo_totalvivo, orden_compra.precio_vivocompra
-                                                                FROM pedido 
-                                                                LEFT JOIN cliente ON pedido.nit = cliente.nit 
-                                                                LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido 
-                                                                LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda 
-                                                                LEFT JOIN orden_compra ON orden_compra.id_producto = producto.id_producto
-                                                                LEFT JOIN tela ON producto.id_tela = tela.id_tela 
-                                                                LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi 
-                                                                LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro
-                                                                LEFT JOIN bolsa ON producto.id_bolsa = bolsa.id_bolsa
-                                                                LEFT JOIN boton ON producto.id_boton = boton.id_boton
-                                                                LEFT JOIN boton2 ON producto.id_boton2 = boton2.id_boton2
-                                                                LEFT JOIN broche ON producto.id_broche = broche.id_broche
-                                                                LEFT JOIN cinta_faya ON producto.id_faya = cinta_faya.id_faya
-                                                                LEFT JOIN cinta_reflectiva ON producto.id_cinta = cinta_reflectiva.id_cinta
-                                                                LEFT JOIN cordon ON producto.id_cordon = cordon.id_cordon
-                                                                LEFT JOIN cremallera ON producto.id_cremallera = cremallera.id_cremallera
-                                                                LEFT JOIN cremallera2 ON producto.id_cremallera2 = cremallera2.id_cremallera2
-                                                                LEFT JOIN cuello ON producto.id_cuello = cuello.id_cuello
-                                                                LEFT JOIN deslizador ON producto.id_deslizador = deslizador.id_deslizador
-                                                                LEFT JOIN entretela ON producto.id_entretela = entretela.id_entretela
-                                                                LEFT JOIN entretela2 ON producto.id_entretela2 = entretela2.id_entretela2
-                                                                LEFT JOIN fajon_cintura ON producto.id_fajon_cintura = fajon_cintura.id_fajon_cintura
-                                                                LEFT JOIN fusionado ON producto.id_fusionado = fusionado.id_fusionado
-                                                                LEFT JOIN guata ON producto.id_guata = guata.id_guata
-                                                                LEFT JOIN hiladilla ON producto.id_hiladilla = hiladilla.id_hiladilla
-                                                                LEFT JOIN hombrera ON producto.id_hombrera = hombrera.id_hombrera
-                                                                LEFT JOIN marquilla ON producto.id_marquilla = marquilla.id_marquilla
-                                                                LEFT JOIN plumilla ON producto.id_plumilla = plumilla.id_plumilla
-                                                                LEFT JOIN pretina ON producto.id_pretina = pretina.id_pretina
-                                                                LEFT JOIN puntera ON producto.id_puntera = puntera.id_puntera
-                                                                LEFT JOIN puño ON producto.id_puño = puño.id_puño
-                                                                LEFT JOIN resorte ON producto.id_resorte = resorte.id_resorte
-                                                                LEFT JOIN resorte2 ON producto.id_resorte2 = resorte2.id_resorte2
-                                                                LEFT JOIN sesgo ON producto.id_sesgo = sesgo.id_sesgo
-                                                                LEFT JOIN trabilla ON producto.id_trabilla = trabilla.id_trabilla
-                                                                LEFT JOIN velcro ON producto.id_velcro = velcro.id_velcro
-                                                                LEFT JOIN vinilo ON producto.id_vinilo = vinilo.id_vinilo
-                                                                LEFT JOIN vivo ON producto.id_vivo = vivo.id_vivo
+                                                $consulta = "SELECT usuario.id_usuario, pedido.id_pedido, pedido.id_usuario, producto.id_producto, ficha_tecnica.num_ficha, ficha_tecnica.id_producto AS id_producto_ficha, producto.estado, pedido.total_factura, tipo_producto.id_tipo_producto, tipo_producto.tipo_producto, cargo.id_cargo, cargo.cargo,
+                                                                producto.imagen, producto.imagen2, producto.imagen3, producto.imagen4, producto.logo1, producto.logo2, producto.logo3, producto.logo4, 
+                                                                producto.cant_tallas, producto.cant_prendas, producto.suma_prendas, producto.precio_iva, producto.precio_total, 
+                                                                
+                                                                producto.frentes, producto.espalda, producto.mangas, producto.cuello, producto.puño, producto.delanteros, producto.traseros, producto.pretina, producto.ensamble, producto.fajon, producto.forro, producto.otros, producto.observaciones, producto.valor_agregado, 
+                                                                producto.boton, producto.logo, producto.cremallera, 
+
+                                                                prenda.id_prenda, prenda.nombre_prenda, prenda_comprada.id_prendacomprada, prenda_comprada.nombre_producto,tipo_prenda.id_tipo_prenda, tipo_prenda.tipo_prenda, pedido.prendas_realizar,
+                                                                pedido.nit, cliente.nit, cliente.cod_cliente, cliente.cliente, cliente.direccion1,
+                                                                producto.precio_compra,producto.costo_total, mano_obra.id_mano_obra, mano_obra.producto, 
+                                                                entrega.id_entrega,
+
+                                                                tela.id_tela, tela.tela, tela.ancho AS ancho_tela, tela.peso AS peso_tela, tela.caracteristicas AS caracteristicas_tela, tela.rendimiento, tela.encogimiento, producto.promedio_consumo, producto.precio_tela, producto.valor_tela, 
+                                                                tela_combinada.id_telacombi, tela_combinada.tela_combi, tela_combinada.ancho AS ancho_telacombi, tela_combinada.peso AS peso_telacombi, tela_combinada.caracteristicas AS caracteristicas_combi, tela_combinada.rendimiento AS rend_telacombi, tela_combinada.encogimiento AS encog_telacombi, producto.promedio_telacombi, producto.precio_telacombinada, producto.valor_telacombi,
+                                                                tela_forro.id_telaforro, tela_forro.tela_forro, tela_forro.ancho AS ancho_forro, tela_forro.peso AS peso_forro, tela_forro.caracteristicas AS caracteristicas_forro, tela_forro.rendimiento AS rend_forro, tela_forro.encogimiento AS encog_forro, producto.promedio_forro, producto.precio_forro, producto.valor_forro,
+                                                                producto.color_tela, producto.color_tela2, producto.color_tela3, producto.color_tela4, producto.color_tela5, producto.color_tela6,
+                                                                producto.color_telacombi, producto.color_telacombi2, producto.color_telacombi3, producto.color_telacombi4, producto.color_telacombi5, producto.color_telacombi6,
+                                                                producto.color_telaforro, producto.color_telaforro2, producto.color_telaforro3, producto.color_telaforro4, producto.color_telaforro5, producto.color_telaforro6,
+                                                                
+                                                                ficha_tecnica.fecha_comercial, ficha_tecnica.fecha_ficha_tecnica, ficha_tecnica.fecha_pedido, ficha_tecnica.fecha_entrega, ficha_tecnica.forma_pago,
+                                                                ficha_tecnica.manga, ficha_tecnica.genero, ficha_tecnica.bolsillo, ficha_tecnica.lavado, ficha_tecnica.bordado, ficha_tecnica.muestra, ficha_tecnica.cuello_option, ficha_tecnica.empaque,
+                                                                ficha_tecnica.codigo_tela, ficha_tecnica.codigo_tela2, ficha_tecnica.codigo_tela3, ficha_tecnica.codigo_tela4, ficha_tecnica.codigo_tela5, ficha_tecnica.codigo_tela6,
+                                                                ficha_tecnica.area_tela, ficha_tecnica.area_tela2, ficha_tecnica.area_tela3, ficha_tecnica.area_tela4, ficha_tecnica.area_tela5, ficha_tecnica.area_tela6,
+                                                                ficha_tecnica.composicion, ficha_tecnica.composicion2, ficha_tecnica.composicion3, ficha_tecnica.composicion4, ficha_tecnica.composicion5, ficha_tecnica.composicion6,
+                                                                ficha_tecnica.ubicacion_combinado, ficha_tecnica.codigo_telacombi, ficha_tecnica.codigo_telacombi2, ficha_tecnica.codigo_telacombi3, ficha_tecnica.codigo_telacombi4, ficha_tecnica.codigo_telacombi5, ficha_tecnica.codigo_telacombi6,
+                                                                ficha_tecnica.ubicacion_forro, ficha_tecnica.codigo_telaforro, ficha_tecnica.codigo_telaforro2, ficha_tecnica.codigo_telaforro3, ficha_tecnica.codigo_telaforro4, ficha_tecnica.codigo_telaforro5, ficha_tecnica.codigo_telaforro6,
+                                                                ficha_tecnica.codigo_molde, ficha_tecnica.tipo_opcion, ficha_tecnica.opcion_escrito, ficha_tecnica.ojales, ficha_tecnica.coser, ficha_tecnica.ref_sugerida, ficha_tecnica.observacion_tallas,
+                                                                ficha_tecnica.talla_XS, ficha_tecnica.talla_S, ficha_tecnica.talla_M, ficha_tecnica.talla_L, ficha_tecnica.talla_XL, ficha_tecnica.talla_2XL, ficha_tecnica.talla_3XL, ficha_tecnica.talla_4XL, ficha_tecnica.talla_5XL, ficha_tecnica.talla_6XL,
+                                                                ficha_tecnica.talla_4, ficha_tecnica.talla_6, ficha_tecnica.talla_8, ficha_tecnica.talla_10, ficha_tecnica.talla_12, ficha_tecnica.talla_14, ficha_tecnica.talla_16, ficha_tecnica.talla_18, ficha_tecnica.talla_20, ficha_tecnica.talla_22,
+                                                                ficha_tecnica.talla2_XS, ficha_tecnica.talla2_S, ficha_tecnica.talla2_M, ficha_tecnica.talla2_L, ficha_tecnica.talla2_XL, ficha_tecnica.talla2_2XL, ficha_tecnica.talla2_3XL, ficha_tecnica.talla2_4XL, ficha_tecnica.talla2_5XL, ficha_tecnica.talla2_6XL,
+                                                                ficha_tecnica.talla2_4, ficha_tecnica.talla2_6, ficha_tecnica.talla2_8, ficha_tecnica.talla2_10, ficha_tecnica.talla2_12, ficha_tecnica.talla2_14, ficha_tecnica.talla2_16, ficha_tecnica.talla2_18, ficha_tecnica.talla2_20, ficha_tecnica.talla2_22,
+                                                                ficha_tecnica.talla3_XS, ficha_tecnica.talla3_S, ficha_tecnica.talla3_M, ficha_tecnica.talla3_L, ficha_tecnica.talla3_XL, ficha_tecnica.talla3_2XL, ficha_tecnica.talla3_3XL, ficha_tecnica.talla3_4XL, ficha_tecnica.talla3_5XL, ficha_tecnica.talla3_6XL,
+                                                                ficha_tecnica.talla3_4, ficha_tecnica.talla3_6, ficha_tecnica.talla3_8, ficha_tecnica.talla3_10, ficha_tecnica.talla3_12, ficha_tecnica.talla3_14, ficha_tecnica.talla3_16, ficha_tecnica.talla3_18, ficha_tecnica.talla3_20, ficha_tecnica.talla3_22,
+                                                                ficha_tecnica.talla4_XS, ficha_tecnica.talla4_S, ficha_tecnica.talla4_M, ficha_tecnica.talla4_L, ficha_tecnica.talla4_XL, ficha_tecnica.talla4_2XL, ficha_tecnica.talla4_3XL, ficha_tecnica.talla4_4XL, ficha_tecnica.talla4_5XL, ficha_tecnica.talla4_6XL,
+                                                                ficha_tecnica.talla4_4, ficha_tecnica.talla4_6, ficha_tecnica.talla4_8, ficha_tecnica.talla4_10, ficha_tecnica.talla4_12, ficha_tecnica.talla4_14, ficha_tecnica.talla4_16, ficha_tecnica.talla4_18, ficha_tecnica.talla4_20, ficha_tecnica.talla4_22,
+                                                                ficha_tecnica.talla5_XS, ficha_tecnica.talla5_S, ficha_tecnica.talla5_M, ficha_tecnica.talla5_L, ficha_tecnica.talla5_XL, ficha_tecnica.talla5_2XL, ficha_tecnica.talla5_3XL, ficha_tecnica.talla5_4XL, ficha_tecnica.talla5_5XL, ficha_tecnica.talla5_6XL,
+                                                                ficha_tecnica.talla5_4, ficha_tecnica.talla5_6, ficha_tecnica.talla5_8, ficha_tecnica.talla5_10, ficha_tecnica.talla5_12, ficha_tecnica.talla5_14, ficha_tecnica.talla5_16, ficha_tecnica.talla5_18, ficha_tecnica.talla5_20, ficha_tecnica.talla5_22,
+                                                                ficha_tecnica.talla6_XS, ficha_tecnica.talla6_S, ficha_tecnica.talla6_M, ficha_tecnica.talla6_L, ficha_tecnica.talla6_XL, ficha_tecnica.talla6_2XL, ficha_tecnica.talla6_3XL, ficha_tecnica.talla6_4XL, ficha_tecnica.talla6_5XL, ficha_tecnica.talla6_6XL,
+                                                                ficha_tecnica.talla6_4, ficha_tecnica.talla6_6, ficha_tecnica.talla6_8, ficha_tecnica.talla6_10, ficha_tecnica.talla6_12, ficha_tecnica.talla6_14, ficha_tecnica.talla6_16, ficha_tecnica.talla6_18, ficha_tecnica.talla6_20, ficha_tecnica.talla6_22,
+                                                                ficha_tecnica.talla_especial, ficha_tecnica.talla2_especial, ficha_tecnica.talla3_especial, ficha_tecnica.talla4_especial, ficha_tecnica.talla5_especial, ficha_tecnica.talla6_especial
+                                                                FROM pedido
+                                                                LEFT JOIN usuario ON pedido.id_usuario = usuario.id_usuario
+                                                                LEFT JOIN cliente ON pedido.nit = cliente.nit
+                                                                LEFT JOIN producto ON pedido.id_pedido = producto.id_pedido
+                                                                LEFT JOIN ficha_tecnica ON producto.id_producto = ficha_tecnica.id_producto
+                                                                LEFT JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto
+                                                                LEFT JOIN cargo ON producto.id_cargo = cargo.id_cargo
+                                                                LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda
+                                                                LEFT JOIN prenda_comprada ON producto.id_prendacomprada = prenda_comprada.id_prendacomprada
+                                                                LEFT JOIN tipo_prenda ON prenda.id_tipo_prenda = tipo_prenda.id_tipo_prenda
+                                                                LEFT JOIN mano_obra ON producto.id_mano_obra = mano_obra.id_mano_obra
+                                                                LEFT JOIN entrega ON producto.id_entrega = entrega.id_entrega
+                                                                LEFT JOIN tela ON producto.id_tela = tela.id_tela
+                                                                LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi
+                                                                LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro 
                                                                 WHERE producto.estado = 'Diseño' AND producto.id_producto = '$id_producto'";
 
-                                                $resultadoFicha = mysqli_query($enlace, $consultaFicha);
+                                                $resultado = mysqli_query($enlace, $consulta);
 
-                                                $filaFicha = mysqli_fetch_array($resultadoFicha);
+                                                $fila = mysqli_fetch_array($resultado);
                                                 ?>
 
-                                                <!-- BODY -->
-                                                <div class="modal-body p-4 bg-light">
-                                                    <form method="POST" enctype="multipart/form-data">
-                                                        <input type="hidden" name="id_producto" value="<?php echo $filaFicha['id_producto']; ?>">
+                                                <div class="modal-body">
+                                                    <ul class="nav nav-tabs" id="myTab<?php echo $id_producto; ?>" role="tablist">
 
-                                                        <!-- INFORMACIÓN GENERAL -->
-                                                        <div class="card shadow-sm border-0 mb-4">
-                                                            <div class="card-header text-white text-center fw-bold" style="background-color:#000DD3;"> INFORMACIÓN DEL PRODUCTO </div>
-                                                            <div class="table-responsive">
-                                                                <table class="table table-bordered align-middle text-center mb-0">
-                                                                    <thead style="background-color:#18a000; color:white;">
-                                                                        <tr class="table-primary">
-                                                                            <th style="text-align: center; vertical-align: middle; width: 40%;">Tipo de Producto</th>
-                                                                            <th style="text-align: center; vertical-align: middle; width: 15%;">Cant. Prendas</th>
-                                                                            <th style="text-align: center; vertical-align: middle; width: 15%;">No. Ficha</th>
-                                                                            <th style="text-align: center; vertical-align: middle; width: 30%;">Cliente</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td><?php echo htmlspecialchars($filaFicha['nombre_prenda']); ?></td>
-                                                                            <td><?php echo htmlspecialchars($filaFicha['suma_prendas']); ?></td>
-                                                                            <td><?php echo htmlspecialchars($filaFicha['num_ficha']); ?></td>
-                                                                            <td><?php echo htmlspecialchars($filaFicha['cliente']); ?></td>
-                                                                        </tr>
-                                                                        <tr>
-                                                                            <th colspan="5" class="text-center fw-bold table-primary"> REPRESENTACIÓN GRÁFICA</th>
-                                                                        </tr>
+                                                        <li class="nav-item">
+                                                            <button class="nav-link active" id="dotaciones-tab<?php echo $id_producto; ?>" data-bs-toggle="tab"
+                                                                data-bs-target="#dotaciones<?php echo $id_producto; ?>" type="button"> Dotaciones
+                                                            </button>
+                                                        </li>
 
-                                                                        <!-- Mostrar imagenes -->
-                                                                        <?php
-                                                                            $imagenes = array_filter([
-                                                                                $filaFicha['imagen'],
-                                                                                $filaFicha['imagen2'],
-                                                                                $filaFicha['imagen3'],
-                                                                                $filaFicha['imagen4']
-                                                                            ]);
-                                                                        ?>
+                                                        <li class="nav-item">
+                                                            <button class="nav-link" id="ilustracion-tab<?php echo $id_producto; ?>" data-bs-toggle="tab"
+                                                                data-bs-target="#ilustracion<?php echo $id_producto; ?>" type="button"> Ilustración
+                                                            </button>
+                                                        </li>
 
-                                                                        <?php if ($imagenes): ?>
-                                                                            <tr>
-                                                                                <td colspan="5">
-                                                                                    <div class="d-flex justify-content-center flex-wrap gap-2">
-                                                                                        <?php foreach ($imagenes as $img): ?>
-                                                                                            <div class="text-center">
-                                                                                                <a href="../../img/pedidos/<?= $img ?>" download>
-                                                                                                    <img src="../../img/pedidos/<?= $img ?>" class="img-fluid rounded shadow-sm img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
-                                                                                                </a>
-                                                                                            </div>
-                                                                                        <?php endforeach; ?>
-                                                                                    </div>
-                                                                                </td>
-                                                                            </tr>
-                                                                        <?php endif; ?>
+                                                        <li class="nav-item">
+                                                            <button class="nav-link" id="descripcion-tab<?php echo $id_producto; ?>" data-bs-toggle="tab"
+                                                                data-bs-target="#descripcion<?php echo $id_producto; ?>" type="button"> Descripción
+                                                            </button>
+                                                        </li>
 
-                                                                        <!-- Mostrar logos -->
-                                                                        <?php
-                                                                            $logoProducto1 = $filaFicha['logo1'];
-                                                                            $logoProducto2 = $filaFicha['logo2'];
-                                                                            $logoProducto3 = $filaFicha['logo3'];
-                                                                            $logoProducto4 = $filaFicha['logo4'];
+                                                        <li class="nav-item">
+                                                            <button class="nav-link" id="insumos-tab<?php echo $id_producto; ?>" data-bs-toggle="tab"
+                                                                data-bs-target="#insumos<?php echo $id_producto; ?>" type="button"> Insumos
+                                                            </button>
+                                                        </li>
 
-                                                                            if (!function_exists('displayFile')) {
-                                                                                function displayFile($file)
-                                                                                {
-                                                                                    $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
-                                                                                    $fileName = basename($file);
-                                                                                    if (in_array($fileExtension, ['pdf', 'doc', 'docx'])) {
-                                                                                        echo '<a href="../../logos_empresas/' . $file . '" class="btn btn-outline-primary mx-1 mb-2" target="_blank" download>' . $fileName . '</a>';
-                                                                                    } else {
-                                                                                        echo '<a href="../../logos_empresas/' . $file . '" target="_blank" download class="d-block mx-1 mb-2"><img src="../../logos_empresas/' . $file . '" alt="' . $fileName . '" class="img-fluid rounded shadow-sm" style="max-width: 130px;"></a>';
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        ?>
-                                                                        <?php if (!empty($logoProducto1) || !empty($logoProducto2) || !empty($logoProducto3) || !empty($logoProducto4)): ?>
-                                                                            <tr>
-                                                                                <th colspan="5" class="text-center fw-bold table-primary"> LOGOS</th>
-                                                                            </tr>
-                                                                            <tr>
-                                                                                <td colspan="5">
-                                                                                    <div>
-                                                                                        <div class="card-body d-flex justify-content-center flex-wrap">
-                                                                                            <?php if (!empty($logoProducto1)): ?>
-                                                                                                <div class="text-center p-1">
-                                                                                                    <?php displayFile($logoProducto1); ?>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                            <?php if (!empty($logoProducto2)): ?>
-                                                                                                <div class="text-center p-1">
-                                                                                                    <?php displayFile($logoProducto2); ?>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                            <?php if (!empty($logoProducto3)): ?>
-                                                                                                <div class="text-center p-1">
-                                                                                                    <?php displayFile($logoProducto3); ?>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                            <?php if (!empty($logoProducto4)): ?>
-                                                                                                <div class="text-center p-1">
-                                                                                                    <?php displayFile($logoProducto4); ?>
-                                                                                                </div>
-                                                                                            <?php endif; ?>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </td>
-                                                                            </tr>
-                                                                        <?php endif; ?>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
+                                                        <li class="nav-item">
+                                                            <button class="nav-link" id="bordado-tab<?php echo $id_producto; ?>" data-bs-toggle="tab"
+                                                                data-bs-target="#bordado<?php echo $id_producto; ?>" type="button"> Bordado - Estampado
+                                                            </button>
+                                                        </li>
 
-                                                        <!-- INFORMACIÓN DE TRAZO -->
-                                                        <div class="card shadow-sm border-0 mb-4">
-                                                            <div class="card-header text-white text-center fw-bold" style="background-color:#18a000;">INFORMACIÓN DE TRAZO Y CORTE</div>
-                                                            <?php
-                                                                $id_tela = $filaFicha['id_tela'];
-                                                                $color_tela = $filaFicha['color_tela'];
+                                                        <li class="nav-item">
+                                                            <button class="nav-link" id="novedad-tab<?php echo $id_producto; ?>" data-bs-toggle="tab"
+                                                                data-bs-target="#novedad<?php echo $id_producto; ?>" type="button"> Novedad
+                                                            </button>
+                                                        </li>
 
-                                                                $consulta_1 = "SELECT producto.id_tela, tela.id_tela, tela.caracteristicas AS caracteristicas_tela, tela.ancho AS ancho_tela, tela.rendimiento AS rendimiento_tela, tela.id_proveedor, proveedor_tela.nombre AS nombre_tela                                                            
-                                                                    FROM producto
-                                                                    LEFT JOIN tela ON producto.id_tela = tela.id_tela LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor WHERE tela.id_tela = '$id_tela'";
+                                                    </ul>
 
-                                                                $resultado_1 = mysqli_query($enlace, $consulta_1);
+                                                    <div class="tab-content mt-3">
+                                                        <!-- DOTACIONES -->
+                                                        <div class="tab-pane fade show active" id="dotaciones<?php echo $id_producto; ?>" role="tabpanel">
+                                                            <form method="post" id="formularioDotaciones<?php echo $id_producto; ?>">
+                                                                <input type="hidden" name="id_producto" value="<?php echo $fila['id_producto']; ?>">
 
-                                                                $fila1 = mysqli_fetch_array($resultado_1)
-                                                            ?>
-
-                                                            <div class="card-body">
-                                                                <div class="modal-header text-white" style="background-color: #000DD3; text-align: center; padding: 7px; margin-top: 0; border-radius: 0;">
-                                                                    <h6 class="modal-title w-100" style="color: white;">Información de Tela Principal</h6>
+                                                                <div class="modal-header text-white justify-content-center position-relative" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
+                                                                    <div class="d-flex align-items-center text-center">
+                                                                        <img src="../../img/unidotaciones.png" alt="Logo" width="150" class="me-3 rounded">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="text-white text-center py-2 fw-bold" style="background-color:#18a000;">
+                                                                    FICHA TÉCNICA DE PRODUCCIÓN
                                                                 </div>
 
-                                                                <div class="table-responsive">
-                                                                    <table id="mytabla" class="table table-bordered text-center">
-                                                                        <thead style="background-color:#18a000; color:white;">
-                                                                            <tr class="table-primary">
-                                                                                <th style="text-align: center; vertical-align: middle; width: 30%;">Nombre de la Tela</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 15%;">Composicion Tela</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Unitario</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Total</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 25%;">Color de la Tela</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 15%;">Textilera</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                <td>
+                                                                <!-- FECHAS -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                                                            <thead>
+                                                                                <tr class="table-primary">
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Comercial</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Ficha Tecnica</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Trazo</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 17%;">Fecha Corte</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 16%;">Fecha Numeracion</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 16%;">Personalizado</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        <?= date('d/m/Y', strtotime($fila['fecha_comercial'])); ?>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <?= date('d/m/Y'); ?>
+                                                                                        <input type="hidden" name="fecha_ficha_tecnica" value="<?= date('Y-m-d'); ?>">
+                                                                                    </td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td>
+                                                                                        <?php echo ($fila['id_entrega'] == 2) ? 'Sí' : 'No'; ?>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- ENCABEZADO FICHA -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle mb-0">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <!-- BLOQUE IZQUIERDO 40% -->
+                                                                                    <td class="fw-bold text-end" style="width:12%;">Fecha Pedido:</td>
+                                                                                    <td class="text-center" style="width:28%;">
+                                                                                        <?php
+                                                                                        setlocale(LC_TIME, 'es_ES.UTF-8', 'es_ES', 'Spanish_Spain');
+                                                                                        $fecha = new DateTime($fila['fecha_pedido']);
+
+                                                                                        $dias = [
+                                                                                            'Sunday'    => 'Domingo',
+                                                                                            'Monday'    => 'Lunes',
+                                                                                            'Tuesday'   => 'Martes',
+                                                                                            'Wednesday' => 'Miércoles',
+                                                                                            'Thursday'  => 'Jueves',
+                                                                                            'Friday'    => 'Viernes',
+                                                                                            'Saturday'  => 'Sábado'
+                                                                                        ];
+
+                                                                                        $meses = [
+                                                                                            'January'   => 'enero',
+                                                                                            'February'  => 'febrero',
+                                                                                            'March'     => 'marzo',
+                                                                                            'April'     => 'abril',
+                                                                                            'May'       => 'mayo',
+                                                                                            'June'      => 'junio',
+                                                                                            'July'      => 'julio',
+                                                                                            'August'    => 'agosto',
+                                                                                            'September' => 'septiembre',
+                                                                                            'October'   => 'octubre',
+                                                                                            'November'  => 'noviembre',
+                                                                                            'December'  => 'diciembre'
+                                                                                        ];
+
+                                                                                        echo $dias[$fecha->format('l')] . ', ' . $fecha->format('d') . ' de ' . $meses[$fecha->format('F')] . ' del ' . $fecha->format('Y');
+                                                                                        ?>
+                                                                                    </td>
+
+                                                                                    <!-- BLOQUE DERECHO 60% -->
+                                                                                    <td class="fw-bold text-center" style="width:11%;">Fecha de Entrega:</td>
+                                                                                    <td class="text-center" style="width:20%;">
+                                                                                        <?= date('d/m/Y', strtotime($fila['fecha_entrega'])); ?>
+                                                                                    </td>
+
+                                                                                    <td class="fw-bold text-center" style="width:17%;">Número de Ficha</td>
+                                                                                    <td class="text-center fw-bold" style="width:12%; background:#ffff00;">
+                                                                                        <span style="background:#ffff00;"><?php echo htmlspecialchars($fila['num_ficha']); ?></span>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-end">Ciudad:</td>
+                                                                                    <td class="text-center">PEREIRA</td>
+
+                                                                                    <td class="fw-bold text-center">Cliente:</td>
+                                                                                    <td class="text-center fw-bold" colspan="3" style="color:red;">
+                                                                                        <?php echo htmlspecialchars($fila['cliente']); ?>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-end">Destino:</td>
+                                                                                    <td class="text-center">UNIDOTACIONES DEL EJE S.A.S</td>
+
+                                                                                    <td class="fw-bold text-center">NIT:</td>
+                                                                                    <td class="text-center">
+                                                                                        <?php echo htmlspecialchars($fila['cod_cliente']); ?>
+                                                                                    </td>
+
+                                                                                    <td class="fw-bold text-center">Forma de Pago:</td>
+                                                                                    <td class="text-center fw-bold">
+                                                                                        <span style="color: red;"><?php echo htmlspecialchars($fila['forma_pago']); ?></span>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-end">Cuenta:</td>
+                                                                                    <td class="text-center">9.011.918.976</td>
+
+                                                                                    <td class="fw-bold text-center">Dirección:</td>
+                                                                                    <td class="text-center" colspan="3">
+                                                                                        <?php echo htmlspecialchars($fila['direccion1']); ?>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- FIRMAS -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                                                            <thead>
+                                                                                <tr class="table-primary">
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 34%;">Revisado y Aprobado Por:</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 33%;">Cortado Por:</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 33%;">Numerado Por:</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td>ALEJANDRA GARCIA</td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- PRENDA -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                                                            <thead>
+                                                                                <tr class="table-primary">
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 20%;">Prenda</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 9%;">Manga</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Genero</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Marca</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Bolsillo</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Lavado</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 7%;">Bordado</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 9%;">Muestra F</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Cuello</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 12%;">Tipo de Empaque</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td><?php echo htmlspecialchars($fila['producto']); ?></td>
+                                                                                    <td><?php echo htmlspecialchars($fila['manga']); ?></td>
+                                                                                    <td><?php echo htmlspecialchars($fila['genero']); ?></td>
+                                                                                    <td>UDE</td>
+                                                                                    <td style="background:#ffff00;"><span style="background:#ffff00;"><?php echo htmlspecialchars($fila['bolsillo']); ?></span></td>
+                                                                                    <td><?php echo htmlspecialchars($fila['lavado']); ?></td>
+                                                                                    <td style="background:#ffff00;"><span style="background:#ffff00;"><?php echo htmlspecialchars($fila['bordado']); ?></span></td>
+                                                                                    <td><?php echo htmlspecialchars($fila['muestra']); ?></td>
+                                                                                    <td><?php echo htmlspecialchars($fila['cuello_option']); ?></td>
+                                                                                    <td><?php echo htmlspecialchars($fila['empaque']); ?></td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- TELA -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <?php
+                                                                    $colores = [];
+                                                                    for ($i = 1; $i <= 6; $i++) {
+                                                                        $clave = ($i == 1) ? 'color_tela' : 'color_tela' . $i;
+                                                                        if (!empty($fila[$clave])) {
+                                                                            $colores[] = [
+                                                                                'sufijo' => ($i == 1) ? '' : $i,
+                                                                                'valor'  => $fila[$clave]
+                                                                            ];
+                                                                        }
+                                                                    }
+                                                                    ?>
+
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                                                            <thead>
+                                                                                <tr class="table-primary">
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 10%;">Codigo</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 12%;">Color</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 35%;">Nombre de la Tela</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 20%;">Composicion</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 10%;">Ancho</th>
+                                                                                    <th style="text-align: center; vertical-align: middle; width: 13%;">AREA</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <?php foreach ($colores as $c): ?>
+
                                                                                     <?php
-                                                                                    $texto = $filaFicha['tela'];
-                                                                                    if (!empty($fila1['ancho_tela'])) {
-                                                                                        $texto .= " ancho " . $fila1['ancho_tela'];
-                                                                                    }
-                                                                                    if (!empty($fila1['rendimiento_tela'])) {
-                                                                                        $texto .= " rendimiento " . $fila1['rendimiento_tela'];
-                                                                                    }
-                                                                                    echo htmlspecialchars($texto);
+                                                                                    $sufijo = $c['sufijo'];
+
+                                                                                    $campoCodigo = 'codigo_tela' . $sufijo;
+                                                                                    $campoColor  = 'color_tela' . $sufijo;
+                                                                                    $campoArea   = 'area_tela' . $sufijo;
                                                                                     ?>
-                                                                                </td>
 
-                                                                                <td><?php echo htmlspecialchars($fila1['caracteristicas_tela']); ?></td>
-                                                                                <td><?php echo htmlspecialchars($filaFicha['promedio_consumo']); ?> Mts</td>
-                                                                                <td><?php echo htmlspecialchars($filaFicha['consumo_tela']); ?> Mts</td>
-                                                                                <td><?php echo htmlspecialchars($filaFicha['color_tela']); ?></td>
-                                                                                <td><?php echo htmlspecialchars($fila1['nombre_tela']); ?></td>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-
-                                                                <?php if (!empty($filaFicha['id_telacombi'])): ?>
-                                                                    <?php
-                                                                        $id_telacombi = $filaFicha['id_telacombi'];
-                                                                        $color_telacombi = $filaFicha['color_telacombi'];
-
-                                                                        $consulta_2 = "SELECT producto.id_telacombi, tela_combinada.id_telacombi, tela_combinada.caracteristicas AS caracteristicas_combinado, tela_combinada.ancho AS ancho_combinado, tela_combinada.rendimiento AS rendimiento_combinado, tela_combinada.id_proveedor, proveedor_tela.nombre AS nombre_combinado
-                                                                                                                FROM producto
-                                                                                                                LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi LEFT JOIN proveedor_tela ON tela_combinada.id_proveedor = proveedor_tela.id_proveedor WHERE tela_combinada.id_telacombi = '$id_telacombi'";
-
-                                                                        $resultado_2 = mysqli_query($enlace, $consulta_2);
-
-                                                                        $fila2 = mysqli_fetch_array($resultado_2)
-                                                                    ?>
-
-                                                                    <div class="modal-header text-white" style="background-color: #000DD3; text-align: center; padding: 7px; margin-top: 0; border-radius: 0;">
-                                                                        <h6 class="modal-title w-100" style="color: white;">Información de la Tela Combinada</h6>
-                                                                    </div>
-                                                                    <div class="table-responsive">
-                                                                        <table id="mytabla" class="table table-bordered text-center">
-                                                                            <thead>
-                                                                                <tr class="table-primary">
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 30%;">Nombre de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Composicion Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Unitario</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Total</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 25%;">Color de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Textilera</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                <tr>
-                                                                                    <td class="text-center align-middle">
-                                                                                        <?php $texto = $filaFicha['tela_combi'];
-                                                                                        if (!empty($fila2['ancho_combinado'])) {
-                                                                                            $texto .= " ancho " . $fila2['ancho_combinado'];
-                                                                                        }
-                                                                                        if (!empty($fila2['rendimiento_combinado'])) {
-                                                                                            $texto .= " rendimiento " . $fila2['rendimiento_combinado'];
-                                                                                        }
-                                                                                        echo htmlspecialchars($texto);
-                                                                                        ?>
-                                                                                    </td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila2['caracteristicas_combinado']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['promedio_telacombi']); ?> Mts</td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['consumo_telacombi']); ?> Mts</td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['color_telacombi']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila2['nombre_combinado']); ?></td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                <?php endif; ?>
-
-                                                                <?php if (!empty($filaFicha['id_telaforro'])): ?>
-
-                                                                    <?php
-                                                                    $id_telaforro = $filaFicha['id_telaforro'];
-                                                                    $color_telaforro = $filaFicha['color_telaforro'];
-
-                                                                    $consulta_3 = "SELECT producto.id_telaforro, tela_forro.id_telaforro, tela_forro.caracteristicas AS caracteristicas_forro, tela_forro.ancho as ancho_forro, tela_forro.rendimiento as rendimiento_forro, tela_forro.id_proveedor, proveedor_tela.id_proveedor, proveedor_tela.nombre AS nombre_forro
-                                                                                                            FROM producto 
-                                                                                                            LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro LEFT JOIN proveedor_tela ON tela_forro.id_proveedor = proveedor_tela.id_proveedor WHERE tela_forro.id_telaforro = '$id_telaforro'";
-
-                                                                    $resultado_3 = mysqli_query($enlace, $consulta_3);
-
-                                                                    $fila3 = mysqli_fetch_array($resultado_3)
-                                                                    ?>
-
-                                                                    <div class="modal-header text-white" style="background-color: #000DD3; text-align: center; padding: 7px; margin-top: 0; border-radius: 0;">
-                                                                        <h6 class="modal-title w-100" style="color: white;">Información de la Tela Forro</h6>
-                                                                    </div>
-                                                                    <div class="table-responsive">
-                                                                        <table id="mytabla" class="table table-bordered text-center">
-                                                                            <thead>
-                                                                                <tr class="table-primary">
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 30%;">Nombre de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Composicion Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Unitario</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Total</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 25%;">Color de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Textilera</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                <tr>
-                                                                                    <td class="text-center align-middle">
-                                                                                        <?php $texto = $filaFicha['tela_forro'];
-                                                                                        if (!empty($fila3['ancho_forro'])) {
-                                                                                            $texto .= " ancho " . $fila3['ancho_forro'];
-                                                                                        }
-                                                                                        if (!empty($fila3['rendimiento_forro'])) {
-                                                                                            $texto .= " rendimiento " . $fila3['rendimiento_forro'];
-                                                                                        }
-                                                                                        echo htmlspecialchars($texto);
-                                                                                        ?>
-                                                                                    </td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila3['caracteristicas_forro']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['promedio_forro']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['consumo_telaforro']); ?> Mts</td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['color_telaforro']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila3['nombre_forro']); ?></td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                <?php endif; ?>
-
-                                                                <?php if (!empty($filaFicha['id_entretela'])): ?>
-
-                                                                    <?php
-                                                                    $id_entretela = $filaFicha['id_entretela'];
-
-                                                                    $consulta_4 = "SELECT producto.id_entretela, entretela.id_entretela, entretela.insumo AS insumo_entretela, producto.cant_entretela, entretela.id_proveedor, proveedor.nombre AS nombre_entretela 
-                                                                                    FROM producto LEFT JOIN entretela ON producto.id_entretela = entretela.id_entretela 
-                                                                                    LEFT JOIN proveedor ON entretela.id_proveedor = proveedor.id_proveedor WHERE entretela.id_entretela = '$id_entretela'";
-
-                                                                    $resultado_4 = mysqli_query($enlace, $consulta_4);
-
-                                                                    $fila4 = mysqli_fetch_array($resultado_4)
-                                                                    ?>
-
-                                                                    <div class="modal-header text-white" style="background-color: #000DD3; text-align: center; padding: 7px; margin-top: 0; border-radius: 0;">
-                                                                        <h6 class="modal-title w-100" style="color: white;">Información de la Entretela</h6>
-                                                                    </div>
-                                                                    <div class="table-responsive">
-                                                                        <table id="mytabla" class="table table-bordered text-center">
-                                                                            <thead>
-                                                                                <tr class="table-primary">
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 30%;">Nombre de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Unitario</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Total</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 25%;">Color de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Textilera</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                <tr>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila4['insumo_entretela']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila4['cant_entretela']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['consumo_totalentretela']); ?></td>
-                                                                                    <td class="text-center align-middle"><input type="text" name="color_entretela" class="form-control text-center"></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila4['nombre_entretela']); ?></td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                <?php endif; ?>
-
-                                                                <?php if (!empty($filaFicha['id_entretela2'])): ?>
-
-                                                                    <?php
-                                                                    $id_entretela2 = $filaFicha['id_entretela2'];
-
-                                                                    $consulta_5 = "SELECT producto.id_entretela2, entretela2.id_entretela2, entretela2.insumo AS insumo_entretela2, producto.cant_entretela2, entretela2.id_proveedor, proveedor.nombre AS nombre_entretela2 
-                                                                                    FROM producto LEFT JOIN entretela2 ON producto.id_entretela2 = entretela2.id_entretela2 
-                                                                                    LEFT JOIN proveedor ON entretela2.id_proveedor = proveedor.id_proveedor WHERE entretela2.id_entretela2 = '$id_entretela2'";
-
-                                                                    $resultado_5 = mysqli_query($enlace, $consulta_5);
-                                                                    $fila5 = mysqli_fetch_array($resultado_5)
-                                                                    ?>
-
-                                                                    <div class="modal-header text-white" style="background-color: #000DD3; text-align: center; padding: 7px; margin-top: 0; border-radius: 0;">
-                                                                        <h6 class="modal-title w-100" style="color: white;">Información de la Entretela 2</h6>
-                                                                    </div>
-                                                                    <div class="table-responsive">
-                                                                        <table id="mytabla" class="table table-bordered text-center">
-                                                                            <thead>
-                                                                                <tr class="table-primary">
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 30%;">Nombre de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Unitario</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 8%;">Consumo <br> Total</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 25%;">Color de la Tela</th>
-                                                                                    <th style="text-align: center; vertical-align: middle; width: 15%;">Textilera</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                <tr>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila5['insumo_entretela2']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila5['cant_entretela2']); ?></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($filaFicha['consumo_totalentretela2']); ?></td>
-                                                                                    <td class="text-center align-middle"><input type="text" name="color_entretela2" class="form-control text-center"></td>
-                                                                                    <td class="text-center align-middle"><?php echo htmlspecialchars($fila5['nombre_entretela2']); ?></td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- CURVA DE TALLAS -->
-                                                        <div class="card shadow-sm border-0 mb-4">
-                                                            <div class="card-header text-white text-center fw-bold" style="background-color:#000DD3;">CURVA DE TALLAS PEDIDO</div>
-
-                                                            <div class="card-body">
-                                                                <!-- TALLAS 1 -->
-                                                                <div class="table-responsive mb-3">
-                                                                    <table class="table table-hover text-center align-middle">
-                                                                        <thead style="background-color:#0F7A00; color:white;">
-                                                                            <tr class="table-primary">
-                                                                                <?php foreach (['2','4','6','8','10','12','14','16','18','20','22','24'] as $t): ?>
-                                                                                    <th><?= $t ?></th>
-                                                                                <?php endforeach; ?>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                <?php
-                                                                                foreach (['2','4','6','8','10','12','14','16','18','20','22','24'] as $talla) {
-                                                                                    $valor = htmlspecialchars($filaFicha["talla_$talla"]);
-                                                                                    $disabled = $valor == 0 ? 'disabled' : '';
-                                                                                    echo "<td> <input type='text' class='form-control form-control-sm text-center' value='$valor' $disabled></td>";
-                                                                                }
-                                                                                ?>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-
-                                                                <!-- TALLAS 2 -->
-                                                                <div class="table-responsive mb-3">
-                                                                    <table class="table table-hover text-center align-middle">
-                                                                        <thead style="background-color:#0F7A00; color:white;">
-                                                                            <tr class="table-primary">
-                                                                                <?php foreach (['26','28','30','32','34','36','38','40','42','44','46','48'] as $t): ?>
-                                                                                    <th><?= $t ?></th>
-                                                                                <?php endforeach; ?>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                <?php
-                                                                                foreach (['26','28','30','32','34','36','38','40','42','44','46','48'] as $talla) {
-                                                                                    $valor = htmlspecialchars($filaFicha["talla_$talla"]);
-                                                                                    $disabled = $valor == 0 ? 'disabled' : '';
-                                                                                    echo "<td> <input type='text' class='form-control form-control-sm text-center' value='$valor' $disabled></td>";
-                                                                                }
-                                                                                ?>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-
-                                                                <!-- TALLAS 3 -->
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-hover text-center align-middle">
-                                                                        <thead style="background-color:#0F7A00; color:white;">
-                                                                            <tr class="table-primary">
-                                                                                <?php foreach (['XS','S','M','L','XL','2XL','3XL','4XL','5XL','6XL','ESPECIAL','TOTAL'] as $t): ?>
-                                                                                    <th><?= $t ?></th>
-                                                                                <?php endforeach; ?>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                <?php
-                                                                                foreach (['XS','S','M','L','XL','2XL','3XL','4XL','5XL','6XL','especial'] as $talla) {
-                                                                                    $valor = htmlspecialchars($filaFicha["talla_$talla"]);
-                                                                                    $disabled = $valor == 0 ? 'disabled' : '';
-                                                                                    echo "<td> <input type='text' class='form-control form-control-sm text-center' value='$valor' $disabled></td>";
-                                                                                }
-                                                                                ?>
-                                                                                <td>
-                                                                                    <input type="text" class="form-control form-control-sm text-center fw-bold" value="<?php echo htmlspecialchars($filaFicha['suma_prendas']); ?>" readonly>
-                                                                                </td>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <?php if (
-                                                            (!empty($filaFicha['id_bolsa']) && $filaFicha['id_bolsa'] != '0') ||
-                                                            (!empty($filaFicha['id_boton']) && $filaFicha['id_boton'] != '0') ||
-                                                            (!empty($filaFicha['id_boton2']) && $filaFicha['id_boton2'] != '0') ||
-                                                            (!empty($filaFicha['id_broche']) && $filaFicha['id_broche'] != '0') ||
-                                                            (!empty($filaFicha['id_faya']) && $filaFicha['id_faya'] != '0') ||
-                                                            (!empty($filaFicha['id_cinta']) && $filaFicha['id_cinta'] != '0') ||
-                                                            (!empty($filaFicha['id_cordon']) && $filaFicha['id_cordon'] != '0') ||
-                                                            (!empty($filaFicha['id_cremallera']) && $filaFicha['id_cremallera'] != '0') ||
-                                                            (!empty($filaFicha['id_cremallera2']) && $filaFicha['id_cremallera2'] != '0') ||
-                                                            (!empty($filaFicha['id_cuello']) && $filaFicha['id_cuello'] != '0') ||
-                                                            (!empty($filaFicha['id_deslizador']) && $filaFicha['id_deslizador'] != '0') ||
-                                                            (!empty($filaFicha['id_fajon_cintura']) && $filaFicha['id_fajon_cintura'] != '0') ||
-                                                            (!empty($filaFicha['id_fusionado']) && $filaFicha['id_fusionado'] != '0') ||
-                                                            (!empty($filaFicha['id_guata']) && $filaFicha['id_guata'] != '0') ||
-                                                            (!empty($filaFicha['id_hiladilla']) && $filaFicha['id_hiladilla'] != '0') ||
-                                                            (!empty($filaFicha['id_hombrera']) && $filaFicha['id_hombrera'] != '0') ||
-                                                            (!empty($filaFicha['id_marquilla']) && $filaFicha['id_marquilla'] != '0') ||
-                                                            (!empty($filaFicha['id_plumilla']) && $filaFicha['id_plumilla'] != '0') ||
-                                                            (!empty($filaFicha['id_pretina']) && $filaFicha['id_pretina'] != '0') ||
-                                                            (!empty($filaFicha['id_puntera']) && $filaFicha['id_puntera'] != '0') ||
-                                                            (!empty($filaFicha['id_puño']) && $filaFicha['id_puño'] != '0') ||
-                                                            (!empty($filaFicha['id_resorte']) && $filaFicha['id_resorte'] != '0') ||
-                                                            (!empty($filaFicha['id_resorte2']) && $filaFicha['id_resorte2'] != '0') ||
-                                                            (!empty($filaFicha['id_sesgo']) && $filaFicha['id_sesgo'] != '0') ||
-                                                            (!empty($filaFicha['id_trabilla']) && $filaFicha['id_trabilla'] != '0') ||
-                                                            (!empty($filaFicha['id_velcro']) && $filaFicha['id_velcro'] != '0') ||
-                                                            (!empty($filaFicha['id_vinilo']) && $filaFicha['id_vinilo'] != '0') ||
-                                                            (!empty($filaFicha['id_vivo']) && $filaFicha['id_vivo'] != '0')
-                                                        ): ?>
-
-                                                            <!-- LISTA DE INSUMOS -->
-                                                            <div class="card shadow-sm border-0 mb-4">
-
-                                                                <!-- HEADER -->
-                                                                <div class="card-header text-white text-center fw-bold" style="background-color:#18a000;">
-                                                                    LISTA DE INSUMOS
-                                                                </div>
-
-                                                                <!-- TABLA -->
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-hover align-middle text-center mb-0">
-
-                                                                        <thead style="background-color:#0A1F8F; color:white;">
-                                                                            <tr class="table-primary">
-                                                                                <th style="text-align: center; vertical-align: middle; width: 50%;">Insumo</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 16%;">Medida</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 15%;">Consumo <br> Unitario</th>
-                                                                                <th style="text-align: center; vertical-align: middle; width: 15%;">Consumo Total <br> X Prenda</th>
-                                                                            </tr>
-                                                                        </thead>
-
-                                                                        <tbody>
-                                                                            <!-- BLOQUE 1 -->
-                                                                            <?php foreach (['cuello', 'puño', 'fusionado'] as $insumo): ?>
-                                                                                <?php if (!empty($filaFicha['id_' . $insumo]) && $filaFicha['id_' . $insumo] != '0'): ?>
                                                                                     <tr>
-                                                                                        <td><?php echo htmlspecialchars($filaFicha['insumo_' . $insumo]); ?></td>
-                                                                                        <td><?php echo htmlspecialchars($filaFicha['medida_' . $insumo]); ?></td>
-                                                                                        <td><?php echo htmlspecialchars($filaFicha['consumo_' . $insumo]); ?></td>
-                                                                                        <td class="fw-bold"><?php echo htmlspecialchars($filaFicha['consumo_total' . $insumo]); ?></td>
+                                                                                        <td><?= htmlspecialchars($fila[$campoCodigo]); ?></td>
+                                                                                        <td><?= htmlspecialchars($fila[$campoColor]); ?></td>
+                                                                                        <td><?= htmlspecialchars($fila['tela']); ?></td>
+                                                                                        <td><?= htmlspecialchars($fila['caracteristicas_tela']); ?></td>
+                                                                                        <td><?= htmlspecialchars($fila['ancho_tela']); ?></td>
+                                                                                        <td style="background:#ffff00;">
+                                                                                            <?= htmlspecialchars($fila[$campoArea]); ?>
+                                                                                        </td>
                                                                                     </tr>
-                                                                                <?php endif; ?>
-                                                                            <?php endforeach; ?>
 
-                                                                            <!-- BLOQUE 2 -->
-                                                                            <?php foreach (['boton','boton2','broche','faya','cinta','cordon','cremallera','cremallera2','deslizador','fajon_cintura','guata',
-                                                                            'hiladilla','hombrera','plumilla','pretina','puntera','resorte','resorte2','sesgo','trabilla','velcro','vinilo','vivo'] as $insumo): ?>
-
-                                                                                <?php if (!empty($filaFicha['id_' . $insumo]) && $filaFicha['id_' . $insumo] != '0'): ?>
-                                                                                    <tr>
-                                                                                        <td><?php echo htmlspecialchars($filaFicha['insumo_' . $insumo]); ?></td>
-                                                                                        <td><?php echo htmlspecialchars($filaFicha['medida_' . $insumo]); ?></td>
-                                                                                        <td><?php echo htmlspecialchars($filaFicha['cant_' . $insumo]); ?></td>
-                                                                                        <td class="fw-bold"><?php echo htmlspecialchars($filaFicha['consumo_total' . $insumo]); ?></td>
-                                                                                    </tr>
-                                                                                <?php endif; ?>
-                                                                            <?php endforeach; ?>
-
-                                                                            <!-- FIJOS -->
-                                                                            <?php if (!empty($filaFicha['id_marquilla']) && $filaFicha['id_marquilla'] != '0'): ?>
-                                                                                <tr>
-                                                                                    <td><?php echo htmlspecialchars($filaFicha['insumo_marquilla']); ?></td>
-                                                                                    <td><?php echo htmlspecialchars($filaFicha['medida_marquilla']); ?></td>
-                                                                                    <td>1</td>
-                                                                                    <td class="fw-bold">1</td>
-                                                                                </tr>
-                                                                            <?php endif; ?>
-
-                                                                            <?php if (!empty($filaFicha['id_bolsa']) && $filaFicha['id_bolsa'] != '0'): ?>
-                                                                                <tr>
-                                                                                    <td><?php echo htmlspecialchars($filaFicha['insumo_bolsa']); ?></td>
-                                                                                    <td><?php echo htmlspecialchars($filaFicha['medida_bolsa']); ?></td>
-                                                                                    <td>1</td>
-                                                                                    <td class="fw-bold">1</td>
-                                                                                </tr>
-                                                                            <?php endif; ?>
-
-                                                                        </tbody>
-
-                                                                    </table>
-                                                                </div>
-
-                                                            </div>
-                                                        <?php endif; ?>
-
-                                                        <?php
-                                                            $campos = ['frentes', 'espalda', 'mangas', 'cuello', 'puño', 'delanteros', 'traseros', 'pretina', 'esamble', 'fajon', 'forro', 'otros', 'observaciones'];
-
-                                                            $tieneContenido = false;
-                                                            foreach ($campos as $campo) {
-                                                                if (!empty($filaFicha[$campo])) {
-                                                                    $tieneContenido = true;
-                                                                    break;
-                                                                }
-                                                            }
-
-                                                            if ($tieneContenido): ?>
-
-                                                            <!-- INFORMACIÓN DE CONFECCIÓN -->
-                                                            <div class="card shadow-sm border-0 mb-4">
-                                                                <!-- HEADER -->
-                                                                <div class="card-header text-white text-center fw-bold" style="background-color:#18a000;">
-                                                                    INFORMACIÓN DE CONFECCIÓN
-                                                                </div>
-
-                                                                <!-- BODY -->
-                                                                <div class="card-body">
-
-                                                                    <div class="row g-3">
-
-                                                                        <?php foreach ($campos as $campo): ?>
-                                                                            <?php if (!empty($filaFicha[$campo])): ?>
-
-                                                                                <div class="col-md-6">
-                                                                                    <label class="form-label fw-semibold text-dark">
-                                                                                        <?php echo ucfirst($campo); ?>
-                                                                                    </label>
-
-                                                                                    <textarea class="form-control form-control-sm shadow-sm" rows="3" name="<?php echo $campo; ?>" style="resize:none;"><?php echo htmlspecialchars($filaFicha[$campo]); ?></textarea>
-                                                                                </div>
-
-                                                                            <?php endif; ?>
-                                                                        <?php endforeach; ?>
+                                                                                <?php endforeach; ?>
+                                                                            </tbody>
+                                                                        </table>
                                                                     </div>
                                                                 </div>
-                                                            </div>
 
-                                                        <?php endif; ?>
+                                                                <!-- TELA COMBINADA -->
+                                                                <?php if (!empty($fila['id_telacombi'])): ?>
+                                                                    <div class="card shadow-sm border-0 mb-3">
+                                                                        <div class="table-responsive">
+                                                                            <table class="table table-bordered table-sm align-middle mb-0">
+                                                                                <tbody>
+                                                                                    <tr>
+                                                                                        <td class="table-primary fw-bold text-center" style="width:10%;">Combinado</td>
+                                                                                        <td class="table-primary" style="width:90%; text-align:center;">
+                                                                                            <?= htmlspecialchars($fila['ubicacion_combinado']); ?>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
 
-                                                        <!-- CARD -->
-                                                        <div class="card border-0 shadow">
-                                                            <div class="card-header text-white text-center fw-bold" style="background-color:#18a000;">
-                                                                Cargar Ficha Técnica
-                                                            </div>
+                                                                    <?php
+                                                                    $colores_combi = [];
+                                                                    for ($i = 1; $i <= 6; $i++) {
+                                                                        $clave = ($i == 1) ? 'color_telacombi' : 'color_telacombi' . $i;
+                                                                        if (!empty($fila[$clave])) {
+                                                                            $colores_combi[] = [
+                                                                                'sufijo' => ($i == 1) ? '' : $i,
+                                                                                'valor'  => $fila[$clave]
+                                                                            ];
+                                                                        }
+                                                                    }
+                                                                    ?>
 
-                                                            <div class="card-body text-center">
+                                                                    <div class="card shadow-sm border-0 mb-3">
+                                                                        <div class="table-responsive">
+                                                                            <table id="mytabla" class="table table-bordered table-sm text-center mb-0">
+                                                                                <thead>
+                                                                                    <tr class="table-primary">
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Codigo</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 12%;">Color</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 35%;">Nombre de la Tela Combinada</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 20%;">Composicion</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Ancho</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    <?php foreach ($colores_combi as $c): ?>
 
-                                                                <!-- INPUT -->
-                                                                <input type="file" class="form-control d-none" name="ficha_tecnica" id="ficha_tecnica<?php echo $id_producto; ?>" accept=".xls,.xlsx,.csv,.pdf,.doc,.docx,.png,.jpg,.jpeg">
+                                                                                        <?php
+                                                                                        $sufijo = $c['sufijo'];
 
-                                                                <!-- BOTÓN -->
-                                                                <label for="ficha_tecnica<?php echo $id_producto; ?>" class="btn text-white px-4" style="background-color:#000DD3;"> <i class="bi bi-upload"></i> Seleccionar archivo</label>
+                                                                                        $campoCodigo = 'codigo_telacombi' . $sufijo;
+                                                                                        $campoColor  = 'color_telacombi' . $sufijo;
+                                                                                        ?>
 
-                                                                <!-- NOMBRE -->
-                                                                <p id="file-name-ficha<?php echo $id_producto; ?>" class="mt-3 text-muted small">
-                                                                    Ningún archivo seleccionado
-                                                                </p>
+                                                                                        <tr>
+                                                                                            <td><?= htmlspecialchars($fila[$campoCodigo]); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila[$campoColor]); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila['tela_combi']); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila['caracteristicas_combi']); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila['ancho_telacombi']); ?></td>
 
-                                                            </div>
+                                                                                        </tr>
+
+                                                                                    <?php endforeach; ?>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
+                                                                <?php endif; ?>
+
+                                                                <!-- TELA FORRO -->
+                                                                <?php if (!empty($fila['id_telaforro'])): ?>
+                                                                    <div class="card shadow-sm border-0 mb-3">
+                                                                        <div class="table-responsive">
+                                                                            <table class="table table-bordered table-sm align-middle mb-0">
+                                                                                <tbody>
+                                                                                    <tr>
+                                                                                        <td class="fw-bold text-center" style="width:10%;">Forro</td>
+                                                                                        <td style="width:90%; text-align:center;">
+                                                                                            <?= htmlspecialchars($fila['ubicacion_forro']); ?>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <?php
+                                                                    $colores_forro = [];
+                                                                    for ($i = 1; $i <= 6; $i++) {
+                                                                        $clave = ($i == 1) ? 'color_telaforro' : 'color_telaforro' . $i;
+                                                                        if (!empty($fila[$clave])) {
+                                                                            $colores_forro[] = [
+                                                                                'sufijo' => ($i == 1) ? '' : $i,
+                                                                                'valor'  => $fila[$clave]
+                                                                            ];
+                                                                        }
+                                                                    }
+                                                                    ?>
+
+                                                                    <div class="card shadow-sm border-0 mb-3">
+                                                                        <div class="table-responsive">
+                                                                            <table id="mytabla" class="table table-bordered table-sm text-center mb-0">
+                                                                                <thead>
+                                                                                    <tr class="table-primary">
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Codigo</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 12%;">Color</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 35%;">Nombre de la Tela Forro</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 20%;">Composicion</th>
+                                                                                        <th style="text-align: center; vertical-align: middle; width: 10%;">Ancho</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    <?php foreach ($colores_forro as $c): ?>
+
+                                                                                        <?php
+                                                                                        $sufijo = $c['sufijo'];
+
+                                                                                        $campoCodigo = 'codigo_telaforro' . $sufijo;
+                                                                                        $campoColor  = 'color_telaforro' . $sufijo;
+                                                                                        ?>
+
+                                                                                        <tr>
+                                                                                            <td><?= htmlspecialchars($fila[$campoCodigo]); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila[$campoColor]); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila['tela_forro']); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila['caracteristicas_forro']); ?></td>
+                                                                                            <td><?= htmlspecialchars($fila['ancho_forro']); ?></td>
+                                                                                        </tr>
+
+                                                                                    <?php endforeach; ?>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
+
+                                                                <?php endif; ?>
+
+                                                                <!-- CODIGOS DE MOLDE -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle mb-0">
+                                                                            <thead>
+                                                                                <tr class="table-primary">
+                                                                                    <th style="text-align: center;">Codigos del Molde</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td colspan="4">
+                                                                                        <input type="text" class="form-control form-control-sm text-center" name="codigo_molde" value="<?= htmlspecialchars($fila['codigo_molde'] ?? '') ?>" pattern="[A-Za-z0-9.# %+-]+" maxlength="500">
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- DESCRIPCIONES -->
+                                                                <div class="card shadow-sm mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;width:100%;">
+                                                                            <tbody>
+                                                                                <!-- TIPO OPCION -->
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                        <?php echo htmlspecialchars($fila['tipo_opcion']); ?>
+                                                                                    </td>
+                                                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                                                        <span style="background:#ffff00; color:red;"><?php echo htmlspecialchars($fila['opcion_escrito']); ?></span>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <!-- OJALES -->
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                        Ojales
+                                                                                    </td>
+                                                                                    <td colspan="4">
+                                                                                        <textarea class="form-control" name="ojales" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo $fila['ojales']; ?></textarea>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <!-- BOTONES -->
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                        Botones
+                                                                                    </td>
+                                                                                    <td colspan="4">
+                                                                                        <textarea class="form-control" name="boton" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo $fila['boton']; ?></textarea>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <!-- COSER -->
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                        Coser
+                                                                                    </td>
+                                                                                    <td colspan="4">
+                                                                                        <textarea class="form-control" name="coser" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"><?php echo $fila['coser']; ?></textarea>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <!-- REF SUGERIDA -->
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                        Ref sugerida
+                                                                                    </td>
+                                                                                    <td colspan="4">
+                                                                                        <?php echo htmlspecialchars($fila['ref_sugerida']); ?>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <!-- OBSERVACIÓN DE TALLAS-->
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                        Observaciónes de las Tallas
+                                                                                    </td>
+                                                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                                                        <span style="background:#ffff00; color:red;"><?php echo htmlspecialchars($fila['observacion_tallas']); ?></span>
+                                                                                    </td>
+                                                                                </tr>
+
+                                                                                <!-- OBSERVACIÓN DE DISEÑO-->
+                                                                                <tr>
+                                                                                    <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                        Observaciónes de Diseño
+                                                                                    </td>
+                                                                                    <td colspan="4" class="text-center fw-bold" style="background:#ffff00; color:red;">
+                                                                                        <textarea style="background:#ffff00; color:red;" class="form-control" name="" pattern="[A-Za-z-Zñóéí ]+" maxlength="1000" rows="1"></textarea>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- CURVA INICIAL -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <?php
+                                                                    // Mismos arreglos de tallas que en el modal editable
+                                                                    $tallas_hombre = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL", "Especial"];
+                                                                    $tallas_dama   = ["4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "Especial"];
+
+                                                                    $genero_fila = trim($fila['genero'] ?? '');
+                                                                    if ($genero_fila === 'Hombre') {
+                                                                        $tallas = $tallas_hombre;
+                                                                    } elseif ($genero_fila === 'Dama' || $genero_fila === 'Junior') {
+                                                                        $tallas = $tallas_dama;
+                                                                    } else {
+                                                                        $tallas = [];
+                                                                    }
+
+                                                                    // Mismo criterio de colores que usas en la tarjeta de TELA
+                                                                    $colores_curva = [];
+                                                                    for ($i = 1; $i <= 6; $i++) {
+                                                                        $clave = ($i == 1) ? 'color_tela' : 'color_tela' . $i;
+                                                                        if (!empty($fila[$clave])) {
+                                                                            $colores_curva[] = $fila[$clave];
+                                                                        }
+                                                                    }
+                                                                    if (empty($colores_curva)) $colores_curva = [''];
+                                                                    ?>
+
+                                                                    <?php if (!empty($tallas)): ?>
+                                                                        <div class="table-responsive">
+                                                                            <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <td colspan="<?= count($tallas) + 3 ?>" class="fw-bold" style="background:#ffff00; color:red;">CURVA INICIAL</td>
+                                                                                    </tr>
+                                                                                    <tr class="table-primary">
+                                                                                        <th style="width:5%;"></th>
+                                                                                        <th style="width:23%;">Color / Talla</th>
+                                                                                        <?php foreach ($tallas as $t): ?>
+                                                                                            <th style="width:5%;"><?= htmlspecialchars($t) ?></th>
+                                                                                        <?php endforeach; ?>
+                                                                                        <th style="width:7%;">Total Und</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    <?php
+                                                                                    $totales_columna = array_fill_keys($tallas, 0);
+                                                                                    $total_general = 0;
+
+                                                                                    foreach ($colores_curva as $index => $color):
+                                                                                        $g = $index + 1;
+                                                                                        $prefijo = ($g === 1) ? 'talla_' : 'talla' . $g . '_';
+                                                                                        $total_fila = 0;
+                                                                                    ?>
+                                                                                        <tr>
+                                                                                            <td><b><?= $g ?></b></td>
+                                                                                            <td><?= htmlspecialchars($color) ?></td>
+                                                                                            <?php foreach ($tallas as $t):
+                                                                                                $key = ($t === 'Especial') ? 'especial' : $t;
+                                                                                                $val = $fila[$prefijo . $key] ?? '';
+                                                                                                $val = ($val === null) ? '' : $val;
+                                                                                                $total_fila += (int) $val;
+                                                                                                $totales_columna[$t] += (int) $val;
+                                                                                            ?>
+                                                                                                <td><?= htmlspecialchars((string) $val) ?></td>
+                                                                                            <?php endforeach; ?>
+                                                                                            <td><b><?= $total_fila ?></b></td>
+                                                                                        </tr>
+                                                                                        <?php $total_general += $total_fila; ?>
+                                                                                    <?php endforeach; ?>
+                                                                                </tbody>
+                                                                                <tfoot>
+                                                                                    <tr class="table-secondary fw-bold">
+                                                                                        <td colspan="2">Total por Talla</td>
+                                                                                        <?php foreach ($tallas as $t): ?>
+                                                                                            <td><?= $totales_columna[$t] ?></td>
+                                                                                        <?php endforeach; ?>
+                                                                                        <td><?= $total_general ?></td>
+                                                                                    </tr>
+                                                                                </tfoot>
+                                                                            </table>
+                                                                        </div>
+                                                                    <?php else: ?>
+                                                                        <div class="text-center text-muted py-2">No se ha definido género para mostrar la curva de tallas.</div>
+                                                                    <?php endif; ?>
+                                                                </div>
+
+                                                                <!-- CURVA PARCIAL -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <?php
+                                                                    // Mismos arreglos de tallas que en el modal editable
+                                                                    $tallas_hombre = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL", "Especial"];
+                                                                    $tallas_dama   = ["4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "Especial"];
+
+                                                                    $genero_fila = trim($fila['genero'] ?? '');
+                                                                    if ($genero_fila === 'Hombre') {
+                                                                        $tallas = $tallas_hombre;
+                                                                    } elseif ($genero_fila === 'Dama' || $genero_fila === 'Junior') {
+                                                                        $tallas = $tallas_dama;
+                                                                    } else {
+                                                                        $tallas = [];
+                                                                    }
+
+                                                                    // Mismo criterio de colores que usas en la tarjeta de TELA
+                                                                    $colores_curva = [];
+                                                                    for ($i = 1; $i <= 6; $i++) {
+                                                                        $clave = ($i == 1) ? 'color_tela' : 'color_tela' . $i;
+                                                                        if (!empty($fila[$clave])) {
+                                                                            $colores_curva[] = $fila[$clave];
+                                                                        }
+                                                                    }
+                                                                    if (empty($colores_curva)) $colores_curva = [''];
+                                                                    ?>
+
+                                                                    <?php if (!empty($tallas)): ?>
+                                                                        <div class="table-responsive">
+                                                                            <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <td colspan="<?= count($tallas) + 3 ?>" class="fw-bold" style="background:#ffff00; color:red;">CURVA PARCIAL</td>
+                                                                                    </tr>
+                                                                                    <tr class="table-primary">
+                                                                                        <th style="width:5%;"></th>
+                                                                                        <th style="width:23%;">Color / Talla</th>
+                                                                                        <?php foreach ($tallas as $t): ?>
+                                                                                            <th style="width:5%;"><?= htmlspecialchars($t) ?></th>
+                                                                                        <?php endforeach; ?>
+                                                                                        <th style="width:7%;">Total Und</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    <?php
+                                                                                    $totales_columna = array_fill_keys($tallas, 0);
+                                                                                    $total_general = 0;
+
+                                                                                    foreach ($colores_curva as $index => $color):
+                                                                                        $g = $index + 1;
+                                                                                        $prefijo = ($g === 1) ? 'talla_' : 'talla' . $g . '_';
+                                                                                        $total_fila = 0;
+                                                                                    ?>
+                                                                                        <tr>
+                                                                                            <td><b><?= $g ?></b></td>
+                                                                                            <td><?= htmlspecialchars($color) ?></td>
+                                                                                            <?php foreach ($tallas as $t):
+                                                                                                $key = ($t === 'Especial') ? 'especial' : $t;
+                                                                                                $val = $fila[$prefijo . $key] ?? '';
+                                                                                                $val = ($val === null) ? '' : $val;
+                                                                                                $total_fila += (int) $val;
+                                                                                                $totales_columna[$t] += (int) $val;
+                                                                                            ?>
+                                                                                                <td><?= htmlspecialchars((string) $val) ?></td>
+                                                                                            <?php endforeach; ?>
+                                                                                            <td><b><?= $total_fila ?></b></td>
+                                                                                        </tr>
+                                                                                        <?php $total_general += $total_fila; ?>
+                                                                                    <?php endforeach; ?>
+                                                                                </tbody>
+                                                                                <tfoot>
+                                                                                    <tr class="table-secondary fw-bold">
+                                                                                        <td colspan="2">Total por Talla</td>
+                                                                                        <?php foreach ($tallas as $t): ?>
+                                                                                            <td><?= $totales_columna[$t] ?></td>
+                                                                                        <?php endforeach; ?>
+                                                                                        <td><?= $total_general ?></td>
+                                                                                    </tr>
+                                                                                </tfoot>
+                                                                            </table>
+                                                                        </div>
+                                                                    <?php else: ?>
+                                                                        <div class="text-center text-muted py-2">No se ha definido género para mostrar la curva de tallas.</div>
+                                                                    <?php endif; ?>
+                                                                </div>
+
+                                                                <!--  FIRMAS y CORTE -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle mb-0">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th colspan="5" class="text-center" style="background:#d9e3f0;">OBSERVACION CORTE</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td colspan="5" style="height: 100px; vertical-align: top;">
+                                                                                        
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                            <colgroup>
+                                                                                <col style="width: 30%;">
+                                                                            </colgroup>
+                                                                            <tbody>
+                                                                                <tr style="height:15px;">
+                                                                                    <td class="fw-bold text-center align-middle py-2" style="background:#ffff00; color:red;">TELA REPOSADA</td>
+                                                                                    <td class="text-center align-middle py-2">
+                                                                                        SI <input type="radio" name="tela_reposada" value="SI">
+                                                                                    </td>
+                                                                                    <td class="text-center align-middle py-2">
+                                                                                        NO <input type="radio" name="tela_reposada" value="NO">
+                                                                                    </td>
+                                                                                    <td class="fw-bold text-center align-middle py-2" style="background:#ffff00; color:red;">HORAS DE REPOSO</td>
+                                                                                    <td colspan="2" class="align-middle py-2">
+                                                                                        <input type="text" class="form-control form-control-sm text-center" name="horas_reposo">
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr style="height:15px;">
+                                                                                    <td class="fw-bold text-center align-middle py-2" style="background:#ffff00;">FIRMA RESPONSABLE</td>
+                                                                                    <td colspan="5" class="align-middle py-2">
+
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr style="height:15px;">
+                                                                                    <td class="fw-bold text-center align-middle py-2" style="background:#ffff00;">CORTE COMPLETO</td>
+                                                                                    <td colspan="5" class="align-middle py-2">
+
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr style="height:15px;">
+                                                                                    <td class="fw-bold text-center align-middle py-2" style="background:#ffff00;">CORTE INCOMPLETO</td>
+                                                                                    <td colspan="5" class="align-middle py-2">
+
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr style="height:15px;">
+                                                                                    <td class="fw-bold text-center align-middle py-2" style="background:#d9e3f0;">FIRMA DE RECIBIDO DE CORTE A PRODUCCION</td>
+                                                                                    <td colspan="5" class="align-middle py-2">
+
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- BUTTON -->
+                                                                <div class="modal-footer justify-content-center">
+                                                                    <button type="submit" name="crear_ficha_tecnica" class="btn btn-success">
+                                                                        <i class="bi bi-save"></i> Guardar Ficha Técnica
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-primary" onclick="imprimirSeccion('dotaciones<?php echo $id_producto; ?>')">
+                                                                        <i class="bi bi-printer"></i>Imprimir
+                                                                    </button>
+                                                                </div>
+                                                            </form>
                                                         </div>
 
-                                                        <!-- ALERTA -->
-                                                        <div id="alertFicha<?php echo $id_producto; ?>" class="alert text-center mt-4" style="background-color:#fff3cd; border-left:5px solid #ffc107;"> <i class="bi bi-exclamation-triangle-fill"></i> El botón <strong>Continuar</strong> se habilitará cuando cargues la ficha técnica.
+                                                        <!-- ILUSTRACION -->
+                                                        <div class="tab-pane fade" id="ilustracion<?php echo $id_producto; ?>" role="tabpanel">
+                                                            <form method="post" id="formularioIlustracion<?php echo $id_producto; ?>">
+
+                                                                <!-- ENTRETELAS -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm text-center align-middle mb-0">
+                                                                            <thead>
+                                                                                <tr class="table-primary">
+                                                                                    <th colspan="5" class="fw-bold">ENTRETELAS</th>
+                                                                                </tr>
+                                                                                <tr class="table-primary">
+                                                                                    <th>Pieza</th>
+                                                                                    <th>Modelo</th>
+                                                                                    <th>Entretela</th>
+                                                                                    <th>Ancho</th>
+                                                                                    <th>Acción</th>
+                                                                                </tr>
+                                                                            </thead>
+
+                                                                            <tbody id="tablaEntretelas<?php echo $id_producto; ?>">
+                                                                                <tr>
+                                                                                    <td><input type="text" name="pieza[]" class="form-control form-control-sm"></td>
+                                                                                    <td><input type="text" name="modelo[]" class="form-control form-control-sm"></td>
+                                                                                    <td><input type="text" name="entretela[]" class="form-control form-control-sm"></td>
+                                                                                    <td><input type="text" name="ancho[]" class="form-control form-control-sm"></td>
+                                                                                    <td>
+                                                                                        <button type="button" class="btn btn-success btn-sm">
+                                                                                            <i class="bi bi-check-lg"></i>
+                                                                                        </button>
+
+                                                                                        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                                                                                            <i class="bi bi-trash"></i>
+                                                                                        </button>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+
+                                                                    <div class="text-center mt-2">
+                                                                        <button type="button"
+                                                                            class="btn btn-success"
+                                                                            onclick="agregarFilaEntretela('<?php echo $id_producto; ?>')">
+                                                                            Agregar fila
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- DIBUJO CARGAR -->
+                                                                <div class="card shadow-sm border-0 mb-3">
+                                                                    <div class="card-header fw-bold text-center">Dibujo Técnico</div>
+                                                                    <div class="card-body text-center">
+
+                                                                        <input type="file"
+                                                                            id="imagenCargar<?php echo $id_producto; ?>"
+                                                                            accept="image/*"
+                                                                            class="form-control mb-3">
+
+                                                                        <div id="contenedorImagen<?php echo $id_producto; ?>"></div>
+
+                                                                    </div>
+                                                                </div>
+                                                            </form>
                                                         </div>
 
-                                                        <!-- FOOTER -->
-                                                        <div class="text-center mt-3">
-                                                            <button type="submit" name="submit_finalizar" id="btnContinuar<?php echo $id_producto; ?>" class="btn text-white px-4" style="background-color:#18a000;" disabled> Continuar</button>
+                                                        <!-- DESCRIPCION -->
+                                                        <div class="tab-pane fade" id="descripcion<?php echo $id_producto; ?>" role="tabpanel">
+                                                                <div class="card shadow-sm mb-3">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;width:100%;">
+                                                                            <?php
+                                                                            // Todos los labels
+                                                                            $labels = [
+                                                                                'mangas'          => 'Descripción de las Mangas',
+                                                                                'cuello'          => 'Descripción del Cuello',
+                                                                                'puño'            => 'Descripción de los Puños',
+                                                                                'pretina'         => 'Descripción de la Pretina',
+                                                                                'fajon'           => 'Descripción del Fajón',
+                                                                                'boton'           => 'Descripción de los Botones',
+                                                                                'cremallera'      => 'Descripción de las Cremalleras',
+                                                                            ];
+
+                                                                            // Campos por tipo de producto
+                                                                            $tiposProducto = [
+                                                                                1 => ['mangas', 'cuello', 'puño', 'boton', 'cremallera'],
+                                                                                2 => ['mangas', 'cuello', 'puño', 'boton', 'cremallera'],
+                                                                                3 => ['pretina', 'boton', 'cremallera'],
+                                                                                4 => ['pretina', 'boton', 'cremallera'],
+                                                                                5 => ['mangas', 'cuello', 'puño', 'fajon', 'boton', 'cremallera'],
+                                                                                6 => ['mangas', 'cuello', 'puño', 'pretina', 'boton', 'cremallera'],
+                                                                                7 => ['mangas', 'cuello', 'puño', 'pretina', 'fajon', 'boton', 'cremallera'],
+                                                                            ];
+
+                                                                            $idTipo = $fila['id_tipo_producto'];
+
+                                                                            if (isset($tiposProducto[$idTipo])) :
+                                                                            ?>
+                                                                                <tbody>
+                                                                                    <?php foreach ($tiposProducto[$idTipo] as $campo): ?>
+                                                                                        <tr>
+                                                                                            <td class="fw-bold text-center align-middle" style="background:#d9e3f0;">
+                                                                                                <?= $labels[$campo] ?>
+                                                                                            </td>
+                                                                                            <td colspan="4">
+                                                                                                <?php echo htmlspecialchars($fila[$campo]); ?>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    <?php endforeach; ?>
+                                                                                </tbody>
+                                                                            <?php endif; ?>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
                                                         </div>
-                                                    </form>
+
+                                                        <!-- INSUMOS -->
+                                                        <div class="tab-pane fade"
+                                                            id="insumos<?php echo $id_producto; ?>"
+                                                            role="tabpanel">
+
+                                                            Contenido Insumos
+
+                                                        </div>
+
+                                                        <!-- BORDADO -->
+                                                        <div class="tab-pane fade"
+                                                            id="bordado<?php echo $id_producto; ?>"
+                                                            role="tabpanel">
+
+                                                            Contenido Bordado - Estampado
+
+                                                        </div>
+
+                                                        <!-- NOVEDAD -->
+                                                        <div class="tab-pane fade"
+                                                            id="novedad<?php echo $id_producto; ?>"
+                                                            role="tabpanel">
+
+                                                            Contenido Novedad
+
+                                                        </div>
+                                                    </div>
                                                 </div>
-
                                             </div>
                                         </div>
                                     </div>
@@ -953,15 +1223,16 @@
             </div>
         </div>
 
+
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-            
+
         <!-- Datatables -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
         <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>
-        
+
         <!-- Configuración de DataTable -->
         <script>
             $(document).ready(function() {
@@ -1216,48 +1487,194 @@
                 });
             });
         </script>
+
+        <!-- Scripts Dotaciones -->
         <script>
-            document.querySelectorAll('.custom-file-input').forEach(function(inputElement) {
-                inputElement.addEventListener('change', function() {
-                    const file = this.files[0];
-                    if (file) {
-                        const idProducto = this.id.replace('imagenInput', '').replace('2', '').replace('3', '').replace('4', '');
-                        const preview = document.getElementById('imagenPreview' + this.id.replace('imagenInput', ''));
-                        const trElement = this.closest('tr'); // Encuentra el <tr> más cercano
+            // Estilos de impresión: se inyectan UNA sola vez en el <head> de la propia página.
+            // Imprimir en la misma página (en vez de una ventana emergente) evita que se rompan
+            // rutas relativas de CSS/imágenes y garantiza que los colores sean idénticos a los de pantalla.
+            (function inicializarEstilosImpresion() {
+                if (document.getElementById('estilosImpresionFicha')) return;
 
-                        preview.src = URL.createObjectURL(file);
-                        preview.style.visibility = 'visible';
-                        preview.style.maxHeight = '200px';
+                const estilo = document.createElement('style');
+                estilo.id = 'estilosImpresionFicha';
+                estilo.innerHTML = `
+                    @media print {
 
-                        // Ajustar la altura del tr automáticamente
-                        setTimeout(() => {
-                            trElement.style.height = preview.offsetHeight + 80 + 'px'; // Añade algo de espacio extra
-                        }, 100);
-                    }
-                });
-            });
-        </script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                document.querySelectorAll("input[type='file']").forEach(inputFile => {
-                    const idSuffix = inputFile.id.replace("ficha_tecnica", "");
-                    const fileNameLabel = document.getElementById("file-name-ficha" + idSuffix);
-                    const btnContinuar = document.getElementById("btnContinuar" + idSuffix);
-                    const alertBox = document.getElementById("alertFicha" + idSuffix);
-
-                    inputFile.addEventListener("change", function() {
-                        if (inputFile.files.length > 0) {
-                            fileNameLabel.textContent = inputFile.files[0].name;
-                            btnContinuar.disabled = false; // ✅ Habilita el botón
-                            if (alertBox) alertBox.style.display = "none"; // ✅ Oculta el aviso
-                        } else {
-                            fileNameLabel.textContent = "Ningún archivo seleccionado";
-                            btnContinuar.disabled = true; // ❌ Deshabilita el botón
-                            if (alertBox) alertBox.style.display = "block"; // 🔁 Muestra el aviso nuevamente
+                        /* Forzar impresión de colores de fondo (tablas amarillas, azules, verdes, etc.) */
+                        *{
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                            color-adjust: exact !important;
                         }
-                    });
-                });
+
+                        @page{
+                            size: letter portrait;
+                            margin: 8mm;
+                        }
+
+                        /* Oculta TODA la página excepto el área de impresión */
+                        body.modo-impresion-activo > *{
+                            display:none !important;
+                        }
+
+                        body.modo-impresion-activo #areaImpresionFicha{
+                            display:block !important;
+                            position:absolute;
+                            top:0; left:0;
+                            width:100%;
+                            margin:0;
+                        }
+
+                        /* Diseño compacto para que la ficha quepa en una sola hoja */
+                        #areaImpresionFicha .btn,
+                        #areaImpresionFicha .modal-footer{
+                            display:none !important;
+                        }
+
+                        #areaImpresionFicha .card{
+                            box-shadow:none !important;
+                            border:none !important;
+                            margin-bottom:3px !important;
+                        }
+
+                        #areaImpresionFicha .table-responsive{
+                            overflow:visible !important;
+                        }
+
+                        #areaImpresionFicha table{
+                            font-size:8.5px !important;
+                            margin-bottom:0 !important;
+                        }
+
+                        #areaImpresionFicha th,
+                        #areaImpresionFicha td{
+                            padding:2px 3px !important;
+                            line-height:1.15 !important;
+                        }
+
+                        #areaImpresionFicha .modal-header{
+                            padding:4px !important;
+                        }
+
+                        #areaImpresionFicha .modal-header img{
+                            max-width:90px !important;
+                            width:90px !important;
+                        }
+
+                        #areaImpresionFicha textarea{
+                            min-height:0 !important;
+                            height:24px !important;
+                            font-size:8.5px !important;
+                        }
+
+                        #areaImpresionFicha input.form-control{
+                            font-size:8.5px !important;
+                            padding:0 2px !important;
+                        }
+                    }
+
+                    /* En pantalla, el área de impresión permanece oculta */
+                    #areaImpresionFicha{
+                        display:none;
+                    }
+                `;
+                document.head.appendChild(estilo);
+            })();
+
+            function imprimirSeccion(id) {
+
+                const contenido = document.getElementById(id);
+
+                let area = document.getElementById('areaImpresionFicha');
+                if (!area) {
+                    area = document.createElement('div');
+                    area.id = 'areaImpresionFicha';
+                    document.body.appendChild(area);
+                }
+                area.innerHTML = contenido.outerHTML;
+
+                document.body.classList.add('modo-impresion-activo');
+                window.print();
+            }
+
+            window.addEventListener('afterprint', () => {
+                document.body.classList.remove('modo-impresion-activo');
             });
         </script>
+
+        <!-- Scripts Ilustraciones -->
+        <script>
+            function agregarFilaEntretela(idProducto) {
+
+                let tabla = document.getElementById('tablaEntretelas' + idProducto);
+
+                let nuevaFila = document.createElement('tr');
+
+                nuevaFila.innerHTML = `
+                    <td><input type="text" name="pieza[]" class="form-control form-control-sm"></td>
+                    <td><input type="text" name="modelo[]" class="form-control form-control-sm"></td>
+                    <td><input type="text" name="entretela[]" class="form-control form-control-sm"></td>
+                    <td><input type="text" name="ancho[]" class="form-control form-control-sm"></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-success btn-sm">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+
+                        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                tabla.appendChild(nuevaFila);
+            }
+
+            function eliminarFila(boton) {
+                let fila = boton.closest('tr');
+                let tbody = fila.closest('tbody');
+
+                if (tbody.rows.length <= 1) {
+                    alert('Debe existir al menos una fila.');
+                    return;
+                }
+
+                fila.remove();
+            }
+        </script>
+        <script>
+            document.addEventListener('change', function(e) {
+
+                if (e.target.type !== 'file') {
+                    return;
+                }
+
+                if (!e.target.id.startsWith('imagenCargar')) {
+                    return;
+                }
+
+                let idProducto = e.target.id.replace('imagenCargar', '');
+
+                let archivo = e.target.files[0];
+
+                if (!archivo) {
+                    return;
+                }
+
+                let url = URL.createObjectURL(archivo);
+
+                let contenedor = document.getElementById('contenedorImagen' + idProducto);
+
+                contenedor.innerHTML = `
+                    <img src="${url}"
+                        class="img-fluid border rounded mt-3"
+                        style="max-height:1000px;">
+                `;
+
+            });
+        </script>
+
+        <!-- Scripts Descripcion -->
+
     </body>
 </html>

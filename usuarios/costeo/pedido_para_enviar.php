@@ -425,7 +425,7 @@
 
         <div class="text-center">
             <button id="downloadExcel" class="btn btn-warning">1. Descarga la Cotizacion <i class="bi bi-filetype-xlsx"></i></button>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cambiarEstado2<?php echo $fila_estado['id_pedido']; ?>">2. Pasar cargar Documentos <i class="bi bi-upload"></i></button>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cambiarEstado2<?php echo $fila_estado['id_pedido']; ?>">2. Pasar a Realizar Ficha Tecnica <i class="bi bi-upload"></i></button>
         </div>
         <br>
 
@@ -768,7 +768,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="alert alert-warning" role="alert">
-                                En caso de que el pedido haya sido Aceptado por el cliente presione continuar, con esto el pedido pasara a ser visualizado por el usuario Comercial para cargar la Orden de compra y Listado de empleados.
+                                En caso de que el pedido haya sido Aceptado por el cliente presione continuar, con esto el pedido pasara a ser visualizado por el usuario Comercial para agregar tallaje y generar ficha tecnica.
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -3035,13 +3035,13 @@
             });
             //
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/xlsx-style@0.8.13/dist/xlsx-style.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
         <script>
-            document.getElementById('downloadExcel').addEventListener('click', function() {
+            document.getElementById('downloadExcel').addEventListener('click', async function() {
                 // Obtener datos desde PHP
                 <?php
-                    $consulta = "SELECT pedido.id_pedido, producto.id_producto, prenda.id_prenda, cliente.nit, cliente.cliente, producto.nombre_producto, prenda.nombre_prenda, producto.suma_prendas, 
+                    $consulta = "SELECT pedido.id_pedido, producto.id_producto, prenda.id_prenda, producto.id_prendacomprada, prenda_comprada.id_prendacomprada, cliente.nit, cliente.cliente, prenda_comprada.nombre_producto, prenda.nombre_prenda, producto.suma_prendas, 
                     producto.id_mano_obra, producto.precio_obra, producto.margen_bruto, producto.precio_venta, producto.precio_iva, producto.precio_total, pedido.total_factura, tipo_producto.id_tipo_producto, producto.id_tipo_producto,
                     producto.id_tela, tela.id_tela, tela.tela, 
                     producto.id_telacombi, tela_combinada.id_telacombi, tela_combinada.tela_combi, 
@@ -3080,6 +3080,7 @@
                     LEFT JOIN cliente ON pedido.nit = cliente.nit
                     LEFT JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto
                     LEFT JOIN prenda ON producto.id_prenda = prenda.id_prenda
+                    LEFT JOIN prenda_comprada ON producto.id_prendacomprada = prenda_comprada.id_prendacomprada
                     LEFT JOIN tela ON producto.id_tela = tela.id_tela
                     LEFT JOIN tela_combinada ON producto.id_telacombi = tela_combinada.id_telacombi
                     LEFT JOIN tela_forro ON producto.id_telaforro = tela_forro.id_telaforro
@@ -3125,423 +3126,259 @@
                 ?>
 
                 const data = <?php echo json_encode($productos); ?>;
-                const totalFactura = data.length > 0 ? data[0].total_factura : 0;
+                const totalFactura = data.length > 0 ? parseFloat(data[0].total_factura) : 0;
                 const clienteNombre = "<?php echo $clienteNombre; ?>";
-
-                // ==========================================
-                // CREAR DATOS
-                // ==========================================
-
                 const fechaActual = new Date().toLocaleDateString('es-CO');
 
-                const ws_data = [];
+                // ==========================================
+                // COLORES DEL DISEÑO
+                // ==========================================
+
+                const COLOR_TITULO    = 'FF1F4E78';
+                const COLOR_SUBTITULO = 'FFD9EAF7';
+                const COLOR_HEADER    = 'FF0B5ED7';
+                const COLOR_FILA_PAR  = 'FFFFFFFF';
+                const COLOR_FILA_IMPAR= 'FFEAF2FB';
+                const COLOR_TEXTO_MUTED = 'FF6C757D';
+                const COLOR_TOTAL     = 'FF198754';
+                const BLANCO = 'FFFFFFFF';
+                const NEGRO  = 'FF000000';
+
+                const bordeFino = {
+                    top:    { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                    bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                    left:   { style: 'thin', color: { argb: 'FFBFBFBF' } },
+                    right:  { style: 'thin', color: { argb: 'FFBFBFBF' } }
+                };
+
+                const bordeMedio = {
+                    top:    { style: 'medium', color: { argb: 'FF7F7F7F' } },
+                    bottom: { style: 'medium', color: { argb: 'FF7F7F7F' } },
+                    left:   { style: 'medium', color: { argb: 'FF7F7F7F' } },
+                    right:  { style: 'medium', color: { argb: 'FF7F7F7F' } }
+                };
+
+                // ==========================================
+                // LIBRO Y HOJA
+                // ==========================================
+
+                const workbook = new ExcelJS.Workbook();
+                workbook.creator = 'Sistema de Cotizaciones';
+                workbook.created = new Date();
+
+                const sheet = workbook.addWorksheet('Cotización', {
+                    views: [{ state: 'frozen', ySplit: 4 }],
+                    properties: { tabColor: { argb: COLOR_TITULO } }
+                });
+
+                sheet.pageSetup = {
+                    orientation: 'landscape',
+                    fitToPage: true,
+                    fitToWidth: 1,
+                    fitToHeight: 0,
+                    margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 }
+                };
+
+                sheet.columns = [
+                    { width: 30 },
+                    { width: 55 },
+                    { width: 12 },
+                    { width: 16 },
+                    { width: 12 },
+                    { width: 18 },
+                    { width: 18 },
+                    { width: 18 }
+                ];
 
                 // TITULO
-                ws_data.push([`COTIZACIÓN GENERAL`]);
-                ws_data.push([`Cliente: ${clienteNombre}`]);
-                ws_data.push([`Fecha: ${fechaActual}`]);
-                ws_data.push([]);
+                sheet.mergeCells('A1:H1');
+                const celdaTitulo = sheet.getCell('A1');
+                celdaTitulo.value = 'COTIZACIÓN GENERAL';
+                celdaTitulo.font = { bold: true, size: 20, color: { argb: BLANCO }, name: 'Calibri' };
+                celdaTitulo.alignment = { vertical: 'middle', horizontal: 'center' };
+                celdaTitulo.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_TITULO } };
+                sheet.getRow(1).height = 34;
+
+                // CLIENTE Y FECHA
+                sheet.mergeCells('A2:E2');
+                sheet.mergeCells('F2:H2');
+                const celdaCliente = sheet.getCell('A2');
+                celdaCliente.value = `Cliente: ${clienteNombre}`;
+                const celdaFecha = sheet.getCell('F2');
+                celdaFecha.value = `Fecha: ${fechaActual}`;
+                [celdaCliente, celdaFecha].forEach((celda, i) => {
+                    celda.font = { bold: true, size: 12, color: { argb: COLOR_TITULO } };
+                    celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_SUBTITULO } };
+                    celda.alignment = { vertical: 'middle', horizontal: i === 0 ? 'left' : 'right' };
+                });
+                sheet.getRow(2).height = 22;
+                sheet.getRow(3).height = 6;
 
                 // ENCABEZADOS
-                ws_data.push([
-                    'PRODUCTO',
-                    'DESCRIPCIÓN',
-                    'UNIDADES',
-                    'MANO OBRA',
-                    '% MARGEN',
-                    'PRECIO UNITARIO',
-                    'PRECIO + IVA',
-                    'TOTAL'
-                ]);
+                const encabezados = ['PRODUCTO', 'DESCRIPCIÓN', 'UNIDADES', 'MANO OBRA', '% MARGEN', 'PRECIO UNITARIO', 'PRECIO + IVA', 'TOTAL'];
+                const filaEncabezado = sheet.getRow(4);
+                encabezados.forEach((texto, i) => {
+                    const celda = filaEncabezado.getCell(i + 1);
+                    celda.value = texto;
+                    celda.font = { bold: true, size: 11, color: { argb: BLANCO } };
+                    celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_HEADER } };
+                    celda.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    celda.border = bordeMedio;
+                });
+                filaEncabezado.height = 26;
 
+                // ==========================================
                 // PRODUCTOS
+                // ==========================================
+
+                let fila = 5;
+
                 data.forEach(item => {
 
-                    const descripcion = [
-                        item.id_tela != 0 ? `• Tela: ${item.tela}` : null,
-                        item.id_telacombi != 0 ? `• Tela Combinada: ${item.tela_combi}` : null,
-                        item.id_telaforro != 0 ? `• Tela Forro: ${item.tela_forro}` : null,
-                        item.id_entretela != 0 ? `• Entretela: ${item.insumo_entretela}` : null,
-                        item.id_entretela2 != 0 ? `• Entretela 2: ${item.insumo_entretela2}` : null,
-                        item.id_bolsa != 0 ? `• Bolsa: ${item.insumo_bolsa}` : null,
-                        item.id_boton != 0 ? `• Botón: ${item.insumo_boton}` : null,
-                        item.id_boton2 != 0 ? `• Botón 2: ${item.insumo_boton2}` : null,
-                        item.id_broche != 0 ? `• Broche: ${item.insumo_broche}` : null,
-                        item.id_faya != 0 ? `• Cinta Faya: ${item.insumo_faya}` : null,
-                        item.id_cinta != 0 ? `• Cinta Reflectiva: ${item.insumo_cinta}` : null,
-                        item.id_cordon != 0 ? `• Cordón: ${item.insumo_cordon}` : null,
-                        item.id_cremallera != 0 ? `• Cremallera: ${item.insumo_cremallera}` : null,
-                        item.id_cremallera2 != 0 ? `• Cremallera 2: ${item.insumo_cremallera2}` : null,
-                        item.id_cuello != 0 ? `• Cuello: ${item.insumo_cuello}` : null,
-                        item.id_deslizador != 0 ? `• Deslizador: ${item.insumo_deslizador}` : null,
-                        item.id_fajon_cintura != 0 ? `• Fajón Cintura: ${item.insumo_fajon}` : null,
-                        item.id_guata != 0 ? `• Guata: ${item.insumo_guata}` : null,
-                        item.id_hiladilla != 0 ? `• Hiladilla: ${item.insumo_hiladilla}` : null,
-                        item.id_hombrera != 0 ? `• Hombrera: ${item.insumo_hombrera}` : null,
-                        item.id_marquilla != 0 ? `• Marquilla: ${item.insumo_marquilla}` : null,
-                        item.id_plumilla != 0 ? `• Plumilla: ${item.insumo_plumilla}` : null,
-                        item.id_pretina != 0 ? `• Pretina: ${item.insumo_pretina}` : null,
-                        item.id_puntera != 0 ? `• Puntera: ${item.insumo_puntera}` : null,
-                        item.id_puño != 0 ? `• Puño: ${item.insumo_puño}` : null,
-                        item.id_resorte != 0 ? `• Resorte: ${item.insumo_resorte}` : null,
-                        item.id_resorte2 != 0 ? `• Resorte 2: ${item.insumo_resorte2}` : null,
-                        item.id_sesgo != 0 ? `• Sesgo: ${item.insumo_sesgo}` : null,
-                        item.id_trabilla != 0 ? `• Trabilla: ${item.insumo_trabilla}` : null,
-                        item.id_velcro != 0 ? `• Velcro: ${item.insumo_velcro}` : null,
-                        item.id_vinilo != 0 ? `• Vinilo: ${item.insumo_vinilo}` : null,
-                        item.id_vivo != 0 ? `• Vivo: ${item.insumo_vivo}` : null,
-                    ].filter(Boolean).join('\n');
+                    // Función auxiliar: solo incluye el insumo si tiene un id válido (no null, no 0)
+                    const tieneValor = (id) => id !== null && id !== undefined && id != 0 && id !== '';
 
-                    const producto =
-                        parseInt(item.id_tipo_producto) == 8
-                            ? item.nombre_producto
-                            : item.nombre_prenda;
+                    const esPrendaComprada = parseInt(item.id_tipo_producto) === 8;
 
-                    ws_data.push([
-                        producto,
-                        descripcion,
-                        item.suma_prendas,
-                        parseFloat(item.precio_obra),
-                        parseFloat(item.margen_bruto),
-                        parseFloat(item.precio_venta),
-                        parseFloat(item.precio_iva),
-                        parseFloat(item.precio_total)
-                    ]);
+                    let descripcion;
+
+                    if (esPrendaComprada) {
+                        // Las prendas compradas no tienen insumos propios de confección
+                        descripcion = 'Prenda comprada';
+                    } else {
+                        descripcion = [
+                            tieneValor(item.id_tela) ? `Tela: ${item.tela}` : null,
+                            tieneValor(item.id_telacombi) ? `Tela Combinada: ${item.tela_combi}` : null,
+                            tieneValor(item.id_telaforro) ? `Tela Forro: ${item.tela_forro}` : null,
+                            tieneValor(item.id_entretela) ? `Entretela: ${item.insumo_entretela}` : null,
+                            tieneValor(item.id_entretela2) ? `Entretela 2: ${item.insumo_entretela2}` : null,
+                            tieneValor(item.id_bolsa) ? `Bolsa: ${item.insumo_bolsa}` : null,
+                            tieneValor(item.id_boton) ? `Botón: ${item.insumo_boton}` : null,
+                            tieneValor(item.id_boton2) ? `Botón 2: ${item.insumo_boton2}` : null,
+                            tieneValor(item.id_broche) ? `Broche: ${item.insumo_broche}` : null,
+                            tieneValor(item.id_faya) ? `Cinta Faya: ${item.insumo_faya}` : null,
+                            tieneValor(item.id_cinta) ? `Cinta Reflectiva: ${item.insumo_cinta}` : null,
+                            tieneValor(item.id_cordon) ? `Cordón: ${item.insumo_cordon}` : null,
+                            tieneValor(item.id_cremallera) ? `Cremallera: ${item.insumo_cremallera}` : null,
+                            tieneValor(item.id_cremallera2) ? `Cremallera 2: ${item.insumo_cremallera2}` : null,
+                            tieneValor(item.id_cuello) ? `Cuello: ${item.insumo_cuello}` : null,
+                            tieneValor(item.id_deslizador) ? `Deslizador: ${item.insumo_deslizador}` : null,
+                            tieneValor(item.id_fajon_cintura) ? `Fajón Cintura: ${item.insumo_fajon}` : null,
+                            tieneValor(item.id_guata) ? `Guata: ${item.insumo_guata}` : null,
+                            tieneValor(item.id_hiladilla) ? `Hiladilla: ${item.insumo_hiladilla}` : null,
+                            tieneValor(item.id_hombrera) ? `Hombrera: ${item.insumo_hombrera}` : null,
+                            tieneValor(item.id_marquilla) ? `Marquilla: ${item.insumo_marquilla}` : null,
+                            tieneValor(item.id_plumilla) ? `Plumilla: ${item.insumo_plumilla}` : null,
+                            tieneValor(item.id_pretina) ? `Pretina: ${item.insumo_pretina}` : null,
+                            tieneValor(item.id_puntera) ? `Puntera: ${item.insumo_puntera}` : null,
+                            tieneValor(item.id_puño) ? `Puño: ${item.insumo_puño}` : null,
+                            tieneValor(item.id_resorte) ? `Resorte: ${item.insumo_resorte}` : null,
+                            tieneValor(item.id_resorte2) ? `Resorte 2: ${item.insumo_resorte2}` : null,
+                            tieneValor(item.id_sesgo) ? `Sesgo: ${item.insumo_sesgo}` : null,
+                            tieneValor(item.id_trabilla) ? `Trabilla: ${item.insumo_trabilla}` : null,
+                            tieneValor(item.id_velcro) ? `Velcro: ${item.insumo_velcro}` : null,
+                            tieneValor(item.id_vinilo) ? `Vinilo: ${item.insumo_vinilo}` : null,
+                            tieneValor(item.id_vivo) ? `Vivo: ${item.insumo_vivo}` : null,
+                        ].filter(Boolean).map(t => `• ${t}`).join('\n');
+
+                        if (!descripcion) {
+                            descripcion = 'Sin insumos registrados';
+                        }
+                    }
+
+                    const producto = esPrendaComprada
+                        ? item.nombre_producto
+                        : item.nombre_prenda;
+
+                    const filaActual = sheet.getRow(fila);
+                    filaActual.getCell(1).value = producto;
+                    filaActual.getCell(2).value = descripcion;
+                    filaActual.getCell(3).value = parseFloat(item.suma_prendas) || 0;
+                    filaActual.getCell(4).value = parseFloat(item.precio_obra) || 0;
+                    filaActual.getCell(5).value = parseFloat(item.margen_bruto) || 0;
+                    filaActual.getCell(6).value = parseFloat(item.precio_venta) || 0;
+                    filaActual.getCell(7).value = parseFloat(item.precio_iva) || 0;
+                    filaActual.getCell(8).value = parseFloat(item.precio_total) || 0;
+
+                    const esPar = (fila % 2 === 0);
+                    const colorFondo = esPar ? COLOR_FILA_PAR : COLOR_FILA_IMPAR;
+
+                    filaActual.eachCell({ includeEmpty: true }, (celda, col) => {
+                        celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colorFondo } };
+                        celda.font = { size: 11, color: { argb: NEGRO } };
+                        celda.border = bordeFino;
+                        celda.alignment = {
+                            vertical: 'middle',
+                            horizontal: col <= 2 ? 'left' : 'center',
+                            wrapText: true
+                        };
+                    });
+
+                    filaActual.getCell(4).numFmt = '$ #,##0';
+                    filaActual.getCell(5).numFmt = '0.0"%"';
+                    filaActual.getCell(6).numFmt = '$ #,##0';
+                    filaActual.getCell(7).numFmt = '$ #,##0';
+                    filaActual.getCell(8).numFmt = '$ #,##0';
+
+                    // Nombre del producto en negrita para que resalte sobre la descripción
+                    filaActual.getCell(1).font = { size: 11, bold: true, color: { argb: NEGRO } };
+
+                    // Las descripciones "placeholder" (prenda comprada / sin insumos) van en cursiva y gris
+                    const esDescripcionPlaceholder = esPrendaComprada || descripcion === 'Sin insumos registrados';
+                    filaActual.getCell(2).font = esDescripcionPlaceholder
+                        ? { size: 11, italic: true, color: { argb: COLOR_TEXTO_MUTED } }
+                        : { size: 11, color: { argb: NEGRO } };
+
+                    const lineas = descripcion ? descripcion.split('\n').length : 1;
+                    filaActual.height = Math.max(28, lineas * 15);
+
+                    fila++;
                 });
 
-                // FILA VACÍA
-                ws_data.push([]);
+                const ultimaFilaProducto = fila - 1;
 
+                // FILA VACÍA DE SEPARACIÓN
+                fila++;
+
+                // ==========================================
                 // TOTAL
-                ws_data.push([
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    'TOTAL FACTURA',
-                    parseFloat(totalFactura)
-                ]);
-
-                // ==========================================
-                // CREAR LIBRO
                 // ==========================================
 
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                sheet.mergeCells(`A${fila}:F${fila}`);
+                const celdaVacia = sheet.getCell(`A${fila}`);
+                const celdaTextoTotal = sheet.getCell(`G${fila}`);
+                celdaTextoTotal.value = 'TOTAL FACTURA';
+                const celdaValorTotal = sheet.getCell(`H${fila}`);
+                celdaValorTotal.value = totalFactura;
 
-                // ==========================================
-                // COMBINAR CELDAS
-                // ==========================================
-
-                ws['!merges'] = [
-                    { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
-                    { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
-                    { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }
-                ];
-
-                // ==========================================
-                // ANCHO COLUMNAS
-                // ==========================================
-
-                ws['!cols'] = [
-                    { wch: 30 },
-                    { wch: 55 },
-                    { wch: 12 },
-                    { wch: 18 },
-                    { wch: 14 },
-                    { wch: 20 },
-                    { wch: 20 },
-                    { wch: 20 }
-                ];
-
-                // ==========================================
-                // ALTURA FILAS
-                // ==========================================
-
-                ws['!rows'] = ws_data.map((row, i) => {
-
-                    if (i === 0) return { hpt: 35 };
-
-                    if (i >= 5 && i < ws_data.length - 2) {
-
-                        const descripcion = row[1] || '';
-                        const lineas = descripcion.split('\n').length;
-
-                        return {
-                            hpt: Math.max(30, lineas * 18)
-                        };
-                    }
-
-                    return { hpt: 25 };
+                [celdaVacia, celdaTextoTotal, celdaValorTotal].forEach(celda => {
+                    celda.font = { bold: true, size: 13, color: { argb: BLANCO } };
+                    celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_TOTAL } };
+                    celda.alignment = { vertical: 'middle', horizontal: 'center' };
+                    celda.border = bordeMedio;
                 });
-
-                // ==========================================
-                // ESTILOS
-                // ==========================================
-
-                const blue = "0B5ED7";
-                const darkBlue = "084298";
-                const lightGray = "F8F9FA";
-                const borderColor = "D9D9D9";
-                const green = "198754";
-
-                const range = XLSX.utils.decode_range(ws['!ref']);
-
-                // ==========================================
-                // COLORES
-                // ==========================================
-
-                const primaryBlue = "1F4E78";
-                const secondaryBlue = "D9EAF7";
-                const headerBlue = "0B5ED7";
-                const grayRow = "F4F6F9";
-                const totalGreen = "198754";
-
-                const thinBorder = {
-                    style: "thin",
-                    color: { rgb: "BFBFBF" }
-                };
-
-                const mediumBorder = {
-                    style: "medium",
-                    color: { rgb: "7F7F7F" }
-                };
-
-                for (let R = range.s.r; R <= range.e.r; ++R) {
-
-                    for (let C = range.s.c; C <= range.e.c; ++C) {
-
-                        const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
-
-                        if (!ws[cellRef]) continue;
-
-                        // ==========================================
-                        // ESTILO BASE
-                        // ==========================================
-
-                        ws[cellRef].s = {
-                            font: {
-                                name: "Calibri",
-                                sz: 11,
-                                color: { rgb: "000000" }
-                            },
-
-                            alignment: {
-                                vertical: "center",
-                                horizontal: "center",
-                                wrapText: true
-                            },
-
-                            border: {
-                                top: thinBorder,
-                                bottom: thinBorder,
-                                left: thinBorder,
-                                right: thinBorder
-                            }
-                        };
-
-                        // ==========================================
-                        // TITULO PRINCIPAL
-                        // ==========================================
-
-                        if (R === 0) {
-
-                            ws[cellRef].s = {
-                                font: {
-                                    bold: true,
-                                    sz: 24,
-                                    color: { rgb: "FFFFFF" },
-                                    name: "Calibri"
-                                },
-
-                                fill: {
-                                    fgColor: { rgb: primaryBlue }
-                                },
-
-                                alignment: {
-                                    vertical: "center",
-                                    horizontal: "center",
-                                    wrapText: true
-                                },
-
-                                border: {
-                                    top: mediumBorder,
-                                    bottom: mediumBorder,
-                                    left: mediumBorder,
-                                    right: mediumBorder
-                                }
-                            };
-                        }
-
-                        // ==========================================
-                        // CLIENTE Y FECHA
-                        // ==========================================
-
-                        if (R === 1 || R === 2) {
-
-                            ws[cellRef].s = {
-                                font: {
-                                    bold: true,
-                                    sz: 12,
-                                    color: { rgb: primaryBlue }
-                                },
-
-                                fill: {
-                                    fgColor: { rgb: secondaryBlue }
-                                },
-
-                                alignment: {
-                                    vertical: "center",
-                                    horizontal: "center",
-                                    wrapText: true
-                                },
-
-                                border: {
-                                    top: thinBorder,
-                                    bottom: thinBorder,
-                                    left: thinBorder,
-                                    right: thinBorder
-                                }
-                            };
-                        }
-
-                        // ==========================================
-                        // ENCABEZADOS TABLA
-                        // ==========================================
-
-                        if (R === 4) {
-
-                            ws[cellRef].s = {
-                                font: {
-                                    bold: true,
-                                    sz: 12,
-                                    color: { rgb: "FFFFFF" }
-                                },
-
-                                fill: {
-                                    fgColor: { rgb: headerBlue }
-                                },
-
-                                alignment: {
-                                    vertical: "center",
-                                    horizontal: "center",
-                                    wrapText: true
-                                },
-
-                                border: {
-                                    top: mediumBorder,
-                                    bottom: mediumBorder,
-                                    left: mediumBorder,
-                                    right: mediumBorder
-                                }
-                            };
-                        }
-
-                        // ==========================================
-                        // FILAS TABLA
-                        // ==========================================
-
-                        if (R > 4 && R < ws_data.length - 1) {
-
-                            const even = R % 2 === 0;
-
-                            ws[cellRef].s.fill = {
-                                fgColor: {
-                                    rgb: even ? "FFFFFF" : grayRow
-                                }
-                            };
-
-                            ws[cellRef].s.border = {
-                                top: thinBorder,
-                                bottom: thinBorder,
-                                left: thinBorder,
-                                right: thinBorder
-                            };
-                        }
-
-                        // ==========================================
-                        // COLUMNAS CENTRADAS
-                        // ==========================================
-
-                        if ([2,3,4,5,6,7].includes(C) && R >= 4) {
-
-                            ws[cellRef].s.alignment.horizontal = "center";
-                        }
-
-                        if (C === 1 && R > 4 && R < ws_data.length - 2) {
-                            ws[cellRef].s.alignment.horizontal = "left";
-                            ws[cellRef].s.alignment.vertical = "center";
-                            ws[cellRef].s.alignment.wrapText = true;
-                        }
-
-                        // ==========================================
-                        // FORMATO MONEDA
-                        // ==========================================
-
-                        if ([3,5,6,7].includes(C) && R > 4) {
-
-                            ws[cellRef].z = '$ #,##0';
-                        }
-
-                        // ==========================================
-                        // TOTAL FINAL
-                        // ==========================================
-
-                        if (R === ws_data.length - 1) {
-
-                            ws[cellRef].s = {
-                                font: {
-                                    bold: true,
-                                    sz: 13,
-                                    color: { rgb: "FFFFFF" }
-                                },
-
-                                fill: {
-                                    fgColor: { rgb: totalGreen }
-                                },
-
-                                alignment: {
-                                    horizontal: "center",
-                                    vertical: "center",
-                                    wrapText: true
-                                },
-
-                                border: {
-                                    top: mediumBorder,
-                                    bottom: mediumBorder,
-                                    left: mediumBorder,
-                                    right: mediumBorder
-                                }
-                            };
-
-                            ws[cellRef].z = '$ #,##0';
-                        }
-                    }
-                }
+                celdaValorTotal.numFmt = '$ #,##0';
+                sheet.getRow(fila).height = 26;
 
                 // ==========================================
                 // FILTROS
                 // ==========================================
 
-                ws['!autofilter'] = {
-                    ref: `A5:H${ws_data.length - 2}`
+                sheet.autoFilter = {
+                    from: 'A4',
+                    to: `H${ultimaFilaProducto}`
                 };
-
-                // ==========================================
-                // AGREGAR HOJA
-                // ==========================================
-
-                XLSX.utils.book_append_sheet(wb, ws, "Cotización");
 
                 // ==========================================
                 // DESCARGAR
                 // ==========================================
 
-                const fileName = `Cotizacion_${clienteNombre}.xlsx`;
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
 
-                XLSX.writeFile(wb, fileName);
+                saveAs(blob, `Cotizacion_${clienteNombre}.xlsx`);
             });
         </script>
     </body>

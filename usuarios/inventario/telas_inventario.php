@@ -13,35 +13,6 @@
     foreach ($_REQUEST as $var => $val) {
         $$var = $val;
     }
-
-    if (isset($_POST['submit_crear'])) {
-
-        $id_tipo_tela = $_POST['id_tipo_tela'];
-        $tela = $_POST['tela'];
-        $ancho = $_POST['ancho'];
-        $peso = $_POST['peso'];
-        $caracteristicas = $_POST['caracteristicas'];
-        $rendimiento = $_POST['rendimiento'];
-        $encogimiento = $_POST['encogimiento'];
-        $precio = $_POST['precio'];
-        $fecha_actualizacion = date('Y-m-d');
-        $id_proveedor = $_POST['id_proveedor'];
-    
-        $consulta = "INSERT INTO tela (id_tipo_tela, tela, ancho, peso, rendimiento, encogimiento, caracteristicas, precio, fecha_actualizacion, unidades_metros, id_proveedor) 
-        VALUES ('$id_tipo_tela', '$tela', '$ancho', '$peso', '$rendimiento', '$encogimiento', '$caracteristicas', '$precio', '$fecha_actualizacion', 0, '$id_proveedor')";
-        
-        $consulta2 = "INSERT INTO tela_combinada (id_tipo_tela, tela_combi, ancho, peso, rendimiento, encogimiento, caracteristicas, precio, fecha_actualizacion, unidades_metros, id_proveedor)
-        VALUES ('$id_tipo_tela', '$tela', '$ancho', '$peso', '$rendimiento', '$encogimiento', '$caracteristicas', '$precio', '$fecha_actualizacion', 0, '$id_proveedor')";
-
-        $consulta3 = "INSERT INTO tela_forro (id_tipo_tela, tela_forro, ancho, peso, rendimiento, encogimiento, caracteristicas, precio, fecha_actualizacion, unidades_metros, id_proveedor)
-        VALUES ('$id_tipo_tela', '$tela', '$ancho', '$peso', '$rendimiento', '$encogimiento', '$caracteristicas', '$precio', '$fecha_actualizacion', 0, '$id_proveedor')";
-        
-        $resultado = mysqli_query($enlace, $consulta);
-        $resultado2 = mysqli_query($enlace, $consulta2);
-        $resultado3 = mysqli_query($enlace, $consulta3);
-        header("Location: telas.php?id_tipo_tela=$id_tipo_tela");
-        exit();
-    }
     
     if (isset($_POST['submit_editar'])) {
         $id_tela = $_POST['id_tela'];
@@ -74,23 +45,7 @@
                     WHERE id_telaforro = '$id_tela'";
         $resultado3 = mysqli_query($enlace, $consulta3);
 
-        header("Location: telas.php?id_tipo_tela=$id_tipo_tela");
-        exit();
-    }
-    
-    if (isset($_POST['submit_eliminar'])) {
-        $id_tela = $_POST['id_tela'];
-        $id_tipo_tela = $_POST['id_tipo_tela'];
-    
-        $consulta = "DELETE FROM tela WHERE id_tela = '$id_tela'";
-        $consulta2 = "DELETE FROM tela_combinada WHERE id_telacombi = '$id_tela'";
-        $consulta3 = "DELETE FROM tela_forro WHERE id_telaforro = '$id_tela'";
-
-        $resultado = mysqli_query($enlace, $consulta);
-        $resultado2 = mysqli_query($enlace, $consulta2);
-        $resultado3 = mysqli_query($enlace, $consulta3);
-
-        header("Location: telas.php?id_tipo_tela=$id_tipo_tela");
+        header("Location: telas_inventario.php?id_tipo_tela=$id_tipo_tela");
         exit();
     }
 
@@ -126,16 +81,9 @@
     <body id="page-top">
         <div id="wrapper">
             <!-- Sidebar -->
-            <ul class="navbar-nav sidebar sidebar-dark accordion shadow" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%); min-height: 100vh;">
-                <!-- LOGO -->
+            <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(50deg, #000DD3 0%, #020873 100%);">
                 <div class="d-flex justify-content-center align-items-center">
-                    <!-- PC -->
-                    <a class="navbar-brand d-none d-md-block text-center" href="inicio_inventario.php">
-                        <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 80px;">
-                    </a>
-
-                    <!-- Mobile -->
-                    <a class="navbar-brand d-block d-md-none text-center" href="inicio_inventario.php">
+                    <a class="navbar-brand text-center" href="inicio_inventario.php">
                         <img src="../../img/Logo.png" alt="Logo" class="img-fluid rounded" style="max-width: 60px;">
                     </a>
                 </div>
@@ -152,6 +100,7 @@
                                 <i class="bi bi-chevron-down ms-auto small"></i>
                             </div>
                         </a>
+                        
 
                         <div id="collapseTelas" class="collapse" data-bs-parent="#accordionSidebar">
                             <div class="collapse-inner rounded bg-white shadow-sm py-2">
@@ -163,7 +112,7 @@
 
                                 if ($resultado->num_rows > 0) {
                                     while ($fila = mysqli_fetch_array($resultado)) {
-                                        echo '<a class="collapse-item text-wrap" href="telas.php?id_tipo_tela=' . $fila["id_tipo_tela"] . '"> ' . $fila["tipo_tela"] . '
+                                        echo '<a class="collapse-item text-wrap" href="telas_inventario.php?id_tipo_tela=' . $fila["id_tipo_tela"] . '"> ' . $fila["tipo_tela"] . '
                                         </a>';
                                     }
                                 }
@@ -192,7 +141,7 @@
 
                                 if ($resultado->num_rows > 0) {
                                     while ($fila = mysqli_fetch_array($resultado)) {
-                                        echo ' <a class="collapse-item text-wrap" href="insumos.php?id_tipoinsumo=' . $fila["id_tipoinsumo"] . '"> ' . $fila["nombre"] . '
+                                        echo ' <a class="collapse-item text-wrap" href="insumos_inventario.php?id_tipoinsumo=' . $fila["id_tipoinsumo"] . '"> ' . $fila["nombre"] . '
                                         </a>';
                                     }
                                 }
@@ -202,7 +151,7 @@
                     </li>
 
                     <li class="nav-item mb-1">
-                        <a class="nav-link" href="prenda_comprada.php">
+                        <a class="nav-link" href="prenda_comprada_inventario.php">
                             <i class="bi bi-bag-plus-fill"></i><span>Prendas Compradas</span>
                         </a>
                     </li>
@@ -256,83 +205,6 @@
                     <div class="container-fluid">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-2">
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrear">
-                                        <i class="bi bi-plus-lg"></i>
-                                    </button>
-                                    <!-- Modal Crear -->
-                                    <div class="modal fade" id="modalCrear" tabindex="-1" role="dialog" aria-labelledby="modalCrearLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                            <div class="modal-content rounded-4">
-                                                <div class="modal-header" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                                    <h5 class="modal-title text-white" id="modalCrearLabel">Ingresa datos de la Tela</h5>
-                                                    <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form action="" method="post" id="formulario" enctype="multipart/form-data">
-                                                        <input type="hidden" name="id_tipo_tela" value="<?php echo $fila2['id_tipo_tela']; ?>">
-
-                                                        <div class="mb-3">
-                                                            <label for="tela" class="form-label" style="color: #000000;">Ingrese Nombre de la Tela:</label>
-                                                            <input type="text" id="tela" class="form-control" name="tela" placeholder="Ingresa el Nombre de la Tela" minlength="3" maxlength="200" required>
-                                                        </div>
-
-                                                        <div class="mb-3 row">
-                                                            <div class="col-sm-6">
-                                                                <label for="ancho" class="form-label" style="color: #000000;">Ingrese el Ancho:</label>
-                                                                <input type="text" id="ancho" class="form-control" name="ancho" placeholder="Ingrese el ancho" pattern="[A-Za-z0-9,.\s]+" maxlength="30">
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <label for="peso" class="form-label" style="color: #000000;">Ingrese el Peso:</label>
-                                                                <input type="text" id="peso" class="form-control" name="peso" placeholder="Ingrese el peso" pattern="[A-Za-z0-9,.\s]+" maxlength="30">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mb-3 row">
-                                                            <div class="col-sm-6">
-                                                                <label for="rendimiento" class="form-label" style="color: #000000;">Ingrese el Rendimiento:</label>
-                                                                <input type="text" id="rendimiento" class="form-control" name="rendimiento" placeholder="Ingrese el rendimiento" pattern="[A-Za-z0-9,.\s]+" maxlength="50">
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <label for="encogimiento" class="form-label" style="color: #000000;">Ingrese el Encogimiento:</label>
-                                                                <input type="text" id="encogimiento" class="form-control" name="encogimiento" placeholder="Ingrese el encogimiento" pattern="[A-Za-z0-9,.\s]+" maxlength="50">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label for="caracteristicas" class="form-label" style="color: #000000;">Ingrese las características de la tela:</label>
-                                                            <input type="text" id="caracteristicas" class="form-control" name="caracteristicas" placeholder="Ingresa las características de la Tela" maxlength="100">
-                                                        </div>
-
-                                                        <div class="mb-3 row">
-                                                            <div class="col-sm-6">
-                                                                <label for="id_proveedor" class="form-label" style="color: #000000;">Elija el proveedor de la tela:</label>
-                                                                <select id="id_proveedor" name="id_proveedor" class="form-select" required>
-                                                                    <option value="">Seleccione una opción</option>
-                                                                    <?php 
-                                                                        $consulta_mysql = 'SELECT * FROM proveedor_tela WHERE id_proveedor > 0'; 
-                                                                        $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
-                                                                        while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                                                            echo "<option value='" . $lista["id_proveedor"] . "'>" . $lista["nombre"] . "</option>";
-                                                                        }
-                                                                    ?>
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <label for="precio" class="form-label" style="color: #000000;">Ingrese el precio del insumo:</label>
-                                                                <input type="number" id="precio" class="form-control" name="precio" placeholder="Ingrese el Precio" min="0" max="99999999" required>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="modal-footer">
-                                                            <button type="submit" name="submit_crear" class="btn btn-success">Agregar</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 <br><br>
                                 <div class="table-responsive">
                                     <table id="mytabla" class="table table-striped table-bordered" style="width:100%">
@@ -340,15 +212,15 @@
                                             <tr>
                                                 <th style="text-align: center; vertical-align: middle; width: 50%;">Tela</th>
                                                 <th style="text-align: center; vertical-align: middle; width: 15%;">Proveedor</th>
-                                                <th style="text-align: center; vertical-align: middle; width: 10%;">Precio</th>
-                                                <th style="text-align: center; vertical-align: middle; width: 15%;">Fecha Actualización</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 5%;">Metros</th>
+                                                <th style="text-align: center; vertical-align: middle; width: 20%;">Fecha Actualización</th>
                                                 <th style="text-align: center; vertical-align: middle; width: 10%;">Opciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php
                                             $consulta = "SELECT tipo_tela.tipo_tela, tipo_tela.id_tipo_tela, tela.id_tela, tela.tela, tela.ancho, tela.peso, tela.rendimiento, tela.encogimiento, tela.caracteristicas, 
-                                            proveedor_tela.nombre, tela.precio, tela.fecha_actualizacion, tela.unidades_metros
+                                            proveedor_tela.nombre, tela.unidades_metros, tela.fecha_actualizacion, tela.unidades_metros
                                             FROM tela
                                             LEFT JOIN proveedor_tela ON tela.id_proveedor = proveedor_tela.id_proveedor
                                             LEFT JOIN tipo_tela ON tela.id_tipo_tela = tipo_tela.id_tipo_tela
@@ -382,18 +254,12 @@
                                                     </td>
 
                                                     <td class="text-center align-middle"><strong><?php echo $fila['nombre']; ?></strong></td>
-                                                    <td class="text-center align-middle"><?php $precio = $fila['precio']; $precio_formateado = $precio == intval($precio) ? number_format($precio, 0, ',', '.') : number_format($precio, 2, ',', '.');?>$<?= $precio_formateado ?></td>
+                                                    <td class="text-center align-middle"><?php echo $fila['unidades_metros']; ?> Mts</td>
                                                     <td class="text-center align-middle"><?php setlocale(LC_TIME, 'spanish'); echo strftime('%d de %B del %Y', strtotime($fila['fecha_actualizacion'])); ?></td>
-                                                    <td>
-                                                        <div class="d-flex justify-content-center">
-                                                            <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#modalEditar<?php echo $fila['id_tela']; ?>"
-                                                                data-id-tipo-tela="<?php echo $fila['id_tipo_tela']; ?>">
-                                                                <i class="bi bi-pencil-square"></i>
-                                                            </button>
-                                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar<?php echo $fila['id_tela']; ?>"
-                                                                data-id-tipo-tela="<?php echo $fila['id_tipo_tela']; ?>">
-                                                                <i class="bi bi-trash-fill"></i>
-                                                            </button>
+                                                    <td class="text-center align-middle">
+                                                        <div class="d-flex align-items-center gap-2 justify-content-center">
+                                                            <input type="number" class="form-control" style="width: 80px;" name="" value="0" onfocus="borrarCero(this)">
+                                                            <button type="button" class="btn btn-success"><i class="bi bi-check-lg"></i></button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -401,112 +267,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <?php
-                                    $resultado = mysqli_query($enlace, $consulta);
-
-                                    while ($fila = mysqli_fetch_array($resultado)) {
-                                    ?>
-                                    <!-- Modal Editar -->
-                                    <div class="modal fade" id="modalEditar<?php echo $fila['id_tela']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                            <div class="modal-content rounded-4">
-                                                <div class="modal-header" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                                    <h5 class="modal-title text-white" id="exampleModalLabel">Ingresa los datos a editar</h5>
-                                                    <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form action="" method="post" id="formulario" enctype="multipart/form-data">
-                                                        <input type="hidden" id="id_tela" name="id_tela" value="<?php echo $fila['id_tela']; ?>">
-                                                        <input type="hidden" name="id_tipo_tela" value="<?php echo $fila['id_tipo_tela']; ?>">
-                                                        <div class="mb-3">
-                                                            <label class="form-label" style="color: #000000;">Ingrese Nombre de la Tela:</label>
-                                                            <input type="text" id="tela" class="form-control" name="tela" value="<?php echo $fila['tela']?>" minlength="3" maxlength="200" required>
-                                                        </div>
-
-                                                        <div class="mb-3 row">
-                                                            <div class="col-sm-6">
-                                                                <label for="ancho" class="form-label" style="color: #000000;">Ingrese el Ancho:</label>
-                                                                <input type="text" id="ancho" class="form-control" name="ancho" value="<?php echo $fila['ancho']?>" pattern="[A-Za-z0-9,.\s]+" maxlength="30">
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <label for="peso" class="form-label" style="color: #000000;">Ingrese el Peso:</label>
-                                                                <input type="text" id="peso" class="form-control" name="peso" value="<?php echo $fila['peso']?>" pattern="[A-Za-z0-9,.\s]+" maxlength="30">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mb-3 row">
-                                                            <div class="col-sm-6">
-                                                                <label for="rendimiento" class="form-label" style="color: #000000;">Ingrese el Rendimiento:</label>
-                                                                <input type="text" id="rendimiento" class="form-control" name="rendimiento" value="<?php echo $fila['rendimiento']?>" pattern="[A-Za-z0-9,.\s]+" maxlength="50">
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <label for="encogimiento" class="form-label" style="color: #000000;">Ingrese el Encogimiento:</label>
-                                                                <input type="text" id="encogimiento" class="form-control" name="encogimiento" value="<?php echo $fila['encogimiento']?>" pattern="[A-Za-z0-9,.\s]+" maxlength="50">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label for="caracteristicas" class="form-label" style="color: #000000;">Ingrese las características de la tela:</label>
-                                                            <input type="text" id="caracteristicas" class="form-control" name="caracteristicas" value="<?php echo $fila['caracteristicas']?>" maxlength="100">
-                                                        </div>
-                                                        <div class="mb-3 row">
-                                                            <div class="col-sm-6">
-                                                                <label class="form-label" style="color: #000000;">Elija el proveedor de la tela:</label>
-                                                                <select name="id_proveedor" class="form-select">
-                                                                    <option value="0">Seleccione una opción</option> 
-                                                                    <?php $consulta_mysql = 'select * from proveedor_tela WHERE id_proveedor > 0'; $resultado_consulta_mysql = mysqli_query($enlace, $consulta_mysql);
-                                                                    while ($lista = mysqli_fetch_assoc($resultado_consulta_mysql)) {
-                                                                        $id = $lista["id_proveedor"];
-                                                                        $nombreProveedor = $lista["nombre"];
-                                                                        $selected = ($nombreProveedor == $fila['nombre']) ? 'selected' : ''; 
-                                                                        echo "<option value='$id' $selected>$nombreProveedor</option>";
-                                                                    }
-                                                                    ?>
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <label class="form-label" style="color: #000000;">Ingrese el precio del insumo:</label>
-                                                                <div class="input-group">
-                                                                    <?php $value = str_replace(['.', ','], ['', '.'], $fila['precio']);?>
-                                                                    <input  type="number" name="precio" class="form-control" value="<?php echo $value; ?>" step="any" pattern="[0-9]+" minlength="1" maxlength="11" style="width: 150px;" required>
-                                                                </div>
-                                                            </div>
-                                                        </div>                                            
-                                                        <div class="modal-footer">
-                                                            <button type="submit" name="submit_editar" class="btn btn-success">Editar</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Modal Eliminar -->                   
-                                    <div class="modal fade" id="modalEliminar<?php echo $fila['id_tela']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content rounded-4">
-                                                <div class="modal-header text-white rounded-top" style="background: linear-gradient(70deg, #020873 0%, #000DD3 100%);">
-                                                    <h5 class="modal-title" id="exampleModalLabel" style="color: white; text-align: center;">¿Realmente desea eliminar la Tela: <?php echo $fila['tela']; ?>?</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="alert alert-warning" role="alert">
-                                                        Si continúa, el Tela sera eliminado de la base de datos.
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <form action="" method="post" id="formulario" enctype="multipart/form-data">
-                                                        <input type="hidden" name="id_tela" value="<?php echo $fila['id_tela']; ?>">
-                                                        <input type="hidden" name="id_tipo_tela" value="<?php echo $fila['id_tipo_tela']; ?>">
-                                                        <button type="submit" name="submit_eliminar" class="btn btn-danger">Eliminar</button>
-                                                    </form>
-                                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancelar</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php
-                                }
-                                ?>
                             </div>
                         </div>
                     </div>
@@ -515,13 +275,12 @@
         </div>
 
         <!-- Bootstrap JS -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
             
-            <!-- Datatables -->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
-            <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>
+        <!-- Datatables -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.8/af-2.7.1/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/cr-2.1.2/cc-1.2.1/date-1.6.3/fc-5.0.5/fh-4.0.6/kt-2.12.2/r-3.0.8/rg-1.6.0/rr-1.5.1/sc-2.4.3/sb-1.8.4/sp-2.3.5/sl-3.1.3/sr-1.4.3/datatables.min.js" integrity="sha384-XCTQyNrbAXZ28p4As7vVXvKGdi4hZcqfqw3LOoZdYriqxbs4EHeHmxLwlsz9DW4l" crossorigin="anonymous"></script>
         
         <script>
             $(document).ready(function() {
@@ -772,6 +531,14 @@
                     }
                 });
             });
+        </script>
+        <script>
+            function borrarCero(input) {
+                // Si el valor es 0, establecer el valor del campo a una cadena vacía
+                if (input.value === '0') {
+                    input.value = '';
+                }
+            }
         </script>
     </body>
 </html>
